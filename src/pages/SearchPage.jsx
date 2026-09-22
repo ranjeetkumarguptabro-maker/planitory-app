@@ -527,7 +527,7 @@ export default function SearchPage({ onBack, onNavigate }) {
         </button>
 
         <button
-          onClick={() => showToast("Opening My Saved Maps...")}
+          onClick={() => onNavigate && onNavigate('purchased-map')}
           className="flex flex-col items-center gap-0.5 text-[#919bb8] hover:text-[#111936] transition-colors cursor-pointer"
         >
           <Map className="w-5 h-5 stroke-[2]" />

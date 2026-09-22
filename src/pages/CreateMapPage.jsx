@@ -649,7 +649,8 @@ export default function CreateMapPage({ onBack, onNavigate }) {
         {/* My Maps */}
         <button
           onClick={() => {
-            showToast("Opening My Maps 🗺️");
+            if (onNavigate) onNavigate('purchased-map');
+            else showToast("Opening My Maps 🗺️");
           }}
           className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
         >

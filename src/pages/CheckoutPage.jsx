@@ -91,6 +91,13 @@ export default function CheckoutPage({ onBack, onNavigate }) {
       setIsProcessing(false);
 
       if (result.success) {
+        try {
+          const existing = JSON.parse(localStorage.getItem('planitory_purchased_maps') || '[]');
+          if (!existing.includes('paris-essentials')) {
+            existing.push('paris-essentials');
+            localStorage.setItem('planitory_purchased_maps', JSON.stringify(existing));
+          }
+        } catch (e) {}
         setLastReceipt(result);
         setShowReceiptModal(true);
       } else {

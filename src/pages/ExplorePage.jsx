@@ -488,12 +488,12 @@ export default function ExplorePage({ onBack, onNavigate }) {
         {/* My Maps Tab */}
         <button
           onClick={() => {
-            setActiveTab('mymaps');
-            showToast("Opening My Maps");
+            if (onNavigate) onNavigate('purchased-map');
+            else showToast("Opening My Maps");
           }}
           className={`flex flex-col items-center gap-1 transition-all ${
             activeTab === 'mymaps' ? 'text-[#544ee5]' : 'text-[#717ea1] hover:text-[#111936]'
-          }`}
+          } cursor-pointer`}
         >
           <Map className="w-5 h-5" />
           <span className="text-[11px] font-semibold">My Maps</span>
