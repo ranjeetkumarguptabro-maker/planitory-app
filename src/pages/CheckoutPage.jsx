@@ -11,6 +11,7 @@ import {
   X,
   Sparkles
 } from 'lucide-react';
+import { processPayment, STRIPE_PUBLISHABLE_KEY } from '../services/stripe';
 
 export default function CheckoutPage({ onBack, onNavigate }) {
   const [selectedMethod, setSelectedMethod] = useState('card');
@@ -23,17 +24,33 @@ export default function CheckoutPage({ onBack, onNavigate }) {
     setTimeout(() => setToastMessage(null), 2500);
   };
 
-  const handlePay = () => {
+  const handlePay = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
+    try {
+      const result = await processPayment({
+        amount: 12,
+        currency: 'usd',
+        itemTitle: 'Paris in 3 Days',
+        paymentMethod: selectedMethod,
+      });
+
       setIsProcessing(false);
-      showToast("Payment successful! Loading your Paris Essentials map...");
-      if (onNavigate) {
-        onNavigate('purchased-map');
+      if (result.success) {
+        showToast("Payment confirmed! Loading your Paris Essentials map...");
+        setTimeout(() => {
+          if (onNavigate) {
+            onNavigate('purchased-map');
+          } else {
+            setShowSuccessModal(true);
+          }
+        }, 600);
       } else {
-        setShowSuccessModal(true);
+        showToast(result.error || "Payment failed, please try again.");
       }
-    }, 700);
+    } catch (err) {
+      setIsProcessing(false);
+      showToast("Payment processing error. Please try again.");
+    }
   };
 
   return (
