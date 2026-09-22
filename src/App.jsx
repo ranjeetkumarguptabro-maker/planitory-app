@@ -185,7 +185,7 @@ export default function App() {
       >
         {/* Page 1: Welcome (c1.png) */}
         {currentPage === 'welcome' && (
-          <WelcomePage onNavigate={(page) => setCurrentPage(page)} />
+          <WelcomePage onNavigate={(page) => setCurrentPage(page === 'home' ? 'explore' : page)} />
         )}
 
         {/* Page 2: Phone Verification (c2.png) */}

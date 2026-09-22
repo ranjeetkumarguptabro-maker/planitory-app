@@ -39,8 +39,8 @@ export default function WelcomePage({ onNavigate }) {
   };
 
   const handleSkip = () => {
-    showToast("Skipped to main discovery feed");
-    if (onNavigate) onNavigate('home');
+    showToast("Skipped directly to Home discovery feed");
+    if (onNavigate) onNavigate('explore');
   };
 
   return (

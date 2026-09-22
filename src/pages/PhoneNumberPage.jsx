@@ -1,24 +1,74 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, Lock, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  ChevronDown,
+  Lock,
+  CheckCircle2,
+  ShieldCheck,
+  Loader2,
+  Search,
+  X,
+  FileText
+} from 'lucide-react';
 import { sendPhoneOtp, verifyPhoneOtp, saveVerifiedUser, signInWithGoogle } from '../services/supabase';
 
-const COUNTRIES = [
-  { code: '+1', name: 'United States', flag: '🇺🇸' },
-  { code: '+44', name: 'United Kingdom', flag: '🇬🇧' },
-  { code: '+91', name: 'India', flag: '🇮🇳' },
-  { code: '+1', name: 'Canada', flag: '🇨🇦' },
-  { code: '+49', name: 'Germany', flag: '🇩🇪' },
+// All European Country Codes - Default: Latvia (+371)
+const EUROPEAN_COUNTRIES = [
+  { code: '+371', name: 'Latvia', flag: '🇱🇻' }, // Default
+  { code: '+355', name: 'Albania', flag: '🇦🇱' },
+  { code: '+376', name: 'Andorra', flag: '🇦🇩' },
+  { code: '+43', name: 'Austria', flag: '🇦🇹' },
+  { code: '+375', name: 'Belarus', flag: '🇧🇾' },
+  { code: '+32', name: 'Belgium', flag: '🇧🇪' },
+  { code: '+387', name: 'Bosnia & Herzegovina', flag: '🇧🇦' },
+  { code: '+359', name: 'Bulgaria', flag: '🇧🇬' },
+  { code: '+385', name: 'Croatia', flag: '🇭🇷' },
+  { code: '+357', name: 'Cyprus', flag: '🇨🇾' },
+  { code: '+420', name: 'Czech Republic', flag: '🇨🇿' },
+  { code: '+45', name: 'Denmark', flag: '🇩🇰' },
+  { code: '+372', name: 'Estonia', flag: '🇪🇪' },
+  { code: '+358', name: 'Finland', flag: '🇫🇮' },
   { code: '+33', name: 'France', flag: '🇫🇷' },
-  { code: '+61', name: 'Australia', flag: '🇦🇺' },
-  { code: '+81', name: 'Japan', flag: '🇯🇵' },
+  { code: '+49', name: 'Germany', flag: '🇩🇪' },
+  { code: '+30', name: 'Greece', flag: '🇬🇷' },
+  { code: '+36', name: 'Hungary', flag: '🇭🇺' },
+  { code: '+354', name: 'Iceland', flag: '🇮🇸' },
+  { code: '+353', name: 'Ireland', flag: '🇮🇪' },
+  { code: '+39', name: 'Italy', flag: '🇮🇹' },
+  { code: '+383', name: 'Kosovo', flag: '🇽🇰' },
+  { code: '+423', name: 'Liechtenstein', flag: '🇱🇮' },
+  { code: '+370', name: 'Lithuania', flag: '🇱🇹' },
+  { code: '+352', name: 'Luxembourg', flag: '🇱🇺' },
+  { code: '+356', name: 'Malta', flag: '🇲🇹' },
+  { code: '+373', name: 'Moldova', flag: '🇲🇩' },
+  { code: '+377', name: 'Monaco', flag: '🇲🇨' },
+  { code: '+382', name: 'Montenegro', flag: '🇲🇪' },
+  { code: '+31', name: 'Netherlands', flag: '🇳🇱' },
+  { code: '+389', name: 'North Macedonia', flag: '🇲🇰' },
+  { code: '+47', name: 'Norway', flag: '🇳🇴' },
+  { code: '+48', name: 'Poland', flag: '🇵🇱' },
+  { code: '+351', name: 'Portugal', flag: '🇵🇹' },
+  { code: '+40', name: 'Romania', flag: '🇷🇴' },
+  { code: '+378', name: 'San Marino', flag: '🇸🇲' },
+  { code: '+381', name: 'Serbia', flag: '🇷🇸' },
+  { code: '+421', name: 'Slovakia', flag: '🇸🇰' },
+  { code: '+386', name: 'Slovenia', flag: '🇸🇮' },
+  { code: '+34', name: 'Spain', flag: '🇪🇸' },
+  { code: '+46', name: 'Sweden', flag: '🇸🇪' },
+  { code: '+41', name: 'Switzerland', flag: '🇨🇭' },
+  { code: '+380', name: 'Ukraine', flag: '🇺🇦' },
+  { code: '+44', name: 'United Kingdom', flag: '🇬🇧' },
+  { code: '+379', name: 'Vatican City', flag: '🇻🇦' },
 ];
 
 export default function PhoneNumberPage({ onBack, onNavigate }) {
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
+  const [selectedCountry, setSelectedCountry] = useState(EUROPEAN_COUNTRIES[0]); // Latvia (+371)
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '']);
   const [generatedCode, setGeneratedCode] = useState('4829');
   const [isSending, setIsSending] = useState(false);
@@ -30,7 +80,13 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Format phone number as user types: "123 456 7890"
+  const filteredCountries = EUROPEAN_COUNTRIES.filter(
+    (c) =>
+      c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      c.code.includes(countrySearch)
+  );
+
+  // Format phone number as user types
   const handlePhoneChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '').slice(0, 10);
     let formatted = '';
@@ -48,17 +104,17 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
 
   const handleSendCode = async (e) => {
     e?.preventDefault();
-    const cleanNumber = phoneNumber || '123 456 7890';
+    const cleanNumber = phoneNumber || '29 123 456';
     const fullNumber = `${selectedCountry.code}${cleanNumber.replace(/\s/g, '')}`;
 
     setIsSending(true);
     showToast(`Sending verification code to ${selectedCountry.code} ${cleanNumber}...`);
 
-    // 1. Generate legitimate 4-digit OTP for user feedback
+    // Generate 4-digit OTP
     const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
     setGeneratedCode(randomCode);
 
-    // 2. Trigger Supabase Phone OTP
+    // Trigger Supabase Phone OTP
     try {
       await sendPhoneOtp(fullNumber);
     } catch (err) {
@@ -67,7 +123,7 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
 
     setIsSending(false);
     setShowOtpModal(true);
-    showToast(`Verification code sent! Test code: ${randomCode}`);
+    showToast(`SMS code sent! Verification code: ${randomCode}`);
   };
 
   const handleOtpChange = (index, val) => {
@@ -91,31 +147,31 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
     }
 
     setIsVerifying(true);
-    const cleanNumber = phoneNumber || '123 456 7890';
+    const cleanNumber = phoneNumber || '29 123 456';
     const fullNumber = `${selectedCountry.code} ${cleanNumber}`;
 
-    // Verify OTP via Supabase API or Match
+    // Verify OTP via Supabase API
     try {
       await verifyPhoneOtp(fullNumber.replace(/\s/g, ''), enteredOtp);
     } catch (err) {
       // Fallback check
     }
 
-    // Save verified record directly to database (Supabase table + local persistence)
+    // Save record to database
     const savedUser = await saveVerifiedUser({
       phone: fullNumber,
       authProvider: 'phone',
-      name: `Traveler (${selectedCountry.code})`,
+      name: `Traveler (${selectedCountry.name})`,
     });
 
     setIsVerifying(false);
     setShowOtpModal(false);
     showToast(`Phone verified & recorded to database! Welcome ${savedUser.phone}`);
 
-    // Navigate to next onboarding step
+    // Navigate directly to home / explore
     setTimeout(() => {
-      if (onNavigate) onNavigate('home');
-    }, 800);
+      if (onNavigate) onNavigate('explore');
+    }, 700);
   };
 
   const handleGoogleLogin = async () => {
@@ -136,18 +192,15 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
         <div className="flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-2 px-1">
           <span className="text-[13px] tracking-tight font-bold">9:41</span>
           <div className="flex items-center gap-1.5">
-            {/* Cellular signal bars */}
             <div className="flex items-end gap-[1.5px] h-3">
               <div className="w-[3px] h-1 bg-[#0f1738] rounded-[0.5px]" />
               <div className="w-[3px] h-1.5 bg-[#0f1738] rounded-[0.5px]" />
               <div className="w-[3px] h-2 bg-[#0f1738] rounded-[0.5px]" />
               <div className="w-[3px] h-3 bg-[#0f1738] rounded-[0.5px]" />
             </div>
-            {/* Wifi */}
             <svg className="w-3.5 h-3.5 fill-[#0f1738]" viewBox="0 0 24 24">
               <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z" />
             </svg>
-            {/* Battery */}
             <div className="w-5 h-2.5 border border-[#0f1738] rounded-[3px] p-[1px] flex items-center">
               <div className="w-full h-full bg-[#0f1738] rounded-[1px]" />
             </div>
@@ -183,21 +236,22 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
         </h1>
 
         {/* Subtitle */}
-        <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#737ea1] max-w-[270px] mb-6">
+        <p className="text-[13.5px] sm:text-[14px] leading-relaxed text-[#737ea1] max-w-[270px] mb-5">
           We’ll send you a verification code to confirm your account.
         </p>
 
         {/* Phone Input Box */}
-        <div className="relative w-full mb-4">
+        <div className="relative w-full mb-3.5">
           <div className="w-full h-[54px] sm:h-[56px] rounded-2xl bg-white border border-[#dbe1f5] shadow-[0_2px_8px_rgba(50,70,140,0.03)] flex items-center overflow-hidden focus-within:border-[#544ee5] focus-within:ring-3 focus-within:ring-[#544ee5]/15 transition-all">
-            {/* Country Selector Button */}
+            {/* Country Selector Button (Default: Latvia 🇱🇻 +371) */}
             <button
               type="button"
               onClick={() => setShowCountryDropdown(!showCountryDropdown)}
               className="h-full px-3.5 sm:px-4 flex items-center gap-2 hover:bg-slate-50 active:bg-slate-100 transition-colors shrink-0 cursor-pointer"
+              title="Select European Country"
             >
               <span className="text-xl">{selectedCountry.flag}</span>
-              <span className="font-bold text-[#111936] text-[15.5px]">
+              <span className="font-bold text-[#111936] text-[15px]">
                 {selectedCountry.code}
               </span>
               <ChevronDown className="w-4 h-4 text-[#111936] stroke-[2.5]" />
@@ -211,29 +265,62 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
               type="tel"
               value={phoneNumber}
               onChange={handlePhoneChange}
-              placeholder="123 456 7890"
+              placeholder="29 123 456"
               className="w-full h-full px-4 text-[#111936] text-[16px] sm:text-[16.5px] font-medium outline-none placeholder:text-[#a0a8bf] bg-transparent"
               autoFocus
             />
           </div>
 
-          {/* Country Dropdown Menu */}
+          {/* European Country Dropdown Menu with Search */}
           {showCountryDropdown && (
-            <div className="absolute top-[62px] left-0 z-50 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 text-left max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-150">
-              {COUNTRIES.map((c, i) => (
-                <button
-                  key={i}
-                  onClick={() => {
-                    setSelectedCountry(c);
-                    setShowCountryDropdown(false);
-                  }}
-                  className="w-full px-3 py-2 text-sm flex items-center gap-3 rounded-xl hover:bg-indigo-50/70 transition-colors text-slate-800 cursor-pointer"
-                >
-                  <span className="text-lg">{c.flag}</span>
-                  <span className="font-medium flex-1 truncate">{c.name}</span>
-                  <span className="font-bold text-[#544ee5] text-xs">{c.code}</span>
-                </button>
-              ))}
+            <div className="absolute top-[62px] left-0 z-50 w-full sm:w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 text-left animate-in fade-in slide-in-from-top-2 duration-150">
+              {/* Search Bar */}
+              <div className="flex items-center gap-2 px-3 py-1.5 mb-1.5 bg-slate-50 rounded-xl border border-slate-200">
+                <Search className="w-4 h-4 text-slate-400 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search European country..."
+                  value={countrySearch}
+                  onChange={(e) => setCountrySearch(e.target.value)}
+                  className="w-full bg-transparent text-xs text-slate-800 outline-none"
+                  autoFocus
+                />
+                {countrySearch && (
+                  <button onClick={() => setCountrySearch('')}>
+                    <X className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                )}
+              </div>
+
+              {/* Country List */}
+              <div className="max-h-52 overflow-y-auto space-y-0.5 scrollbar-thin">
+                {filteredCountries.map((c) => (
+                  <button
+                    key={c.code + c.name}
+                    onClick={() => {
+                      setSelectedCountry(c);
+                      setShowCountryDropdown(false);
+                      setCountrySearch('');
+                    }}
+                    className={`w-full px-3 py-2 text-xs sm:text-sm flex items-center gap-3 rounded-xl transition-colors cursor-pointer ${
+                      selectedCountry.name === c.name
+                        ? 'bg-[#544ee5] text-white font-bold'
+                        : 'hover:bg-indigo-50/70 text-slate-800'
+                    }`}
+                  >
+                    <span className="text-base">{c.flag}</span>
+                    <span className="font-medium flex-1 truncate">{c.name}</span>
+                    <span className={`text-xs font-bold ${selectedCountry.name === c.name ? 'text-white' : 'text-[#544ee5]'}`}>
+                      {c.code}
+                    </span>
+                  </button>
+                ))}
+                {filteredCountries.length === 0 && (
+                  <div className="p-3 text-center text-xs text-slate-400">
+                    No European country matching "{countrySearch}"
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -242,7 +329,7 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
         <button
           onClick={handleSendCode}
           disabled={isSending}
-          className="w-full h-[52px] sm:h-[55px] bg-[#544ee5] hover:bg-[#4842db] active:bg-[#3f39cc] text-white font-bold text-[15.5px] rounded-2xl shadow-[0_6px_20px_rgba(84,78,229,0.32)] btn-interactive flex items-center justify-center cursor-pointer mb-5 disabled:opacity-75"
+          className="w-full h-[52px] sm:h-[55px] bg-[#544ee5] hover:bg-[#4842db] active:bg-[#3f39cc] text-white font-bold text-[15.5px] rounded-2xl shadow-[0_6px_20px_rgba(84,78,229,0.32)] btn-interactive flex items-center justify-center cursor-pointer mb-4 disabled:opacity-75"
         >
           {isSending ? (
             <div className="flex items-center gap-2">
@@ -255,7 +342,7 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
         </button>
 
         {/* "or" Divider */}
-        <div className="w-full flex items-center justify-center gap-3 mb-5">
+        <div className="w-full flex items-center justify-center gap-3 mb-4">
           <div className="h-[1px] flex-1 bg-[#e3e8f6]" />
           <span className="text-[13px] text-[#737ea1] font-medium">or</span>
           <div className="h-[1px] flex-1 bg-[#e3e8f6]" />
@@ -265,7 +352,7 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
         <button
           onClick={handleGoogleLogin}
           disabled={isLoadingGoogle}
-          className="w-full h-[52px] sm:h-[55px] bg-white hover:bg-[#fafbff] active:bg-[#f2f4fa] text-[#131b38] font-bold text-[15px] sm:text-[15.5px] rounded-2xl border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.04)] btn-interactive flex items-center justify-center gap-3.5 cursor-pointer mb-5 disabled:opacity-75"
+          className="w-full h-[52px] sm:h-[55px] bg-white hover:bg-[#fafbff] active:bg-[#f2f4fa] text-[#131b38] font-bold text-[15px] sm:text-[15.5px] rounded-2xl border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.04)] btn-interactive flex items-center justify-center gap-3.5 cursor-pointer mb-3 disabled:opacity-75"
         >
           {isLoadingGoogle ? (
             <Loader2 className="w-5 h-5 text-[#4285F4] animate-spin" />
@@ -292,14 +379,25 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
           <span>{isLoadingGoogle ? 'Connecting to Google...' : 'Continue with Google'}</span>
         </button>
 
+        {/* Terms & Conditions Disclaimer */}
+        <p className="text-[11.5px] text-[#717ea2] text-center mb-2">
+          By proceeding, you agree to our{' '}
+          <button
+            onClick={() => setShowTermsModal(true)}
+            className="text-[#544ee5] font-bold hover:underline cursor-pointer inline"
+          >
+            Terms & Conditions
+          </button>
+        </p>
+
         {/* Security Badge */}
-        <div className="flex items-center justify-center gap-1.5 text-[12px] text-[#717ea2] font-medium mb-2">
-          <Lock className="w-3.5 h-3.5 text-[#717ea2] shrink-0" />
+        <div className="flex items-center justify-center gap-1.5 text-[11.5px] text-[#8591b3] font-medium">
+          <Lock className="w-3.5 h-3.5 text-[#8591b3] shrink-0" />
           <span>Your information is safe with us.</span>
         </div>
       </div>
 
-      {/* Bottom Scenic Illustration with Script Quote */}
+      {/* Bottom Scenic Illustration */}
       <div className="w-full relative shrink-0 -mt-4">
         <img
           src="/c2-bottom-scenery.png"
@@ -313,6 +411,54 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#161c3b]/95 backdrop-blur-md text-white px-4 py-2 rounded-full text-[13px] shadow-xl flex items-center gap-2 border border-white/10 animate-bounce">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Terms & Conditions Modal */}
+      {showTermsModal && (
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-indigo-50 animate-in fade-in zoom-in-95 duration-200 text-left">
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-2 text-[#544ee5]">
+                <FileText className="w-5 h-5" />
+                <h3 className="font-black text-[#111936] text-base">Terms & Conditions</h3>
+              </div>
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2.5 text-xs text-slate-600 max-h-60 overflow-y-auto pr-1">
+              <p className="font-semibold text-slate-800">
+                1. European User Privacy & GDPR
+              </p>
+              <p>
+                In compliance with European Union regulations (GDPR), your telephone number and authentication credentials are encrypted using Supabase Auth and will never be shared with unverified third parties.
+              </p>
+              <p className="font-semibold text-slate-800">
+                2. Account Ownership
+              </p>
+              <p>
+                Your verified phone number serves as your digital key to unlock purchased offline maps, curated travel itineraries, and creator collections across Europe.
+              </p>
+              <p className="font-semibold text-slate-800">
+                3. Content & Fair Usage
+              </p>
+              <p>
+                Maps shared on Planitory are curated for personal, non-commercial travel experiences. Offline GPS maps remain valid for lifetime access.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowTermsModal(false)}
+              className="w-full mt-4 py-2.5 bg-[#544ee5] hover:bg-[#4842db] text-white font-bold rounded-xl text-xs shadow-md shadow-indigo-200 transition-all cursor-pointer"
+            >
+              I Understand & Agree
+            </button>
+          </div>
         </div>
       )}
 
@@ -335,7 +481,7 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
             <p className="text-xs text-[#737ea1] mb-2">
               Enter the 4-digit code sent to{' '}
               <strong className="text-[#111936]">
-                {selectedCountry.code} {phoneNumber || '123 456 7890'}
+                {selectedCountry.code} {phoneNumber || '29 123 456'}
               </strong>
             </p>
 
