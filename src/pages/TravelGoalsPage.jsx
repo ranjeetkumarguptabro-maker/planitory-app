@@ -43,7 +43,7 @@ export default function TravelGoalsPage({ onBack, onNavigate }) {
   };
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
+    <div className="relative w-full h-full overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
       {/* Top Header & Status Bar Area */}
       <div className="w-full pt-3 sm:pt-4 px-6 z-20 shrink-0">
         {/* Mock iOS Status Bar */}

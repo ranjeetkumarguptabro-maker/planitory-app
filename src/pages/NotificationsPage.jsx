@@ -158,7 +158,7 @@ export default function NotificationsPage({ onBack, onNavigate }) {
   );
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
+    <div className="relative w-full h-full overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
       {/* Top Header Area */}
       <div className="w-full pt-3 sm:pt-3.5 px-5 sm:px-6 z-20 shrink-0 bg-[#fafbfe]/95 backdrop-blur-md">
         {/* Mock iOS Status Bar */}
@@ -228,7 +228,7 @@ export default function NotificationsPage({ onBack, onNavigate }) {
       </div>
 
       {/* Notifications List Content */}
-      <div className="flex-1 overflow-y-auto px-5 sm:px-6 space-y-4 pb-20 scrollbar-none pt-2">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-5 sm:px-6 space-y-4 pb-28 scrollbar-none pt-2">
         {groups.map((group) => (
           <div key={group} className="space-y-2">
             <h2 className="text-[13px] font-bold text-[#717ea1] tracking-tight text-left pl-1">

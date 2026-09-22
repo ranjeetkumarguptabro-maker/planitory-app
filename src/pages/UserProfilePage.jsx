@@ -123,9 +123,9 @@ export default function UserProfilePage({ onNavigate }) {
   };
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
+    <div className="relative w-full h-full overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
       {/* Scrollable Profile Content */}
-      <div className="flex-1 overflow-y-auto pb-32 scrollbar-none">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-36 scrollbar-none">
         {/* Top Header & Status Bar Area */}
         <div className="pt-3 sm:pt-4 px-6 shrink-0 bg-[#fafbfe]/95 backdrop-blur-md">
           {/* Mock iOS Status Bar */}

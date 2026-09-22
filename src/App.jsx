@@ -210,11 +210,11 @@ export default function App() {
 
       {/* Main Canvas Container */}
       <main
-        className={`w-full transition-all duration-300 flex items-center justify-center ${
+        className={`w-full transition-all duration-300 flex flex-col ${
           viewMode === 'mobile'
             ? 'sm:max-w-[430px] sm:h-[890px] sm:rounded-[44px] sm:ring-8 sm:ring-[#212946] sm:shadow-2xl sm:shadow-indigo-950/40'
             : 'sm:max-w-[520px] sm:h-[92vh] sm:rounded-[36px]'
-        } h-full overflow-hidden relative bg-white sm:bg-black`}
+        } h-full flex-1 sm:flex-initial overflow-hidden relative bg-[#fafbfe]`}
       >
         {/* Page 1: Welcome (c1.png) */}
         {currentPage === 'welcome' && (

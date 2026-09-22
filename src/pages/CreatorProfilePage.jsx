@@ -84,9 +84,9 @@ export default function CreatorProfilePage({ onBack, onNavigate }) {
   };
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
+    <div className="relative w-full h-full overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
       {/* Scrollable Profile Content */}
-      <div className="flex-1 overflow-y-auto pb-10 scrollbar-none">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-16 scrollbar-none">
         {/* Cover Panorama Banner with Built-in Status Bar & Action Buttons */}
         <div className="relative w-full aspect-[908/305] overflow-hidden shrink-0">
           <img

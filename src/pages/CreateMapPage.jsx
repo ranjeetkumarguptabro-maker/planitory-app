@@ -131,7 +131,7 @@ export default function CreateMapPage({ onBack, onNavigate }) {
   ].filter(p => placeQuery && p.toLowerCase().includes(placeQuery.toLowerCase()));
 
   return (
-    <div className="w-full h-full bg-white sm:rounded-[44px] flex flex-col justify-between overflow-hidden relative font-sans text-gray-900 select-none">
+    <div className="w-full h-full bg-white sm:rounded-[44px] flex flex-col justify-between overflow-hidden relative font-sans text-gray-900">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 bg-[#1e2337] text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl border border-white/10 flex items-center gap-2 animate-fade-in">
@@ -149,7 +149,7 @@ export default function CreateMapPage({ onBack, onNavigate }) {
       />
 
       {/* Scrollable Main Content */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar pb-24">
+      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y scrollbar-none pb-28">
         {/* Status Bar */}
         <div className="pt-3 px-7 flex justify-between items-center text-xs font-semibold text-gray-900">
           <span>9:41</span>

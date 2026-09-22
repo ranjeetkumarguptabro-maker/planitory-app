@@ -87,7 +87,7 @@ export default function CreatorsPage({ onBack, onNavigate }) {
       : CREATORS.filter((c) => c.category === activeCategory);
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
+    <div className="relative w-full h-full overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
       {/* Top Header & Status Bar Area */}
       <div className="w-full pt-3 sm:pt-4 px-6 z-20 shrink-0 bg-[#fafbfe]/95 backdrop-blur-md">
         {/* Mock iOS Status Bar */}
@@ -162,7 +162,7 @@ export default function CreatorsPage({ onBack, onNavigate }) {
       </div>
 
       {/* Main Scrollable Creators List */}
-      <div className="flex-1 overflow-y-auto px-5 sm:px-6 space-y-3.5 pt-2 pb-24 scrollbar-none">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-5 sm:px-6 space-y-3.5 pt-2 pb-28 scrollbar-none">
         {filteredCreators.map((creator) => {
           const isFollowing = !!followingMap[creator.id];
           return (

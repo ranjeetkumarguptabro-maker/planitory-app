@@ -39,9 +39,9 @@ export default function MapDetailPage({ onBack, onNavigate }) {
   };
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden bg-white sm:rounded-[44px] flex flex-col justify-between">
+    <div className="relative w-full h-full overflow-hidden bg-white sm:rounded-[44px] flex flex-col justify-between">
       {/* Scrollable Container */}
-      <div className="flex-1 overflow-y-auto pb-24 scrollbar-none">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28 scrollbar-none">
         {/* Top Hero Image Container */}
         <div className="relative w-full aspect-[16/10] max-h-[300px] overflow-hidden">
           <img

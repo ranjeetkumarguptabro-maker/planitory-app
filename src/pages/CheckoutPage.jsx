@@ -54,7 +54,7 @@ export default function CheckoutPage({ onBack, onNavigate }) {
   };
 
   return (
-    <div className="relative w-full h-full select-none overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
+    <div className="relative w-full h-full overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
       {/* Top Header & Status Bar Area */}
       <div className="w-full pt-3 sm:pt-4 px-6 z-20 shrink-0">
         {/* Mock iOS Status Bar */}
@@ -92,7 +92,7 @@ export default function CheckoutPage({ onBack, onNavigate }) {
       </div>
 
       {/* Main Content Body */}
-      <div className="flex-1 overflow-y-auto px-5 sm:px-6 space-y-4 pt-1 pb-6 scrollbar-none">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y px-5 sm:px-6 space-y-4 pt-1 pb-10 scrollbar-none">
         {/* Product Card */}
         <div className="w-full p-3 sm:p-3.5 rounded-2xl bg-white border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.03)] flex items-center justify-between gap-3">
           {/* Thumbnail */}
