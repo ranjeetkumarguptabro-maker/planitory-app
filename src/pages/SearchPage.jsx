@@ -121,6 +121,22 @@ export default function SearchPage({ onBack, onNavigate }) {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
 
+  const query = searchQuery.trim().toLowerCase();
+
+  const filteredDestinations = destinations.filter((d) =>
+    !query || d.city.toLowerCase().includes(query) || d.country.toLowerCase().includes(query)
+  );
+
+  const filteredPopular = POPULAR_SEARCHES.filter((p) =>
+    !query || p.city.toLowerCase().includes(query) || p.description.toLowerCase().includes(query)
+  );
+
+  const filteredTrending = trendingMaps.filter((m) =>
+    !query || m.title.toLowerCase().includes(query) || m.places.toLowerCase().includes(query)
+  );
+
+  const hasResults = filteredDestinations.length > 0 || filteredPopular.length > 0 || filteredTrending.length > 0;
+
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 2500);
@@ -271,152 +287,179 @@ export default function SearchPage({ onBack, onNavigate }) {
           </div>
         )}
 
+        {/* No Results Found State */}
+        {query && !hasResults && (
+          <div className="py-12 flex flex-col items-center justify-center text-center px-4">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-[#544ee5] flex items-center justify-center mb-3">
+              <Search className="w-7 h-7 stroke-[2]" />
+            </div>
+            <h3 className="text-base font-black text-[#111936] mb-1">
+              No results found
+            </h3>
+            <p className="text-xs text-[#717ea1] max-w-xs mb-4">
+              We couldn't find any destinations or maps matching "{searchQuery}". Try searching for Paris, Rome, Vienna, Cafés, or Museums.
+            </p>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="px-4 py-2 bg-[#544ee5] text-white font-bold text-xs rounded-xl shadow-sm hover:bg-[#423bcb] active:scale-95 transition-all cursor-pointer"
+            >
+              Clear Search
+            </button>
+          </div>
+        )}
+
         {/* Suggested Destinations */}
-        <div>
-          <div className="flex items-center justify-between mb-2.5">
-            <h2 className="text-[15px] sm:text-[16px] font-extrabold text-[#111936] tracking-tight">
-              Suggested Destinations
-            </h2>
-            <button
-              onClick={() => showToast("Viewing all destinations")}
-              className="text-[#544ee5] hover:text-[#423bcb] font-bold text-[12.5px] cursor-pointer"
-            >
-              See All &gt;
-            </button>
-          </div>
-
-          {/* Horizontal Destinations Carousel */}
-          <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
-            {destinations.map((dest) => (
-              <div
-                key={dest.id}
-                onClick={() => {
-                  showToast(`Selected destination: ${dest.city}`);
-                  if (onNavigate) onNavigate('map-detail');
-                }}
-                className="relative w-[112px] sm:w-[124px] h-[135px] sm:h-[145px] rounded-2xl overflow-hidden shrink-0 shadow-[0_4px_12px_rgba(50,70,140,0.08)] cursor-pointer group hover:scale-[1.02] transition-transform duration-200"
+        {filteredDestinations.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <h2 className="text-[15px] sm:text-[16px] font-extrabold text-[#111936] tracking-tight">
+                {query ? `Destinations (${filteredDestinations.length})` : 'Suggested Destinations'}
+              </h2>
+              <button
+                onClick={() => showToast("Viewing all destinations")}
+                className="text-[#544ee5] hover:text-[#423bcb] font-bold text-[12.5px] cursor-pointer"
               >
-                <img
-                  src={dest.img}
-                  alt={dest.city}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
-                />
+                See All &gt;
+              </button>
+            </div>
 
-                {/* Hitbox over baked heart */}
-                <button
-                  onClick={(e) => toggleDestinationLike(dest.id, e)}
-                  className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all z-10"
+            {/* Horizontal Destinations Carousel */}
+            <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+              {filteredDestinations.map((dest) => (
+                <div
+                  key={dest.id}
+                  onClick={() => {
+                    showToast(`Selected destination: ${dest.city}`);
+                    if (onNavigate) onNavigate('map-detail');
+                  }}
+                  className="relative w-[112px] sm:w-[124px] h-[135px] sm:h-[145px] rounded-2xl overflow-hidden shrink-0 shadow-[0_4px_12px_rgba(50,70,140,0.08)] cursor-pointer group hover:scale-[1.02] transition-transform duration-200"
                 >
-                  {dest.isLiked && (
-                    <Heart className="w-4 h-4 fill-[#ff4a73] text-[#ff4a73] animate-in zoom-in-50 duration-150" />
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Popular Searches */}
-        <div>
-          <h2 className="text-[15px] sm:text-[16px] font-extrabold text-[#111936] tracking-tight mb-2.5">
-            Popular Searches
-          </h2>
-
-          <div className="space-y-2">
-            {POPULAR_SEARCHES.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => {
-                  showToast(`Exploring ${item.city}...`);
-                  if (onNavigate) onNavigate('map-detail');
-                }}
-                className="w-full p-2 rounded-2xl bg-white border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.03)] flex items-center justify-between gap-3 hover:border-indigo-200 transition-all cursor-pointer group"
-              >
-                {/* Thumbnail */}
-                <img
-                  src={item.img}
-                  alt={item.city}
-                  className="w-[70px] h-[50px] sm:w-[76px] sm:h-[54px] object-cover rounded-xl shrink-0 pointer-events-none"
-                />
-
-                {/* Info */}
-                <div className="flex-1 min-w-0 pr-1 text-left">
-                  <h3 className="text-[14px] font-bold text-[#111936] tracking-tight group-hover:text-[#544ee5] transition-colors">
-                    {item.city}
-                  </h3>
-                  <p className="text-[11.5px] text-[#717ea1] truncate">
-                    {item.description}
-                  </p>
-                </div>
-
-                {/* Chevron */}
-                <ChevronRight className="w-4 h-4 text-[#717ea1] group-hover:text-[#544ee5] transition-colors shrink-0 mr-1" />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Trending Maps */}
-        <div>
-          <div className="flex items-center justify-between mb-2.5">
-            <h2 className="text-[15px] sm:text-[16px] font-extrabold text-[#111936] tracking-tight">
-              Trending Maps
-            </h2>
-            <button
-              onClick={() => showToast("Viewing trending maps")}
-              className="text-[#544ee5] hover:text-[#423bcb] font-bold text-[12.5px] cursor-pointer"
-            >
-              See All &gt;
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
-            {trendingMaps.map((map) => (
-              <div
-                key={map.id}
-                onClick={() => {
-                  showToast(`Opening map: ${map.title}`);
-                  if (onNavigate) onNavigate('map-detail');
-                }}
-                className="w-[145px] sm:w-[155px] p-2 rounded-2xl bg-white border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.03)] flex flex-col shrink-0 hover:border-indigo-200 transition-all cursor-pointer group"
-              >
-                {/* Image Container with Badge */}
-                <div className="relative w-full h-[95px] rounded-xl overflow-hidden mb-2">
                   <img
-                    src={map.img}
-                    alt={map.title}
+                    src={dest.img}
+                    alt={dest.city}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                   />
+
+                  {/* Hitbox over baked heart */}
                   <button
-                    onClick={(e) => toggleTrendingBookmark(map.id, e)}
-                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all shadow-xs cursor-pointer"
+                    onClick={(e) => toggleDestinationLike(dest.id, e)}
+                    className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 active:scale-95 transition-all z-10"
                   >
-                    {map.liked ? (
-                      <Heart className="w-3.5 h-3.5 fill-[#ff4a73] text-[#ff4a73]" />
-                    ) : (
-                      <Bookmark
-                        className={`w-3.5 h-3.5 ${
-                          map.saved ? 'fill-[#544ee5] text-[#544ee5]' : 'text-[#111936]'
-                        }`}
-                      />
+                    {dest.isLiked && (
+                      <Heart className="w-4 h-4 fill-[#ff4a73] text-[#ff4a73] animate-in zoom-in-50 duration-150" />
                     )}
                   </button>
                 </div>
-
-                {/* Details */}
-                <h3 className="font-bold text-[12.5px] text-[#111936] tracking-tight truncate mb-1 text-left">
-                  {map.title}
-                </h3>
-                <div className="flex items-center gap-1.5 text-[10.5px] text-[#717ea1] font-medium text-left">
-                  <MapPin className="w-3 h-3 text-[#717ea1] shrink-0" />
-                  <span>{map.places}</span>
-                  <span>&bull;</span>
-                  <span>{map.duration}</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Popular Searches */}
+        {filteredPopular.length > 0 && (
+          <div>
+            <h2 className="text-[15px] sm:text-[16px] font-extrabold text-[#111936] tracking-tight mb-2.5">
+              {query ? 'Popular Matches' : 'Popular Searches'}
+            </h2>
+
+            <div className="space-y-2">
+              {filteredPopular.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => {
+                    showToast(`Exploring ${item.city}...`);
+                    if (onNavigate) onNavigate('map-detail');
+                  }}
+                  className="w-full p-2 rounded-2xl bg-white border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.03)] flex items-center justify-between gap-3 hover:border-indigo-200 transition-all cursor-pointer group"
+                >
+                  {/* Thumbnail */}
+                  <img
+                    src={item.img}
+                    alt={item.city}
+                    className="w-[70px] h-[50px] sm:w-[76px] sm:h-[54px] object-cover rounded-xl shrink-0 pointer-events-none"
+                  />
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0 pr-1 text-left">
+                    <h3 className="text-[14px] font-bold text-[#111936] tracking-tight group-hover:text-[#544ee5] transition-colors">
+                      {item.city}
+                    </h3>
+                    <p className="text-[11.5px] text-[#717ea1] truncate">
+                      {item.description}
+                    </p>
+                  </div>
+
+                  {/* Chevron */}
+                  <ChevronRight className="w-4 h-4 text-[#717ea1] group-hover:text-[#544ee5] transition-colors shrink-0 mr-1" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Trending Maps */}
+        {filteredTrending.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-2.5">
+              <h2 className="text-[15px] sm:text-[16px] font-extrabold text-[#111936] tracking-tight">
+                {query ? 'Matching Maps' : 'Trending Maps'}
+              </h2>
+              <button
+                onClick={() => showToast("Viewing trending maps")}
+                className="text-[#544ee5] hover:text-[#423bcb] font-bold text-[12.5px] cursor-pointer"
+              >
+                See All &gt;
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+              {filteredTrending.map((map) => (
+                <div
+                  key={map.id}
+                  onClick={() => {
+                    showToast(`Opening map: ${map.title}`);
+                    if (onNavigate) onNavigate('map-detail');
+                  }}
+                  className="w-[145px] sm:w-[155px] p-2 rounded-2xl bg-white border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.03)] flex flex-col shrink-0 hover:border-indigo-200 transition-all cursor-pointer group"
+                >
+                  {/* Image Container with Badge */}
+                  <div className="relative w-full h-[95px] rounded-xl overflow-hidden mb-2">
+                    <img
+                      src={map.img}
+                      alt={map.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
+                    />
+                    <button
+                      onClick={(e) => toggleTrendingBookmark(map.id, e)}
+                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all shadow-xs cursor-pointer"
+                    >
+                      {map.liked ? (
+                        <Heart className="w-3.5 h-3.5 fill-[#ff4a73] text-[#ff4a73]" />
+                      ) : (
+                        <Bookmark
+                          className={`w-3.5 h-3.5 ${
+                            map.saved ? 'fill-[#544ee5] text-[#544ee5]' : 'text-[#111936]'
+                          }`}
+                        />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Details */}
+                  <h3 className="font-bold text-[12.5px] text-[#111936] tracking-tight truncate mb-1 text-left">
+                    {map.title}
+                  </h3>
+                  <div className="flex items-center gap-1.5 text-[10.5px] text-[#717ea1] font-medium text-left">
+                    <MapPin className="w-3 h-3 text-[#717ea1] shrink-0" />
+                    <span>{map.places}</span>
+                    <span>&bull;</span>
+                    <span>{map.duration}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filter Modal */}
