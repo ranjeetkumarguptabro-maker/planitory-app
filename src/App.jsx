@@ -14,8 +14,8 @@ import UserProfilePage from './pages/UserProfilePage';
 import { Smartphone, Monitor } from 'lucide-react';
 
 export default function App() {
-  // Defaults to newly requested Page 12 (c14: User Profile)
-  const [currentPage, setCurrentPage] = useState('user-profile'); 
+  // Defaults to Page 1: Welcome & Auth
+  const [currentPage, setCurrentPage] = useState('welcome'); 
   const [viewMode, setViewMode] = useState('mobile'); // 'mobile' | 'fill'
 
   return (
