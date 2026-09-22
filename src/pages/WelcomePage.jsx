@@ -274,18 +274,48 @@ export default function WelcomePage({ onNavigate }) {
             )}
 
             {(activeModal === 'terms' || activeModal === 'privacy') && (
-              <div className="space-y-3 text-xs text-slate-600 max-h-56 overflow-y-auto pr-1">
-                <p>
-                  Welcome to <strong>Planitory</strong>. By accessing our maps and travel planning services, you agree to discover the world with respect, curiosity, and kindness.
-                </p>
-                <p>
-                  Your personal itineraries, location data, and travel stories are encrypted and safeguarded under our privacy commitment.
-                </p>
+              <div className="space-y-3 text-[11.5px] sm:text-xs text-slate-600 max-h-64 overflow-y-auto pr-1 leading-relaxed">
+                {/* Creator Policy Highlight */}
+                <div className="p-3 bg-indigo-50/80 rounded-2xl border border-indigo-100/80 space-y-1.5 text-left">
+                  <span className="text-[#544ee5] font-bold text-xs block">
+                    ✨ Creator Publishing & Monetization
+                  </span>
+                  <ul className="space-y-1 text-[#303859]">
+                    <li>
+                      &bull; <strong>5 Free Listings:</strong> Creators start with their first <strong>5 map listings 100% FREE</strong>.
+                    </li>
+                    <li>
+                      &bull; <strong>€0.20 per Additional Listing:</strong> From the 6th listing onward, a publishing fee of <strong>€0.20 EUR</strong> per listing applies.
+                    </li>
+                    <li>
+                      &bull; <strong>10% Sales Fee:</strong> Planitory charges a <strong>10% platform fee</strong> per sale, with <strong>90% paid directly to the creator</strong>.
+                    </li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-slate-800 text-xs mb-0.5">
+                    1. European User Privacy & GDPR Compliance
+                  </h4>
+                  <p>
+                    All accounts and personal data are encrypted via Supabase Auth and strictly compliant with GDPR standards.
+                  </p>
+                </div>
+
+                <div>
+                  <h4 className="font-bold text-slate-800 text-xs mb-0.5">
+                    2. Traveler Lifetime Access & Support
+                  </h4>
+                  <p>
+                    Purchasing a map grants lifetime offline GPS access, curated route stops, and creator quarterly updates.
+                  </p>
+                </div>
+
                 <button
                   onClick={() => setActiveModal(null)}
-                  className="w-full mt-2 py-2 bg-slate-100 hover:bg-slate-200 font-semibold rounded-lg text-slate-700 cursor-pointer"
+                  className="w-full mt-2 py-2 bg-[#544ee5] hover:bg-[#4740d4] font-bold rounded-xl text-white text-xs shadow-md shadow-indigo-200 cursor-pointer transition-all"
                 >
-                  Close
+                  I Understand & Agree
                 </button>
               </div>
             )}

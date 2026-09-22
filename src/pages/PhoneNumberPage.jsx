@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ArrowLeft,
   ChevronDown,
@@ -8,7 +8,10 @@ import {
   Loader2,
   Search,
   X,
-  FileText
+  FileText,
+  BadgePercent,
+  Sparkles,
+  Coins
 } from 'lucide-react';
 import { sendPhoneOtp, verifyPhoneOtp, saveVerifiedUser, signInWithGoogle } from '../services/supabase';
 
@@ -75,6 +78,8 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
 
+  const otpInputsRef = useRef([]);
+
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
@@ -113,6 +118,7 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
     // Generate 4-digit OTP
     const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
     setGeneratedCode(randomCode);
+    setOtp(['', '', '', '']);
 
     // Trigger Supabase Phone OTP
     try {
@@ -124,25 +130,79 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
     setIsSending(false);
     setShowOtpModal(true);
     showToast(`SMS code sent! Verification code: ${randomCode}`);
+
+    // Focus first input after modal renders
+    setTimeout(() => {
+      otpInputsRef.current[0]?.focus();
+    }, 100);
   };
 
-  const handleOtpChange = (index, val) => {
-    if (!/^\d*$/.test(val)) return;
+  // Robust, safe OTP input change handler
+  const handleOtpChange = (index, e) => {
+    const rawVal = e.target.value;
+    // Extract only digits
+    const digitsOnly = rawVal.replace(/\D/g, '');
+
+    // If user typed or pasted more than 1 character
+    if (digitsOnly.length > 1) {
+      const newOtp = [...otp];
+      for (let i = 0; i < 4; i++) {
+        newOtp[i] = digitsOnly[i] || '';
+      }
+      setOtp(newOtp);
+      const nextIdx = Math.min(digitsOnly.length, 3);
+      otpInputsRef.current[nextIdx]?.focus();
+      return;
+    }
+
+    const singleDigit = digitsOnly.slice(-1);
     const newOtp = [...otp];
-    newOtp[index] = val.slice(-1);
+    newOtp[index] = singleDigit;
     setOtp(newOtp);
 
-    // Auto-advance focus
-    if (val && index < 3) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      if (nextInput) nextInput.focus();
+    // Smoothly advance to next input after small delay so key event doesn't duplicate
+    if (singleDigit && index < 3) {
+      setTimeout(() => {
+        otpInputsRef.current[index + 1]?.focus();
+      }, 30);
     }
+  };
+
+  // Handle Backspace navigation
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace') {
+      if (!otp[index] && index > 0) {
+        e.preventDefault();
+        const newOtp = [...otp];
+        newOtp[index - 1] = '';
+        setOtp(newOtp);
+        otpInputsRef.current[index - 1]?.focus();
+      }
+    }
+  };
+
+  // Handle Paste
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4);
+    if (!pastedData) return;
+
+    const newOtp = ['', '', '', ''];
+    for (let i = 0; i < pastedData.length; i++) {
+      newOtp[i] = pastedData[i];
+    }
+    setOtp(newOtp);
+
+    const nextIdx = Math.min(pastedData.length, 3);
+    setTimeout(() => {
+      otpInputsRef.current[nextIdx]?.focus();
+    }, 50);
   };
 
   const handleVerifyOtp = async () => {
     const enteredOtp = otp.join('');
     if (enteredOtp.length < 4) {
-      showToast("Please enter the complete 4-digit code");
+      showToast("Please enter all 4 digits of your verification code");
       return;
     }
 
@@ -154,10 +214,10 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
     try {
       await verifyPhoneOtp(fullNumber.replace(/\s/g, ''), enteredOtp);
     } catch (err) {
-      // Fallback check
+      // Fallback
     }
 
-    // Save record to database
+    // Save verified record to database
     const savedUser = await saveVerifiedUser({
       phone: fullNumber,
       authProvider: 'phone',
@@ -286,7 +346,7 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
                   autoFocus
                 />
                 {countrySearch && (
-                  <button onClick={() => setCountrySearch('')}>
+                  <button onClick={() => setCountrySearch('')} className="cursor-pointer">
                     <X className="w-3.5 h-3.5 text-slate-400" />
                   </button>
                 )}
@@ -414,14 +474,14 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
         </div>
       )}
 
-      {/* Terms & Conditions Modal */}
+      {/* Comprehensive Terms & Conditions Modal */}
       {showTermsModal && (
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-indigo-50 animate-in fade-in zoom-in-95 duration-200 text-left">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-white rounded-3xl p-5 sm:p-6 shadow-2xl border border-indigo-50 animate-in fade-in zoom-in-95 duration-200 text-left">
             <div className="flex justify-between items-center mb-3">
               <div className="flex items-center gap-2 text-[#544ee5]">
                 <FileText className="w-5 h-5" />
-                <h3 className="font-black text-[#111936] text-base">Terms & Conditions</h3>
+                <h3 className="font-black text-[#111936] text-[16px]">Terms & Conditions</h3>
               </div>
               <button
                 onClick={() => setShowTermsModal(false)}
@@ -431,30 +491,69 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
               </button>
             </div>
 
-            <div className="space-y-2.5 text-xs text-slate-600 max-h-60 overflow-y-auto pr-1">
-              <p className="font-semibold text-slate-800">
-                1. European User Privacy & GDPR
-              </p>
-              <p>
-                In compliance with European Union regulations (GDPR), your telephone number and authentication credentials are encrypted using Supabase Auth and will never be shared with unverified third parties.
-              </p>
-              <p className="font-semibold text-slate-800">
-                2. Account Ownership
-              </p>
-              <p>
-                Your verified phone number serves as your digital key to unlock purchased offline maps, curated travel itineraries, and creator collections across Europe.
-              </p>
-              <p className="font-semibold text-slate-800">
-                3. Content & Fair Usage
-              </p>
-              <p>
-                Maps shared on Planitory are curated for personal, non-commercial travel experiences. Offline GPS maps remain valid for lifetime access.
-              </p>
+            <div className="space-y-3 text-[11.5px] sm:text-xs text-slate-600 max-h-72 overflow-y-auto pr-1 leading-relaxed">
+              {/* Creator Policy Highlight */}
+              <div className="p-3 bg-indigo-50/80 rounded-2xl border border-indigo-100/80 space-y-2">
+                <div className="flex items-center gap-1.5 text-[#544ee5] font-bold text-xs">
+                  <Sparkles className="w-4 h-4" />
+                  <span>Creator Publishing & Monetization</span>
+                </div>
+                <ul className="space-y-1.5 text-[#303859]">
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-[#544ee5] font-black">&bull;</span>
+                    <span><strong>5 Free Listings:</strong> Every creator can publish their first <strong>5 map listings completely for FREE</strong>.</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-[#544ee5] font-black">&bull;</span>
+                    <span><strong>€0.20 per Additional Listing:</strong> Starting from the 6th listing, creators will be charged a publishing fee of around <strong>€0.20 EUR</strong> per listing.</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <span className="text-[#544ee5] font-black">&bull;</span>
+                    <span><strong>10% Sales Fee:</strong> On each map sold to travelers, Planitory charges a <strong>10% platform fee</strong>, with <strong>90% paid directly to the creator</strong>.</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-800 text-xs mb-1">
+                  1. European User Privacy & GDPR Compliance
+                </h4>
+                <p>
+                  In strict compliance with European Union GDPR regulations, your telephone number and credentials are securely encrypted via Supabase Auth. Contact information is never distributed to third parties.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-800 text-xs mb-1">
+                  2. Traveler Lifetime Map Access
+                </h4>
+                <p>
+                  When travelers purchase a curated map, they receive lifetime offline access, downloadable GPS coordinates, and quarterly creator updates.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-800 text-xs mb-1">
+                  3. Payouts & Currency
+                </h4>
+                <p>
+                  Creator sales earnings are calculated net of the 10% fee and disbursed on rolling weekly cycles via Stripe Connect in EUR or local currency.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-800 text-xs mb-1">
+                  4. Intellectual Property & Original Content
+                </h4>
+                <p>
+                  Creators retain full artistic and commercial ownership of their curated photos, itineraries, and stories published on Planitory.
+                </p>
+              </div>
             </div>
 
             <button
               onClick={() => setShowTermsModal(false)}
-              className="w-full mt-4 py-2.5 bg-[#544ee5] hover:bg-[#4842db] text-white font-bold rounded-xl text-xs shadow-md shadow-indigo-200 transition-all cursor-pointer"
+              className="w-full mt-3.5 py-2.5 bg-[#544ee5] hover:bg-[#4842db] text-white font-bold rounded-xl text-xs shadow-md shadow-indigo-200 transition-all cursor-pointer"
             >
               I Understand & Agree
             </button>
@@ -462,52 +561,63 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
         </div>
       )}
 
-      {/* Interactive Legitimate OTP Verification Sheet */}
+      {/* Interactive OTP Verification Sheet - Fixed Grid Layout */}
       {showOtpModal && (
-        <div className="absolute inset-0 bg-black/45 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-indigo-50 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-3">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-[340px] sm:max-w-[360px] bg-white rounded-3xl p-6 shadow-2xl border border-indigo-50 animate-in fade-in zoom-in-95 duration-150 text-center">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-3 text-left">
               <div className="flex items-center gap-2 text-[#544ee5]">
                 <ShieldCheck className="w-5 h-5" />
-                <h3 className="font-bold text-[#111936] text-base">Verify Your Code</h3>
+                <h3 className="font-black text-[#111936] text-[16px]">Verify Code</h3>
               </div>
               <button
                 onClick={() => setShowOtpModal(false)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-semibold px-2 py-1 cursor-pointer"
+                className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                title="Close"
               >
-                Cancel
+                <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-[#737ea1] mb-2">
+
+            <p className="text-xs text-[#737ea1] mb-2 text-left">
               Enter the 4-digit code sent to{' '}
               <strong className="text-[#111936]">
                 {selectedCountry.code} {phoneNumber || '29 123 456'}
               </strong>
             </p>
 
-            <div className="mb-4 bg-indigo-50/70 border border-indigo-100 rounded-xl p-2 text-center text-xs text-[#544ee5]">
-              <span>SMS Verification Code: <strong>{generatedCode}</strong></span>
+            {/* Test Code Banner */}
+            <div className="mb-4 bg-indigo-50/80 border border-indigo-100 rounded-xl p-2 text-xs text-[#544ee5] font-medium">
+              <span>SMS Verification Code: <strong className="font-black tracking-widest text-[#544ee5]">{generatedCode}</strong></span>
             </div>
 
-            {/* 4-digit inputs */}
-            <div className="flex justify-between gap-3 mb-5">
+            {/* Safe 4-digit OTP Grid: 4 equal square boxes */}
+            <div className="grid grid-cols-4 gap-2.5 sm:gap-3 mb-5 w-full">
               {otp.map((digit, index) => (
                 <input
                   key={index}
+                  ref={(el) => (otpInputsRef.current[index] = el)}
                   id={`otp-${index}`}
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={1}
                   value={digit}
-                  onChange={(e) => handleOtpChange(index, e.target.value)}
-                  className="w-13 h-14 text-center text-xl font-bold rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#544ee5] focus:ring-2 focus:ring-[#544ee5]/20 outline-none text-[#111936]"
+                  onChange={(e) => handleOtpChange(index, e)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  onPaste={index === 0 ? handleOtpPaste : undefined}
+                  className="w-full h-14 sm:h-16 text-center text-2xl font-black rounded-2xl border-2 border-slate-200 bg-slate-50 focus:bg-white focus:border-[#544ee5] focus:ring-4 focus:ring-[#544ee5]/15 outline-none text-[#111936] transition-all shadow-xs"
+                  autoFocus={index === 0}
                 />
               ))}
             </div>
 
+            {/* Verify Button */}
             <button
               onClick={handleVerifyOtp}
               disabled={isVerifying}
-              className="w-full py-3 bg-[#544ee5] hover:bg-[#4842db] text-white font-bold rounded-xl text-sm shadow-md shadow-indigo-200 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-75"
+              className="w-full py-3 bg-[#544ee5] hover:bg-[#4842db] active:scale-98 text-white font-bold rounded-2xl text-sm shadow-md shadow-indigo-200 transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-75"
             >
               {isVerifying ? (
                 <>
