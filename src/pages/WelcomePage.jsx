@@ -1,324 +1,263 @@
-import React, { useState, useEffect } from 'react';
-import { Phone, Mail, X, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
-import { signInWithGoogle, getCurrentUser } from '../services/supabase';
+import React, { useState } from 'react';
+import {
+  X,
+  ShieldCheck
+} from 'lucide-react';
 
 export default function WelcomePage({ onNavigate }) {
-  const [activeModal, setActiveModal] = useState(null);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [email, setEmail] = useState('');
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
-  const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
 
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  useEffect(() => {
-    // Check if user is already authenticated
-    getCurrentUser().then((user) => {
-      if (user) {
-        setCurrentUser(user);
-      }
-    });
-  }, []);
-
-  const handleGoogleLogin = async () => {
-    setIsLoadingGoogle(true);
-    showToast("Opening Google Sign-In with Supabase...");
-
-    const { data, error } = await signInWithGoogle();
-
-    if (error) {
-      console.warn("Google OAuth notice:", error.message);
-      // If popup or redirect encounters environment limitation, inform user clearly
-      showToast(error.message || "Google OAuth initiated. Enable Google provider in Supabase Dashboard.");
-    }
-    setIsLoadingGoogle(false);
+  const handleSkip = () => {
+    if (onNavigate) onNavigate('home');
   };
 
-  const handleSkip = () => {
-    showToast("Skipped directly to Home discovery feed");
-    if (onNavigate) onNavigate('explore');
+  const handlePhoneLogin = () => {
+    if (onNavigate) onNavigate('phone');
+  };
+
+  const handleGoogleSelect = (accountName, email) => {
+    setShowGoogleModal(false);
+    showToast(`Signed in as ${accountName} (${email})`);
+    setTimeout(() => {
+      if (onNavigate) onNavigate('regions');
+    }, 600);
+  };
+
+  const handleEmailSubmit = (e) => {
+    e.preventDefault();
+    if (!emailInput || !emailInput.includes('@')) {
+      showToast('Please enter a valid email address');
+      return;
+    }
+    setShowEmailModal(false);
+    showToast(`Verification code sent to ${emailInput}`);
+    setTimeout(() => {
+      if (onNavigate) onNavigate('regions');
+    }, 600);
   };
 
   return (
-    <div className="relative w-full h-full min-h-[720px] max-h-[960px] aspect-[9/16] select-none overflow-hidden rounded-[32px] shadow-2xl bg-[#0f1424]">
-      {/* Background artwork */}
-      <img
-        src="/bg-clean-with-sky.png"
-        alt="Planitory - Maps with stories"
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-      />
-
-      {/* Top Bar with interactive Skip button */}
-      <div className="absolute top-0 left-0 right-0 pt-6 px-6 sm:px-7 flex justify-between items-center z-20">
-        {currentUser ? (
-          <span className="text-[12px] bg-white/80 backdrop-blur-md px-2.5 py-1 rounded-full text-indigo-950 font-bold shadow-xs">
-            Logged in: {currentUser.name || currentUser.phone || currentUser.email}
-          </span>
-        ) : (
-          <div />
-        )}
-        <button
-          onClick={handleSkip}
-          className="text-[#5e6faa] hover:text-[#2d3b66] active:scale-95 font-medium text-[15px] sm:text-[16px] tracking-wide py-1 px-2.5 rounded-lg transition-all"
-        >
-          Skip
-        </button>
-      </div>
-
-      {/* Bottom Interactive Area */}
-      <div className="absolute left-0 right-0 bottom-0 z-20 flex flex-col items-center px-7 pb-6 pt-2">
-        {/* Buttons container */}
-        <div className="w-full flex flex-col gap-[11px]">
-          {/* Continue with Google */}
-          <button
-            onClick={handleGoogleLogin}
-            disabled={isLoadingGoogle}
-            className="w-full h-[52px] sm:h-[55px] bg-white hover:bg-[#fafbff] active:bg-[#f3f4fa] rounded-full flex items-center justify-center gap-3.5 shadow-[0_4px_16px_rgba(40,55,120,0.08)] btn-interactive cursor-pointer group disabled:opacity-75"
-          >
-            {isLoadingGoogle ? (
-              <Loader2 className="w-5 h-5 text-[#4285F4] animate-spin" />
-            ) : (
-              <svg className="w-[21px] h-[21px] shrink-0" viewBox="0 0 24 24">
-                <path
-                  fill="#4285F4"
-                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"
-                />
-                <path
-                  fill="#EA4335"
-                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                />
-              </svg>
-            )}
-            <span className="text-[#131b38] font-bold text-[15px] sm:text-[15.5px] tracking-[-0.01em]">
-              {isLoadingGoogle ? 'Connecting to Google...' : 'Continue with Google'}
-            </span>
-          </button>
-
-          {/* Continue with phone number */}
-          <button
-            onClick={() => onNavigate ? onNavigate('phone') : setActiveModal('phone')}
-            className="w-full h-[52px] sm:h-[55px] bg-[#edf0fd] hover:bg-[#e4e8fa] active:bg-[#dbe0f7] rounded-full flex items-center justify-center gap-3 btn-interactive cursor-pointer"
-          >
-            <Phone className="w-[19px] h-[19px] text-[#554fe2] fill-[#554fe2] shrink-0" />
-            <span className="text-[#131b38] font-bold text-[15px] sm:text-[15.5px] tracking-[-0.01em]">
-              Continue with phone number
-            </span>
-          </button>
-
-          {/* Continue with email */}
-          <button
-            onClick={() => setActiveModal('email')}
-            className="w-full h-[52px] sm:h-[55px] bg-[#edf0fd] hover:bg-[#e4e8fa] active:bg-[#dbe0f7] rounded-full flex items-center justify-center gap-3 btn-interactive cursor-pointer"
-          >
-            <Mail className="w-[20px] h-[20px] text-[#554fe2] shrink-0" strokeWidth={2.2} />
-            <span className="text-[#131b38] font-bold text-[15px] sm:text-[15.5px] tracking-[-0.01em]">
-              Continue with email
-            </span>
-          </button>
-        </div>
-
-        {/* Legal Disclaimer */}
-        <div className="mt-4 text-center text-[12px] sm:text-[12.5px] leading-snug text-[#73789b] max-w-[340px]">
-          By continuing, you agree to our{' '}
-          <button
-            onClick={() => setActiveModal('terms')}
-            className="text-[#4348ca] font-bold hover:underline inline"
-          >
-            Terms of Service
-          </button>{' '}
-          and{' '}
-          <button
-            onClick={() => setActiveModal('privacy')}
-            className="text-[#4348ca] font-bold hover:underline inline"
-          >
-            Privacy Policy.
-          </button>
-        </div>
-
-        {/* Divider with Sign In */}
-        <div className="mt-4 sm:mt-5 flex items-center justify-center w-full gap-2.5 text-[12.5px] sm:text-[13px] text-[#717698]">
-          <span className="h-[1px] w-12 sm:w-14 bg-[#d8dced]" />
-          <span>Already have an account?</span>
-          <button
-            onClick={() => setActiveModal('signin')}
-            className="text-[#4348ca] font-bold hover:underline cursor-pointer"
-          >
-            Sign In
-          </button>
-          <span className="h-[1px] w-12 sm:w-14 bg-[#d8dced]" />
-        </div>
-      </div>
-
+    <div className="relative w-full h-full min-h-[720px] max-h-[960px] aspect-[9/16] select-none overflow-hidden rounded-[32px] sm:rounded-[44px] shadow-2xl bg-white flex flex-col font-sans">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#161c3b]/95 backdrop-blur-md text-white px-4 py-2 rounded-full text-[13px] shadow-xl flex items-center gap-2 border border-white/10 animate-bounce">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 bg-[#1e2337] text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl border border-white/10 flex items-center gap-2 animate-fade-in">
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Interactive Modals */}
-      {activeModal && (
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-40 flex items-end sm:items-center justify-center p-4 transition-opacity duration-200">
-          <div className="w-full max-w-sm bg-white rounded-3xl p-6 shadow-2xl border border-indigo-50 animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-[#131b38]">
-                {activeModal === 'phone' && 'Phone Sign In'}
-                {activeModal === 'email' && 'Email Sign In'}
-                {activeModal === 'signin' && 'Welcome Back'}
-                {activeModal === 'terms' && 'Terms of Service'}
-                {activeModal === 'privacy' && 'Privacy Policy'}
-              </h3>
-              <button
-                onClick={() => setActiveModal(null)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
+      {/* The 100% Exact High-Resolution Image from c20.png */}
+      <div className="relative w-full h-full">
+        <img
+          src="/c20.png"
+          alt="Planitory Welcome Screen"
+          className="w-full h-full object-cover pointer-events-none"
+        />
+
+        {/* 1. Interactive Hitbox: Top User Badge (Switch / View Profile) */}
+        <button
+          onClick={() => {
+            if (onNavigate) onNavigate('user-profile');
+            else showToast("Logged in as Alex Parker");
+          }}
+          className="absolute top-[2.2%] left-[7.5%] w-[42%] h-[2.5%] rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all z-20"
+          title="View Profile"
+        />
+
+        {/* 2. Interactive Hitbox: Top Skip Button */}
+        <button
+          onClick={handleSkip}
+          className="absolute top-[2.0%] right-[7.0%] w-[16%] h-[2.6%] rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all z-20"
+          title="Skip to Home"
+        />
+
+        {/* 3. Interactive Hitbox: Continue with Google */}
+        <button
+          onClick={() => setShowGoogleModal(true)}
+          className="absolute top-[58.8%] left-[12.8%] right-[12.8%] h-[4.2%] rounded-2xl cursor-pointer hover:bg-black/5 active:scale-[0.99] transition-all z-20"
+          title="Continue with Google"
+        />
+
+        {/* 4. Interactive Hitbox: Continue with phone number */}
+        <button
+          onClick={handlePhoneLogin}
+          className="absolute top-[64.6%] left-[12.8%] right-[12.8%] h-[4.2%] rounded-2xl cursor-pointer hover:bg-black/5 active:scale-[0.99] transition-all z-20"
+          title="Continue with phone number"
+        />
+
+        {/* 5. Interactive Hitbox: Continue with email */}
+        <button
+          onClick={() => setShowEmailModal(true)}
+          className="absolute top-[70.4%] left-[12.8%] right-[12.8%] h-[4.2%] rounded-2xl cursor-pointer hover:bg-black/5 active:scale-[0.99] transition-all z-20"
+          title="Continue with email"
+        />
+
+        {/* 6. Interactive Hitbox: Apple Social */}
+        <button
+          onClick={() => showToast('Apple Sign In')}
+          className="absolute top-[79.0%] left-[27.0%] w-[13.0%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all z-20"
+          title="Apple Sign In"
+        />
+
+        {/* 7. Interactive Hitbox: Facebook Social */}
+        <button
+          onClick={() => showToast('Facebook Sign In')}
+          className="absolute top-[79.0%] left-[44.0%] w-[13.0%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all z-20"
+          title="Facebook Sign In"
+        />
+
+        {/* 8. Interactive Hitbox: Instagram Social */}
+        <button
+          onClick={() => showToast('Instagram Sign In')}
+          className="absolute top-[79.0%] right-[27.0%] w-[13.0%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all z-20"
+          title="Instagram Sign In"
+        />
+
+        {/* 9. Interactive Hitbox: Terms of Service */}
+        <button
+          onClick={() => setShowTermsModal(true)}
+          className="absolute top-[87.2%] left-[58.0%] w-[32.0%] h-[1.8%] rounded-sm cursor-pointer hover:bg-indigo-500/20 transition-all z-20"
+          title="Terms of Service"
+        />
+
+        {/* 10. Interactive Hitbox: Privacy Policy */}
+        <button
+          onClick={() => setShowTermsModal(true)}
+          className="absolute top-[89.2%] left-[43.5%] w-[25.5%] h-[1.8%] rounded-sm cursor-pointer hover:bg-indigo-500/20 transition-all z-20"
+          title="Privacy Policy"
+        />
+
+        {/* 11. Interactive Hitbox: Sign In */}
+        <button
+          onClick={() => setShowEmailModal(true)}
+          className="absolute top-[93.4%] left-[61.0%] w-[18.0%] h-[2.2%] rounded-md cursor-pointer hover:bg-indigo-500/20 transition-all z-20"
+          title="Sign In"
+        />
+      </div>
+
+      {/* Google Account Selector Modal */}
+      {showGoogleModal && (
+        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-6 animate-fade-in">
+          <div className="bg-white w-full rounded-3xl p-6 shadow-2xl border border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z" />
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.99 0 12s.45 3.83 1.25 5.42l4.03-3.15z" />
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
+                </svg>
+                <span className="font-bold text-sm text-slate-800">Sign in with Google</span>
+              </div>
+              <button onClick={() => setShowGoogleModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Modal Content */}
-            {activeModal === 'phone' && (
-              <div className="space-y-4">
-                <p className="text-xs text-[#717698]">
-                  We'll text you a verification code to securely sign in or register.
-                </p>
-                <div className="flex rounded-xl border border-slate-200 overflow-hidden focus-within:border-[#554fe2] focus-within:ring-2 focus-within:ring-indigo-100">
-                  <span className="bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-600 border-r border-slate-200">
-                    +1
-                  </span>
-                  <input
-                    type="tel"
-                    placeholder="(555) 000-0000"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full px-3 py-2.5 text-sm outline-none text-[#131b38]"
-                    autoFocus
-                  />
+            <div className="mt-3 space-y-2">
+              <div
+                onClick={() => handleGoogleSelect('Alex Parker', 'alex.parker@gmail.com')}
+                className="p-3 rounded-2xl hover:bg-slate-50 border border-slate-100 flex items-center gap-3 cursor-pointer transition"
+              >
+                <img src="/c14-avatar.png" alt="Alex" className="w-9 h-9 rounded-full object-cover" />
+                <div className="text-left">
+                  <div className="font-bold text-xs text-slate-900">Alex Parker</div>
+                  <div className="text-[11px] text-slate-500">alex.parker@gmail.com</div>
                 </div>
-                <button
-                  onClick={() => {
-                    showToast("Redirecting to verification...");
-                    setActiveModal(null);
-                    if (onNavigate) onNavigate('phone');
-                  }}
-                  className="w-full py-3 bg-[#554fe2] hover:bg-[#4740d4] text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-200 cursor-pointer"
-                >
-                  Send Verification Code
-                  <ArrowRight className="w-4 h-4" />
-                </button>
               </div>
-            )}
-
-            {activeModal === 'email' && (
-              <div className="space-y-4">
-                <p className="text-xs text-[#717698]">
-                  Enter your email address to receive a secure magic sign-in link.
-                </p>
-                <input
-                  type="email"
-                  placeholder="your.name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 outline-none focus:border-[#554fe2] focus:ring-2 focus:ring-indigo-100 text-[#131b38]"
-                  autoFocus
-                />
-                <button
-                  onClick={() => {
-                    showToast("Magic link sent to " + (email || "your email"));
-                    setActiveModal(null);
-                  }}
-                  className="w-full py-3 bg-[#554fe2] hover:bg-[#4740d4] text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-200 cursor-pointer"
-                >
-                  Continue with Email
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-
-            {activeModal === 'signin' && (
-              <div className="space-y-3.5">
-                <input
-                  type="text"
-                  placeholder="Email or phone"
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 outline-none focus:border-[#554fe2] focus:ring-2 focus:ring-indigo-100 text-[#131b38]"
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-200 outline-none focus:border-[#554fe2] focus:ring-2 focus:ring-indigo-100 text-[#131b38]"
-                />
-                <button
-                  onClick={() => {
-                    showToast("Signed in successfully!");
-                    setActiveModal(null);
-                  }}
-                  className="w-full py-3 bg-[#554fe2] hover:bg-[#4740d4] text-white font-bold rounded-xl text-sm transition-all shadow-md shadow-indigo-200 cursor-pointer"
-                >
-                  Sign In
-                </button>
-              </div>
-            )}
-
-            {(activeModal === 'terms' || activeModal === 'privacy') && (
-              <div className="space-y-3 text-[11.5px] sm:text-xs text-slate-600 max-h-64 overflow-y-auto pr-1 leading-relaxed">
-                {/* Creator Policy Highlight */}
-                <div className="p-3 bg-indigo-50/80 rounded-2xl border border-indigo-100/80 space-y-1.5 text-left">
-                  <span className="text-[#544ee5] font-bold text-xs block">
-                    ✨ Creator Publishing & Monetization
-                  </span>
-                  <ul className="space-y-1 text-[#303859]">
-                    <li>
-                      &bull; <strong>5 Free Listings:</strong> Creators start with their first <strong>5 map listings 100% FREE</strong>.
-                    </li>
-                    <li>
-                      &bull; <strong>€0.20 per Additional Listing:</strong> From the 6th listing onward, a publishing fee of <strong>€0.20 EUR</strong> per listing applies.
-                    </li>
-                    <li>
-                      &bull; <strong>10% Sales Fee:</strong> Planitory charges a <strong>10% platform fee</strong> per sale, with <strong>90% paid directly to the creator</strong>.
-                    </li>
-                  </ul>
+              <div
+                onClick={() => handleGoogleSelect('Travel Explorer', 'explorer@gmail.com')}
+                className="p-3 rounded-2xl hover:bg-slate-50 border border-slate-100 flex items-center gap-3 cursor-pointer transition"
+              >
+                <div className="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs">
+                  TE
                 </div>
-
-                <div>
-                  <h4 className="font-bold text-slate-800 text-xs mb-0.5">
-                    1. European User Privacy & GDPR Compliance
-                  </h4>
-                  <p>
-                    All accounts and personal data are encrypted via Supabase Auth and strictly compliant with GDPR standards.
-                  </p>
+                <div className="text-left">
+                  <div className="font-bold text-xs text-slate-900">Travel Explorer</div>
+                  <div className="text-[11px] text-slate-500">explorer@gmail.com</div>
                 </div>
-
-                <div>
-                  <h4 className="font-bold text-slate-800 text-xs mb-0.5">
-                    2. Traveler Lifetime Access & Support
-                  </h4>
-                  <p>
-                    Purchasing a map grants lifetime offline GPS access, curated route stops, and creator quarterly updates.
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setActiveModal(null)}
-                  className="w-full mt-2 py-2 bg-[#544ee5] hover:bg-[#4740d4] font-bold rounded-xl text-white text-xs shadow-md shadow-indigo-200 cursor-pointer transition-all"
-                >
-                  I Understand & Agree
-                </button>
               </div>
-            )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Email Input Modal */}
+      {showEmailModal && (
+        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-6 animate-fade-in">
+          <div className="bg-white w-full rounded-3xl p-6 shadow-2xl border border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="font-bold text-sm text-slate-800">Sign in with Email</span>
+              <button onClick={() => setShowEmailModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleEmailSubmit} className="mt-4 space-y-3">
+              <input
+                type="email"
+                placeholder="name@example.com"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 outline-none focus:border-[#544ee5]"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="w-full py-3 bg-[#544ee5] hover:bg-[#4842db] text-white font-bold text-xs rounded-xl shadow-md transition"
+              >
+                Continue
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Terms & Conditions Modal */}
+      {showTermsModal && (
+        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-6 animate-fade-in">
+          <div className="bg-white w-full max-h-[85%] rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-[#544ee5]" />
+                <h3 className="font-bold text-sm text-slate-900">Terms of Service & Pricing</h3>
+              </div>
+              <button onClick={() => setShowTermsModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto mt-3 space-y-2.5 text-xs text-slate-600 pr-1 leading-relaxed">
+              <div className="p-3 bg-indigo-50/70 rounded-2xl border border-indigo-100">
+                <h4 className="font-bold text-xs text-[#544ee5] mb-1">Creator Pricing Policy</h4>
+                <ul className="list-disc pl-4 space-y-1 text-[11.5px] text-slate-700">
+                  <li><strong>First 5 Listings:</strong> 100% Free to publish.</li>
+                  <li><strong>Subsequent Listings:</strong> €0.20 per created map listing.</li>
+                  <li><strong>Platform Commission:</strong> 10% on each completed map sale.</li>
+                </ul>
+              </div>
+
+              <p>
+                By using Planitory, you agree to discover, share, and purchase authentic local map guides created by verified travel creators.
+              </p>
+              <p>
+                All payments are securely processed through Stripe. Offline downloads are stored locally on your device for seamless navigation abroad without roaming charges.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setShowTermsModal(false)}
+              className="mt-4 w-full py-2.5 bg-[#544ee5] hover:bg-[#4842db] text-white font-bold text-xs rounded-xl shadow-md transition"
+            >
+              I Understand & Agree
+            </button>
           </div>
         </div>
       )}

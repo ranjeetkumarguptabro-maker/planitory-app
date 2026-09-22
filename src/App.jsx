@@ -11,6 +11,9 @@ import PurchasedMapView from './pages/PurchasedMapView';
 import CreatorsPage from './pages/CreatorsPage';
 import CreatorProfilePage from './pages/CreatorProfilePage';
 import UserProfilePage from './pages/UserProfilePage';
+import SearchPage from './pages/SearchPage';
+import NotificationsPage from './pages/NotificationsPage';
+import CreateMapPage from './pages/CreateMapPage';
 import { Smartphone, Monitor } from 'lucide-react';
 
 export default function App() {
@@ -144,6 +147,36 @@ export default function App() {
           >
             P12: Profile (c14)
           </button>
+          <button
+            onClick={() => setCurrentPage('search')}
+            className={`px-2 py-1 rounded-full font-semibold transition-all shrink-0 ${
+              currentPage === 'search'
+                ? 'bg-[#544ee5] text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            P13: Search (c15)
+          </button>
+          <button
+            onClick={() => setCurrentPage('notifications')}
+            className={`px-2 py-1 rounded-full font-semibold transition-all shrink-0 ${
+              currentPage === 'notifications'
+                ? 'bg-[#544ee5] text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            P14: Notif (c16)
+          </button>
+          <button
+            onClick={() => setCurrentPage('create')}
+            className={`px-2 py-1 rounded-full font-semibold transition-all shrink-0 ${
+              currentPage === 'create'
+                ? 'bg-[#544ee5] text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            P15: Create (c18)
+          </button>
         </div>
 
         {/* View Mode Toggle */}
@@ -274,11 +307,35 @@ export default function App() {
             onNavigate={(page) => setCurrentPage(page)}
           />
         )}
+
+        {/* Page 13: Search (c15.png) */}
+        {currentPage === 'search' && (
+          <SearchPage
+            onBack={() => setCurrentPage('explore')}
+            onNavigate={(page) => setCurrentPage(page)}
+          />
+        )}
+
+        {/* Page 14: Notifications (c16.png) */}
+        {currentPage === 'notifications' && (
+          <NotificationsPage
+            onBack={() => setCurrentPage('explore')}
+            onNavigate={(page) => setCurrentPage(page)}
+          />
+        )}
+
+        {/* Page 15: Create Map (c18.png) */}
+        {currentPage === 'create' && (
+          <CreateMapPage
+            onBack={() => setCurrentPage('explore')}
+            onNavigate={(page) => setCurrentPage(page)}
+          />
+        )}
       </main>
 
       {/* Footer Subtext */}
       <footer className="hidden sm:block mt-2 text-[11.5px] text-slate-500 font-medium">
-        All 12 screens implemented with exact fidelity &bull; Ready for your next page
+        All 15 screens implemented with exact fidelity &bull; Create Map (c18) Active
       </footer>
     </div>
   );

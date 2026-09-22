@@ -16,7 +16,7 @@ const CREATOR_MAPS = [
     places: '5 places',
     duration: '1-2 days',
     price: '$10',
-    img: '/c13-map-cafes.png',
+    img: '/c13-clean-cafes.png',
     isLiked: false,
   },
   {
@@ -25,7 +25,7 @@ const CREATOR_MAPS = [
     places: '8 places',
     duration: '2 days',
     price: '$9',
-    img: '/c13-map-night.png',
+    img: '/c13-clean-night.png',
     isLiked: false,
   },
   {
@@ -34,7 +34,7 @@ const CREATOR_MAPS = [
     places: '10 places',
     duration: '3 days',
     price: '$12',
-    img: '/c13-map-culture.png',
+    img: '/c13-clean-culture.png',
     isLiked: false,
   },
   {
@@ -43,7 +43,7 @@ const CREATOR_MAPS = [
     places: '12 places',
     duration: '3 days',
     price: '$10',
-    img: '/c13-map-hidden.png',
+    img: '/c13-clean-hidden.png',
     isLiked: false,
   },
 ];
@@ -87,42 +87,35 @@ export default function CreatorProfilePage({ onBack, onNavigate }) {
     <div className="relative w-full h-full min-h-[720px] max-h-[960px] aspect-[9/16] select-none overflow-hidden rounded-[32px] sm:rounded-[44px] shadow-2xl bg-[#fafbfe] flex flex-col justify-between">
       {/* Scrollable Profile Content */}
       <div className="flex-1 overflow-y-auto pb-10 scrollbar-none">
-        {/* Cover Panorama Banner */}
-        <div className="relative w-full aspect-[16/7.5] max-h-[220px] overflow-hidden">
+        {/* Cover Panorama Banner with Built-in Status Bar & Action Buttons */}
+        <div className="relative w-full aspect-[908/305] overflow-hidden shrink-0">
           <img
-            src="/c13-cover-florence.png"
+            src="/c13-cover-top.png"
             alt="Emma Wilson Travel Cover"
             className="w-full h-full object-cover pointer-events-none"
           />
 
-          {/* Floating Actions on Cover */}
-          <div className="absolute top-0 left-0 right-0 pt-3 sm:pt-4 px-5 z-20 flex items-center justify-between">
-            {/* Back Button */}
-            <button
-              onClick={onBack}
-              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all cursor-pointer"
-              title="Go back"
-            >
-              <ArrowLeft className="w-5 h-5 stroke-[2.4]" />
-            </button>
+          {/* Interactive Click Target: Back Button (matching baked button in image) */}
+          <button
+            onClick={onBack}
+            className="absolute left-[5.4%] top-[43.2%] w-[11%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-20"
+            title="Go back"
+          />
 
-            {/* Share Button */}
-            <button
-              onClick={handleShare}
-              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all cursor-pointer"
-              title="Share profile"
-            >
-              <Share2 className="w-5 h-5 stroke-[2.2]" />
-            </button>
-          </div>
+          {/* Interactive Click Target: Share Button (matching baked button in image) */}
+          <button
+            onClick={handleShare}
+            className="absolute right-[5.4%] top-[43.2%] w-[11%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-20"
+            title="Share profile"
+          />
         </div>
 
         {/* Profile Card Container */}
-        <div className="relative -mt-12 bg-white rounded-t-[32px] px-6 pt-0 pb-6 shadow-xs border-b border-slate-100 space-y-3.5">
+        <div className="relative -mt-6 bg-white rounded-t-[32px] px-6 pt-0 pb-6 shadow-xs border-b border-slate-100 space-y-3.5">
           {/* Avatar & Main Identity Row */}
           <div className="flex items-end justify-between">
             {/* Avatar overlapping cover */}
-            <div className="relative -mt-10 w-22 h-22 sm:w-24 sm:h-24 rounded-full overflow-hidden shadow-lg ring-4 ring-white bg-white shrink-0">
+            <div className="relative -mt-12 w-22 h-22 sm:w-24 sm:h-24 rounded-full overflow-hidden shadow-lg ring-4 ring-white bg-white shrink-0">
               <img
                 src="/c7-creator-emma.png"
                 alt="Emma Wilson"
@@ -295,28 +288,27 @@ export default function CreatorProfilePage({ onBack, onNavigate }) {
                   }}
                   className="rounded-2xl bg-white border border-[#e4e8f7] overflow-hidden shadow-[0_2px_8px_rgba(50,70,140,0.04)] hover:border-slate-300 transition-all cursor-pointer group"
                 >
-                  {/* Thumbnail with floating heart */}
-                  <div className="relative aspect-[16/10] overflow-hidden">
+                  {/* Clean Thumbnail with no cut text */}
+                  <div className="relative aspect-[394/207] overflow-hidden">
                     <img
                       src={map.img}
                       alt={map.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                     />
 
-                    {/* Favorite Heart Button */}
+                    {/* Interactive Heart Button aligned over baked circle */}
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleLike(map.id, map.title);
                       }}
-                      className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md shadow-sm flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all"
+                      className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
+                      title="Favorite"
                     >
-                      <Heart
-                        className={`w-4 h-4 transition-colors ${
-                          map.isLiked ? 'fill-[#ff4a73] text-[#ff4a73]' : 'text-[#111936]'
-                        }`}
-                      />
+                      {map.isLiked && (
+                        <Heart className="w-4 h-4 fill-[#ff4a73] text-[#ff4a73] animate-in zoom-in-50 duration-150" />
+                      )}
                     </button>
                   </div>
 

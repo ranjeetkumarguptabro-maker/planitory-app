@@ -50,49 +50,35 @@ export default function MapDetailPage({ onBack, onNavigate }) {
             className="w-full h-full object-cover pointer-events-none"
           />
 
-          {/* Floating Actions on Hero */}
-          <div className="absolute top-0 left-0 right-0 pt-3 sm:pt-4 px-5 z-20 flex items-center justify-between">
-            {/* Back Button */}
-            <button
-              onClick={onBack}
-              className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all cursor-pointer"
-              title="Back to Explore"
-            >
-              <ArrowLeft className="w-5 h-5 stroke-[2.4]" />
-            </button>
+          {/* Clean Interactive Overlays matching baked buttons in c7-hero.png */}
+          {/* Back Button Hitbox */}
+          <button
+            onClick={onBack}
+            className="absolute left-[7.5%] top-[25.5%] w-[11%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-20"
+            title="Back to Explore"
+          />
 
-            {/* Right Buttons: Favorite + Share */}
-            <div className="flex items-center gap-2.5">
-              <button
-                onClick={() => {
-                  const next = !isLiked;
-                  setIsLiked(next);
-                  showToast(next ? "Saved to your favorites!" : "Removed from favorites");
-                }}
-                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all cursor-pointer"
-                title="Favorite"
-              >
-                <Heart
-                  className={`w-5 h-5 transition-colors ${
-                    isLiked ? 'fill-[#ff4a73] text-[#ff4a73]' : 'text-[#111936]'
-                  }`}
-                />
-              </button>
+          {/* Favorite Button Hitbox */}
+          <button
+            onClick={() => {
+              const next = !isLiked;
+              setIsLiked(next);
+              showToast(next ? "Saved to your favorites!" : "Removed from favorites");
+            }}
+            className="absolute right-[19.2%] top-[25.5%] w-[11%] aspect-square rounded-full flex items-center justify-center cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-20"
+            title="Favorite"
+          >
+            {isLiked && (
+              <Heart className="w-5 h-5 fill-[#ff4a73] text-[#ff4a73] animate-in zoom-in-50 duration-150" />
+            )}
+          </button>
 
-              <button
-                onClick={handleShare}
-                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all cursor-pointer"
-                title="Share"
-              >
-                <Share2 className="w-5 h-5 stroke-[2.2]" />
-              </button>
-            </div>
-          </div>
-
-          {/* Image Counter Badge (1/6) */}
-          <div className="absolute bottom-6 right-5 bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full z-20">
-            1/6
-          </div>
+          {/* Share Button Hitbox */}
+          <button
+            onClick={handleShare}
+            className="absolute right-[7.5%] top-[25.5%] w-[11%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-20"
+            title="Share"
+          />
         </div>
 
         {/* Content Card (Rounded Top Overlap) */}

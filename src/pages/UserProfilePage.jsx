@@ -125,7 +125,7 @@ export default function UserProfilePage({ onNavigate }) {
   return (
     <div className="relative w-full h-full min-h-[720px] max-h-[960px] aspect-[9/16] select-none overflow-hidden rounded-[32px] sm:rounded-[44px] shadow-2xl bg-[#fafbfe] flex flex-col justify-between">
       {/* Scrollable Profile Content */}
-      <div className="flex-1 overflow-y-auto pb-24 scrollbar-none">
+      <div className="flex-1 overflow-y-auto pb-32 scrollbar-none">
         {/* Top Header & Status Bar Area */}
         <div className="pt-3 sm:pt-4 px-6 shrink-0 bg-[#fafbfe]/95 backdrop-blur-md">
           {/* Mock iOS Status Bar */}
@@ -168,50 +168,33 @@ export default function UserProfilePage({ onNavigate }) {
           </div>
         </div>
 
-        {/* Cover Landscape Banner Container */}
-        <div className="px-5 sm:px-6 pt-3">
-          <div className="relative w-full aspect-[16/6.8] rounded-[24px] sm:rounded-[26px] overflow-hidden shadow-xs border border-slate-100">
+        {/* Cover Landscape Banner Container using exact c14-cover-banner.png */}
+        <div className="px-5 sm:px-6 pt-3 relative">
+          <div className="relative w-full aspect-[769/272] rounded-[24px] sm:rounded-[26px] overflow-hidden shadow-xs border border-slate-100">
             <img
-              src="/c14-cover.png"
+              src="/c14-cover-banner.png"
               alt="Alex Parker Cover - Explore Create Inspire"
               className="w-full h-full object-cover pointer-events-none"
             />
 
-            {/* Bottom-right: Edit Cover Button */}
+            {/* Clickable Hitbox: Edit Cover */}
             <button
               onClick={() => showToast('Choose photo to update cover panorama')}
-              className="absolute bottom-2.5 right-2.5 px-3 py-1.5 rounded-full bg-white/90 hover:bg-white backdrop-blur-md shadow-xs border border-white/40 flex items-center gap-1.5 text-[11.5px] font-semibold text-[#111936] transition-all cursor-pointer active:scale-95"
-            >
-              <Camera className="w-3.5 h-3.5 stroke-[2.2]" />
-              <span>Edit Cover</span>
-            </button>
+              className="absolute bottom-[4.5%] right-[2.5%] w-[27%] h-[18%] rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all z-20"
+              title="Edit Cover"
+            />
+
+            {/* Clickable Hitbox: Edit Avatar */}
+            <button
+              onClick={() => showToast('Update profile photo')}
+              className="absolute bottom-[4%] left-[23%] w-[8%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all z-20"
+              title="Edit profile photo"
+            />
           </div>
         </div>
 
-        {/* Profile Card Container Overlapping Cover */}
-        <div className="px-5 sm:px-6 -mt-8 relative z-10 space-y-3">
-          {/* Avatar and Edit Badge */}
-          <div className="flex items-end justify-between">
-            <div className="relative">
-              <div className="w-22 h-22 sm:w-24 sm:h-24 rounded-full overflow-hidden shadow-md ring-4 ring-white bg-white">
-                <img
-                  src="/c14-avatar.png"
-                  alt={profileData.name}
-                  className="w-full h-full object-cover pointer-events-none"
-                />
-              </div>
-
-              {/* Edit Avatar Pencil Button */}
-              <button
-                onClick={() => showToast('Update profile photo')}
-                className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-[#544ee5] hover:bg-[#433dcf] text-white flex items-center justify-center ring-2 ring-white shadow-md active:scale-95 transition-all cursor-pointer"
-                title="Edit profile photo"
-              >
-                <Pencil className="w-3.5 h-3.5 stroke-[2.5]" />
-              </button>
-            </div>
-          </div>
-
+        {/* Profile Info Container below avatar */}
+        <div className="px-5 sm:px-6 pt-2 relative z-10 space-y-3">
           {/* Identity & Edit Profile Button Row */}
           <div className="flex items-center justify-between pt-0.5">
             <div>
@@ -254,41 +237,43 @@ export default function UserProfilePage({ onNavigate }) {
               </div>
             </div>
 
-            {/* Social Icons (Instagram, YouTube, TikTok, Globe) */}
+            {/* Social Icons (Instagram, YouTube, X / Twitter, Globe) */}
             <div className="flex items-center gap-2 shrink-0">
               {/* Instagram */}
               <button
                 onClick={() => showToast('Instagram: @alex.parker')}
-                className="w-5.5 h-5.5 rounded-md bg-gradient-to-tr from-[#feda75] via-[#fa7e1e] via-[#d62976] to-[#962fbf] p-[1.2px] shadow-xs active:scale-95 transition-transform"
+                className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#feda75] via-[#fa7e1e] via-[#d62976] to-[#962fbf] p-[1.5px] shadow-xs active:scale-95 transition-transform"
                 title="Instagram"
               >
-                <div className="w-full h-full bg-white rounded-[4px] flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full border-[1.2px] border-[#d62976]" />
+                <div className="w-full h-full bg-white rounded-[5px] flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full border-[1.5px] border-[#d62976]" />
                 </div>
               </button>
 
               {/* YouTube */}
               <button
                 onClick={() => showToast('YouTube: Alex Parker Travel')}
-                className="w-5.5 h-5.5 rounded-md bg-[#ff0000] flex items-center justify-center shadow-xs active:scale-95 transition-transform"
+                className="w-6 h-6 rounded-lg bg-[#ff0000] flex items-center justify-center shadow-xs active:scale-95 transition-transform"
                 title="YouTube"
               >
-                <div className="w-0 h-0 border-y-[3px] border-y-transparent border-l-[5px] border-l-white ml-0.5" />
+                <div className="w-0 h-0 border-y-[3.5px] border-y-transparent border-l-[6px] border-l-white ml-0.5" />
               </button>
 
-              {/* TikTok */}
+              {/* X / Twitter */}
               <button
-                onClick={() => showToast('TikTok: @alexparkertravels')}
-                className="w-5.5 h-5.5 rounded-md bg-black text-white flex items-center justify-center font-bold text-[9px] shadow-xs active:scale-95 transition-transform"
-                title="TikTok"
+                onClick={() => showToast('X: @alexparker')}
+                className="w-6 h-6 rounded-lg bg-black text-white flex items-center justify-center shadow-xs active:scale-95 transition-transform"
+                title="X (Twitter)"
               >
-                ♪
+                <svg className="w-3 h-3 fill-white" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
               </button>
 
               {/* Globe */}
               <button
                 onClick={() => showToast('Website: https://alexparker.travel')}
-                className="w-5.5 h-5.5 rounded-md bg-[#edf0fd] hover:bg-[#e2e7f8] text-[#544ee5] flex items-center justify-center shadow-xs active:scale-95 transition-transform"
+                className="w-6 h-6 rounded-lg bg-[#edf0fd] hover:bg-[#e2e7f8] text-[#544ee5] flex items-center justify-center shadow-xs active:scale-95 transition-transform"
                 title="Website"
               >
                 <Globe className="w-3.5 h-3.5 stroke-[2]" />
@@ -413,7 +398,7 @@ export default function UserProfilePage({ onNavigate }) {
                     <button
                       type="button"
                       onClick={() => toggleMapLike(map.id, map.title)}
-                      className="absolute top-1.5 right-1.5 w-6.5 h-6.5 rounded-full bg-white/90 backdrop-blur-md shadow-xs flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all cursor-pointer"
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 backdrop-blur-md shadow-sm flex items-center justify-center text-[#111936] hover:bg-white active:scale-90 transition-all cursor-pointer z-10"
                     >
                       <Heart
                         className={`w-3.5 h-3.5 transition-colors ${
@@ -571,7 +556,10 @@ export default function UserProfilePage({ onNavigate }) {
         {/* Center Floating Action Button (+ Create) */}
         <div className="-mt-6 flex flex-col items-center">
           <button
-            onClick={() => showToast('Create new map story...')}
+            onClick={() => {
+              if (onNavigate) onNavigate('create');
+              else showToast('Create new map story...');
+            }}
             className="w-13 h-13 rounded-full bg-[#544ee5] hover:bg-[#4842db] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-indigo-300 transition-all cursor-pointer"
             title="Create"
           >

@@ -182,34 +182,26 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
             className="w-full h-full object-cover pointer-events-none"
           />
 
-          {/* Top-Right Layer Settings Button */}
+          {/* Top-Right Layer Settings Hitbox over baked icon */}
           <button
             onClick={() => showToast("Layers: Landmarks, Transit, 3D Buildings enabled")}
-            className="absolute top-3.5 right-3.5 w-9 h-9 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-[#111936] hover:bg-white active:scale-95 transition-all cursor-pointer z-20"
+            className="absolute top-[3%] right-[3%] w-[10%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all z-20"
             title="Map Layers"
-          >
-            <SlidersHorizontal className="w-4 h-4 stroke-[2.2]" />
-          </button>
+          />
 
-          {/* Bottom-Left: "Customize Map" Floating Pill */}
+          {/* Bottom-Left: "Customize Map" Hitbox over baked pill */}
           <button
             onClick={() => setShowCustomizeModal(true)}
-            className="absolute bottom-3.5 left-3.5 bg-white/95 backdrop-blur-md hover:bg-white text-[#0f1738] font-bold text-[12px] sm:text-[12.5px] px-3.5 py-2 rounded-full shadow-md flex items-center gap-2 border border-slate-100 active:scale-95 transition-all cursor-pointer z-20"
-          >
-            <Pencil className="w-3.5 h-3.5 text-[#544ee5]" />
-            <span>Customize Map</span>
-            <div className="w-[1px] h-3 bg-slate-200 mx-0.5" />
-            <Camera className="w-3.5 h-3.5 text-slate-500" />
-          </button>
+            className="absolute bottom-[3.5%] left-[3.5%] w-[45%] h-[8%] rounded-full cursor-pointer hover:bg-black/5 active:scale-95 transition-all z-20"
+            title="Customize Map"
+          />
 
-          {/* Bottom-Right: GPS Compass Navigation Button */}
+          {/* Bottom-Right: GPS Compass Navigation Hitbox over baked blue circle */}
           <button
             onClick={handleLocateMe}
-            className="absolute bottom-3.5 right-3.5 w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-md flex items-center justify-center text-[#544ee5] hover:bg-white active:scale-95 transition-all cursor-pointer z-20"
+            className="absolute bottom-[3.5%] right-[3.5%] w-[11%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-95 transition-all z-20"
             title="Locate me"
-          >
-            <Navigation className="w-5 h-5 fill-[#544ee5] stroke-0" />
-          </button>
+          />
 
           {/* Interactive Clickable Hotspots for Pin Detail Preview */}
           {PIN_ITEMS.map((pin) => {

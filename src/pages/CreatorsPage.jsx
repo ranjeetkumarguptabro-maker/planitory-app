@@ -271,7 +271,10 @@ export default function CreatorsPage({ onBack, onNavigate }) {
         {/* Center Floating Action Button (+ Create) */}
         <div className="-mt-6 flex flex-col items-center">
           <button
-            onClick={() => showToast("Create new map story...")}
+            onClick={() => {
+              if (onNavigate) onNavigate('create');
+              else showToast("Create new map story...");
+            }}
             className="w-13 h-13 rounded-full bg-[#544ee5] hover:bg-[#4842db] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-indigo-300 transition-all cursor-pointer"
             title="Create"
           >

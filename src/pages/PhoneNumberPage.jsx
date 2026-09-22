@@ -228,20 +228,25 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
     setShowOtpModal(false);
     showToast(`Phone verified & recorded to database! Welcome ${savedUser.phone}`);
 
-    // Navigate directly to home / explore
+    // Navigate to Page 3: Regions (flowchart: Verification -> Onboarding Q1)
     setTimeout(() => {
-      if (onNavigate) onNavigate('explore');
+      if (onNavigate) onNavigate('regions');
     }, 700);
   };
 
   const handleGoogleLogin = async () => {
     setIsLoadingGoogle(true);
     showToast("Connecting to Google authentication...");
-    const { error } = await signInWithGoogle();
-    if (error) {
-      showToast(error.message || "Google OAuth initiated.");
-    }
+    const res = await signInWithGoogle();
     setIsLoadingGoogle(false);
+    if (res?.data?.user) {
+      showToast(`Signed in with Google! Welcome ${res.data.user.name}`);
+      setTimeout(() => {
+        if (onNavigate) onNavigate('regions');
+      }, 700);
+    } else if (res?.error) {
+      showToast(res.error.message || "Google OAuth initiated.");
+    }
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Search,
   SlidersHorizontal,
@@ -14,8 +14,43 @@ import {
   Users,
   Compass,
   CheckCircle2,
-  Share2
+  Share2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
+
+const HERO_SLIDES = [
+  {
+    id: 'rome-cafes',
+    title: 'Best 5 Cafés in Rome',
+    city: 'Rome',
+    country: 'Italy',
+    places: '5 places',
+    duration: '1–2 days',
+    price: '$9',
+    img: '/d1.png',
+  },
+  {
+    id: 'barcelona-cafes',
+    title: 'Best 5 Cafés in Barcelona',
+    city: 'Barcelona',
+    country: 'Spain',
+    places: '5 places',
+    duration: '1–2 days',
+    price: '$8',
+    img: '/d2.png',
+  },
+  {
+    id: 'vienna-cafes',
+    title: 'Best 5 Cafés in Vienna',
+    city: 'Vienna',
+    country: 'Austria',
+    places: '5 places',
+    duration: '1–2 days',
+    price: '$11',
+    img: '/d3.png',
+  },
+];
 
 const CATEGORIES = [
   { id: 'cafes', name: 'Cafés', img: '/c6-cat-cafe.png' },
@@ -77,6 +112,38 @@ export default function ExplorePage({ onBack, onNavigate }) {
   const [maps, setMaps] = useState(POPULAR_MAPS);
   const [activeTab, setActiveTab] = useState('explore');
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Hero carousel state (d1, d2, d3: Rome, Barcelona, Vienna)
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const [isHeroHovered, setIsHeroHovered] = useState(false);
+  const [touchStartX, setTouchStartX] = useState(null);
+
+  // Auto-advance hero slides every 3.5 seconds (3-4 seconds gap)
+  useEffect(() => {
+    if (isHeroHovered) return;
+    const timer = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [isHeroHovered]);
+
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (diff > 45) {
+      // Swiped left -> next slide
+      setCurrentHeroIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+    } else if (diff < -45) {
+      // Swiped right -> previous slide
+      setCurrentHeroIndex((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+    }
+    setTouchStartX(null);
+  };
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -145,8 +212,8 @@ export default function ExplorePage({ onBack, onNavigate }) {
 
           {/* Notification Bell with Red Badge */}
           <button
-            onClick={() => showToast("No new notifications")}
-            className="relative w-9 h-9 rounded-full flex items-center justify-center text-[#12183a] hover:bg-slate-100 active:scale-95 transition-all"
+            onClick={() => onNavigate ? onNavigate('notifications') : showToast("Opening notifications...")}
+            className="relative w-9 h-9 rounded-full flex items-center justify-center text-[#12183a] hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
             title="Notifications"
           >
             <Bell className="w-5 h-5 text-[#12183a]" />
@@ -155,18 +222,25 @@ export default function ExplorePage({ onBack, onNavigate }) {
         </div>
 
         {/* Search & Filter Pill Bar */}
-        <div className="w-full h-[46px] sm:h-[48px] rounded-2xl bg-white border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.03)] flex items-center px-3.5 gap-2.5 focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-[#544ee5]/15 transition-all mb-2.5">
+        <div
+          onClick={() => onNavigate && onNavigate('search')}
+          className="w-full h-[46px] sm:h-[48px] rounded-2xl bg-white border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.03)] flex items-center px-3.5 gap-2.5 focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-[#544ee5]/15 transition-all mb-2.5 cursor-pointer hover:border-indigo-200"
+        >
           <Search className="w-4 h-4 text-[#717ea1] shrink-0" />
           <input
             type="text"
             placeholder="Search city, country or theme..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent text-[13.5px] font-medium text-[#111936] placeholder:text-[#7885a5] outline-none"
+            readOnly
+            onClick={() => onNavigate && onNavigate('search')}
+            className="w-full bg-transparent text-[13.5px] font-medium text-[#111936] placeholder:text-[#7885a5] outline-none cursor-pointer"
           />
           <button
-            onClick={() => showToast("Filters: Price, Duration, Rating")}
-            className="text-[#131b38] hover:text-[#544ee5] active:scale-95 transition-colors shrink-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onNavigate) onNavigate('search');
+            }}
+            className="text-[#131b38] hover:text-[#544ee5] active:scale-95 transition-colors shrink-0 cursor-pointer"
             title="Filter search"
           >
             <SlidersHorizontal className="w-4 h-4" />
@@ -196,16 +270,79 @@ export default function ExplorePage({ onBack, onNavigate }) {
           ))}
         </div>
 
-        {/* Featured Hero Card (Paris) */}
+        {/* Featured Hero Carousel: Rome (d1), Barcelona (d2), Vienna (d3) */}
         <div
-          onClick={() => onNavigate ? onNavigate('map-detail') : showToast('Opening "Best 5 Cafés in Paris" itinerary...')}
-          className="relative w-full rounded-[24px] sm:rounded-[26px] overflow-hidden shadow-[0_8px_24px_rgba(50,70,140,0.12)] cursor-pointer group hover:shadow-xl transition-all duration-200"
+          onMouseEnter={() => setIsHeroHovered(true)}
+          onMouseLeave={() => setIsHeroHovered(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="relative w-full rounded-[24px] sm:rounded-[26px] overflow-hidden shadow-[0_8px_24px_rgba(50,70,140,0.12)] cursor-pointer group hover:shadow-xl transition-all duration-200 aspect-[16/9] bg-slate-900"
         >
-          <img
-            src="/c6-hero-paris.png"
-            alt="Best 5 Cafés in Paris"
-            className="w-full h-auto object-cover group-hover:scale-[1.015] transition-transform duration-300"
-          />
+          {/* Slides Track - Smooth Horizontal Right-to-Left Slide Transition */}
+          <div
+            className="flex transition-transform duration-700 ease-out h-full w-full"
+            style={{ transform: `translateX(-${currentHeroIndex * 100}%)` }}
+          >
+            {HERO_SLIDES.map((slide, idx) => (
+              <div
+                key={slide.id}
+                onClick={() => {
+                  showToast(`Opening "${slide.title}" itinerary...`);
+                  if (onNavigate) onNavigate('map-detail');
+                }}
+                className="w-full h-full shrink-0 relative select-none"
+              >
+                <img
+                  src={slide.img}
+                  alt={slide.title}
+                  className="w-full h-full object-cover group-hover:scale-[1.015] transition-transform duration-300 pointer-events-none"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Left Arrow Navigation Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentHeroIndex((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+            }}
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 cursor-pointer shadow-md"
+            title="Previous slide"
+          >
+            <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
+          </button>
+
+          {/* Right Arrow Navigation Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setCurrentHeroIndex((prev) => (prev + 1) % HERO_SLIDES.length);
+            }}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-sm text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20 cursor-pointer shadow-md"
+            title="Next slide"
+          >
+            <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+          </button>
+
+          {/* Interactive Indicator Pills */}
+          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-20 bg-black/35 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10">
+            {HERO_SLIDES.map((slide, idx) => (
+              <button
+                key={slide.id}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentHeroIndex(idx);
+                }}
+                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                  currentHeroIndex === idx
+                    ? 'w-6 bg-white shadow-xs'
+                    : 'w-1.5 bg-white/50 hover:bg-white/80'
+                }`}
+                title={`Go to ${slide.title}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Popular Maps Section */}
@@ -365,7 +502,10 @@ export default function ExplorePage({ onBack, onNavigate }) {
         {/* Center Floating Action Button (+ Create) */}
         <div className="-mt-6 flex flex-col items-center">
           <button
-            onClick={() => showToast("Create new map story...")}
+            onClick={() => {
+              if (onNavigate) onNavigate('create');
+              else showToast("Create new map story...");
+            }}
             className="w-13 h-13 rounded-full bg-[#544ee5] hover:bg-[#4842db] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-indigo-300 transition-all cursor-pointer"
             title="Create Map"
           >
