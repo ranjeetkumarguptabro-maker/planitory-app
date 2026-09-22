@@ -22,7 +22,7 @@ export default function App() {
   const [viewMode, setViewMode] = useState('mobile'); // 'mobile' | 'fill'
 
   return (
-    <div className="min-h-screen w-full bg-[#0a0d18] flex flex-col items-center justify-center p-0 sm:p-4 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-[100dvh] h-[100dvh] w-full bg-[#0a0d18] flex flex-col items-center justify-center p-0 sm:p-4 text-slate-100 selection:bg-indigo-500 selection:text-white overflow-hidden">
       {/* Top Floating Control Bar (Desktop only) */}
       <header className="hidden sm:flex items-center justify-between w-full max-w-[1040px] mb-3 px-4 py-2 bg-[#141a2f]/85 backdrop-blur-md border border-white/10 rounded-full shadow-lg text-xs">
         {/* Page Switcher Tabs */}
@@ -213,8 +213,8 @@ export default function App() {
         className={`w-full transition-all duration-300 flex items-center justify-center ${
           viewMode === 'mobile'
             ? 'sm:max-w-[430px] sm:h-[890px] sm:rounded-[44px] sm:ring-8 sm:ring-[#212946] sm:shadow-2xl sm:shadow-indigo-950/40'
-            : 'max-w-[520px] h-[92vh] sm:rounded-[36px]'
-        } h-screen overflow-hidden relative bg-black`}
+            : 'sm:max-w-[520px] sm:h-[92vh] sm:rounded-[36px]'
+        } h-full overflow-hidden relative bg-white sm:bg-black`}
       >
         {/* Page 1: Welcome (c1.png) */}
         {currentPage === 'welcome' && (

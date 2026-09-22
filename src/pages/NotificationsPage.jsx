@@ -158,7 +158,7 @@ export default function NotificationsPage({ onBack, onNavigate }) {
   );
 
   return (
-    <div className="relative w-full h-full min-h-[720px] max-h-[960px] aspect-[9/16] select-none overflow-hidden rounded-[32px] sm:rounded-[44px] shadow-2xl bg-[#fafbfe] flex flex-col justify-between">
+    <div className="relative w-full h-full select-none overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
       {/* Top Header Area */}
       <div className="w-full pt-3 sm:pt-3.5 px-5 sm:px-6 z-20 shrink-0 bg-[#fafbfe]/95 backdrop-blur-md">
         {/* Mock iOS Status Bar */}
@@ -357,7 +357,7 @@ export default function NotificationsPage({ onBack, onNavigate }) {
       )}
 
       {/* Bottom Sticky Navigation Bar */}
-      <div className="w-full bg-white/95 backdrop-blur-md border-t border-[#e8ecf8] py-2 px-6 flex items-center justify-between z-30 shrink-0">
+      <div className="w-full bg-white/95 backdrop-blur-md border-t border-[#e8ecf8] pt-2 pb-3 sm:pb-2.5 px-6 flex items-center justify-between z-30 shrink-0">
         <button
           onClick={() => onNavigate && onNavigate('explore')}
           className="flex flex-col items-center gap-0.5 text-[#544ee5] cursor-pointer"

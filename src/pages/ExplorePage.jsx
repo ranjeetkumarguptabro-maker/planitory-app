@@ -164,7 +164,7 @@ export default function ExplorePage({ onBack, onNavigate }) {
   };
 
   return (
-    <div className="relative w-full h-full min-h-[720px] max-h-[960px] aspect-[9/16] select-none overflow-hidden rounded-[32px] sm:rounded-[44px] shadow-2xl bg-[#fafbfe] flex flex-col justify-between">
+    <div className="relative w-full h-full select-none overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
       {/* Top Header & Status Bar Area */}
       <div className="w-full pt-3 sm:pt-3.5 px-6 z-20 shrink-0 bg-[#fafbfe]/90 backdrop-blur-md">
         {/* Mock iOS Status Bar */}
@@ -473,7 +473,7 @@ export default function ExplorePage({ onBack, onNavigate }) {
       </div>
 
       {/* Floating Bottom Navigation Bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#e8ecf8] px-6 py-2 shadow-[0_-4px_20px_rgba(50,70,140,0.06)] flex items-center justify-between">
+      <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#e8ecf8] px-6 pt-2 pb-3 sm:pb-2.5 shadow-[0_-4px_20px_rgba(50,70,140,0.06)] flex items-center justify-between">
         {/* Explore Tab */}
         <button
           onClick={() => setActiveTab('explore')}

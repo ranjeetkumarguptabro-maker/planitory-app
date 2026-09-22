@@ -39,7 +39,7 @@ export default function MapDetailPage({ onBack, onNavigate }) {
   };
 
   return (
-    <div className="relative w-full h-full min-h-[720px] max-h-[960px] aspect-[9/16] select-none overflow-hidden rounded-[32px] sm:rounded-[44px] shadow-2xl bg-white flex flex-col justify-between">
+    <div className="relative w-full h-full select-none overflow-hidden bg-white sm:rounded-[44px] flex flex-col justify-between">
       {/* Scrollable Container */}
       <div className="flex-1 overflow-y-auto pb-24 scrollbar-none">
         {/* Top Hero Image Container */}
@@ -340,7 +340,7 @@ export default function MapDetailPage({ onBack, onNavigate }) {
       </div>
 
       {/* Sticky Bottom Purchase Bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-100 px-6 py-3 shadow-[0_-4px_20px_rgba(50,70,140,0.06)]">
+      <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-100 px-6 pt-3 pb-3 sm:pb-3 shadow-[0_-4px_20px_rgba(50,70,140,0.06)]">
         <button
           onClick={() => onNavigate ? onNavigate('checkout') : setShowPurchaseModal(true)}
           className="w-full h-[52px] sm:h-[56px] bg-[#544ee5] hover:bg-[#4842db] active:bg-[#3f39cc] text-white font-bold text-[16px] rounded-full shadow-[0_6px_20px_rgba(84,78,229,0.32)] btn-interactive flex items-center justify-center gap-2 cursor-pointer"

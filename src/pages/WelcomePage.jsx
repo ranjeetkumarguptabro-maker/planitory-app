@@ -46,7 +46,7 @@ export default function WelcomePage({ onNavigate }) {
   };
 
   return (
-    <div className="relative w-full h-full min-h-[720px] max-h-[960px] aspect-[9/16] select-none overflow-hidden rounded-[32px] sm:rounded-[44px] shadow-2xl bg-white flex flex-col font-sans">
+    <div className="relative w-full h-full select-none overflow-hidden bg-white sm:rounded-[44px] flex flex-col font-sans">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 bg-[#1e2337] text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl border border-white/10 flex items-center gap-2 animate-fade-in">

@@ -131,7 +131,7 @@ export default function CreateMapPage({ onBack, onNavigate }) {
   ].filter(p => placeQuery && p.toLowerCase().includes(placeQuery.toLowerCase()));
 
   return (
-    <div className="w-full h-full bg-white flex flex-col justify-between overflow-hidden relative font-sans text-gray-900 select-none">
+    <div className="w-full h-full bg-white sm:rounded-[44px] flex flex-col justify-between overflow-hidden relative font-sans text-gray-900 select-none">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 bg-[#1e2337] text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl border border-white/10 flex items-center gap-2 animate-fade-in">
@@ -636,7 +636,7 @@ export default function CreateMapPage({ onBack, onNavigate }) {
       </div>
 
       {/* Bottom Fixed Navigation Bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-white/95 backdrop-blur-md border-t border-gray-150/80 px-6 flex items-center justify-between z-30">
+      <div className="absolute bottom-0 left-0 right-0 pt-2 pb-3 sm:pb-2.5 bg-white/95 backdrop-blur-md border-t border-gray-150/80 px-6 flex items-center justify-between z-30">
         {/* Explore */}
         <button
           onClick={() => onNavigate?.('explore')}
