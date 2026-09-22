@@ -40,7 +40,7 @@ export default function PreferencesPage({ onBack, onNavigate }) {
   return (
     <div className="relative w-full h-full overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between">
       {/* Top Header & Status Bar Area */}
-      <div className="w-full pt-3 sm:pt-4 px-6 z-20 shrink-0">
+      <div className="w-full pt-3 sm:pt-4 px-6 z-20 shrink-0 bg-[#fafbfe]/95 backdrop-blur-md">
         {/* Mock iOS Status Bar */}
         <div className="flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-2 px-1">
           <span className="text-[13px] tracking-tight font-bold">9:41</span>
@@ -64,11 +64,11 @@ export default function PreferencesPage({ onBack, onNavigate }) {
         </div>
 
         {/* Navigation & Progress Bar Row */}
-        <div className="flex items-center justify-between gap-3 mt-1">
+        <div className="flex items-center justify-between gap-3 mt-1 pb-2">
           {/* Back Button */}
           <button
             onClick={onBack}
-            className="w-9 h-9 -ml-2 rounded-full flex items-center justify-center text-[#12183a] hover:bg-slate-100 active:scale-95 transition-all shrink-0"
+            className="w-9 h-9 -ml-2 rounded-full flex items-center justify-center text-[#12183a] hover:bg-slate-100 active:scale-95 transition-all shrink-0 cursor-pointer"
             title="Go back"
           >
             <ArrowLeft className="w-6 h-6 stroke-[2.2]" />
@@ -88,84 +88,86 @@ export default function PreferencesPage({ onBack, onNavigate }) {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="w-full px-5 sm:px-6 flex flex-col items-center text-center z-20 flex-1 justify-center py-1">
-        {/* Pink Badge with 3D Heart */}
-        <div className="w-15 h-15 sm:w-16 sm:h-16 rounded-full bg-[#ffe8ee] flex items-center justify-center shadow-[0_4px_16px_rgba(255,140,165,0.18)] mb-2">
+      {/* Main Scrollable Content Area */}
+      <div className="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y scrollbar-none flex flex-col justify-between">
+        <div className="w-full px-5 sm:px-6 flex flex-col items-center text-center pt-2 pb-4">
+          {/* Pink Badge with 3D Heart */}
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#ffe8ee] flex items-center justify-center shadow-[0_4px_16px_rgba(255,140,165,0.18)] mb-2">
+            <img
+              src="/c3-heart-only.png"
+              alt="Love Places"
+              className="w-8 h-8 sm:w-9 sm:h-9 object-contain drop-shadow-sm"
+            />
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-[20px] sm:text-[22px] font-extrabold text-[#0e1738] tracking-[-0.02em] leading-tight mb-1">
+            What kind of places do you love?
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-[12.5px] sm:text-[13px] leading-snug text-[#737ea1] max-w-[260px] mb-3">
+            Choose a few to personalize your experience.
+          </p>
+
+          {/* 3x3 Grid of Categories */}
+          <div className="w-full grid grid-cols-3 gap-2.5 sm:gap-3 mb-4">
+            {INITIAL_CATEGORIES.map((cat) => {
+              const isSelected = selectedIds.includes(cat.id);
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => toggleCategory(cat.id)}
+                  className={`relative aspect-[1/1.05] rounded-2xl flex flex-col items-center justify-center p-2 transition-all duration-150 cursor-pointer ${
+                    isSelected
+                      ? 'border-2 border-[#544ee5] bg-[#f2f5fe] shadow-[0_4px_12px_rgba(84,78,229,0.1)]'
+                      : 'border border-[#e3e8f7] bg-white/95 hover:bg-white hover:border-slate-300 shadow-[0_2px_6px_rgba(50,70,140,0.03)]'
+                  } active:scale-95`}
+                >
+                  {/* Checkmark badge when selected */}
+                  {isSelected && (
+                    <div className="absolute top-1.5 right-1.5 w-[18px] h-[18px] rounded-full bg-[#544ee5] text-white flex items-center justify-center shadow-sm animate-in zoom-in-75 duration-100">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    </div>
+                  )}
+
+                  {/* Category Icon */}
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center mb-1">
+                    <img
+                      src={cat.icon}
+                      alt={cat.name}
+                      className="max-w-full max-h-full object-contain pointer-events-none drop-shadow-sm"
+                    />
+                  </div>
+
+                  {/* Category Name */}
+                  <span className="text-[12px] sm:text-[12.5px] font-bold text-[#111936] tracking-tight leading-none">
+                    {cat.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Single Continue Button */}
+          <button
+            onClick={handleContinue}
+            className="w-full h-[52px] sm:h-[54px] bg-[#544ee5] hover:bg-[#4842db] active:bg-[#3f39cc] text-white font-bold text-[15.5px] rounded-full shadow-[0_6px_20px_rgba(84,78,229,0.32)] btn-interactive flex items-center justify-center gap-2 cursor-pointer mb-3"
+          >
+            <span>Continue</span>
+            <ArrowRight className="w-5 h-5 stroke-[2.4]" />
+          </button>
+        </div>
+
+        {/* Bottom Coastal Artwork with Script Quote */}
+        <div className="w-full relative shrink-0 mt-auto">
           <img
-            src="/c3-heart-only.png"
-            alt="Love Places"
-            className="w-8 h-8 sm:w-9 sm:h-9 object-contain drop-shadow-sm"
+            src="/c3-bottom-scenery.png"
+            alt="Santorini Coastal Illustration - Great Places Brighter Days"
+            className="w-full h-auto object-cover pointer-events-none block"
           />
         </div>
-
-        {/* Headline */}
-        <h1 className="text-[21px] sm:text-[23px] font-extrabold text-[#0e1738] tracking-[-0.02em] leading-tight mb-1">
-          What kind of places do you love?
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-[13px] sm:text-[13.5px] leading-snug text-[#737ea1] max-w-[260px] mb-3.5">
-          Choose a few to personalize your experience.
-        </p>
-
-        {/* 3x3 Grid of Categories */}
-        <div className="w-full grid grid-cols-3 gap-2.5 sm:gap-3 mb-4">
-          {INITIAL_CATEGORIES.map((cat) => {
-            const isSelected = selectedIds.includes(cat.id);
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => toggleCategory(cat.id)}
-                className={`relative aspect-[1/1.05] rounded-2xl flex flex-col items-center justify-center p-2 transition-all duration-150 cursor-pointer ${
-                  isSelected
-                    ? 'border-2 border-[#544ee5] bg-[#f2f5fe] shadow-[0_4px_12px_rgba(84,78,229,0.1)]'
-                    : 'border border-[#e3e8f7] bg-white/95 hover:bg-white hover:border-slate-300 shadow-[0_2px_6px_rgba(50,70,140,0.03)]'
-                } active:scale-95`}
-              >
-                {/* Checkmark badge when selected */}
-                {isSelected && (
-                  <div className="absolute top-1.5 right-1.5 w-[18px] h-[18px] rounded-full bg-[#544ee5] text-white flex items-center justify-center shadow-sm animate-in zoom-in-75 duration-100">
-                    <Check className="w-3 h-3 stroke-[3]" />
-                  </div>
-                )}
-
-                {/* Category Icon */}
-                <div className="w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center mb-1">
-                  <img
-                    src={cat.icon}
-                    alt={cat.name}
-                    className="max-w-full max-h-full object-contain pointer-events-none drop-shadow-sm"
-                  />
-                </div>
-
-                {/* Category Name */}
-                <span className="text-[12.5px] sm:text-[13px] font-bold text-[#111936] tracking-tight leading-none">
-                  {cat.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Single Continue Button */}
-        <button
-          onClick={handleContinue}
-          className="w-full h-[52px] sm:h-[54px] bg-[#544ee5] hover:bg-[#4842db] active:bg-[#3f39cc] text-white font-bold text-[15.5px] rounded-full shadow-[0_6px_20px_rgba(84,78,229,0.32)] btn-interactive flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <span>Continue</span>
-          <ArrowRight className="w-5 h-5 stroke-[2.4]" />
-        </button>
-      </div>
-
-      {/* Bottom Coastal Artwork with Script Quote (No duplicate button) */}
-      <div className="w-full relative shrink-0">
-        <img
-          src="/c3-bottom-scenery.png"
-          alt="Santorini Coastal Illustration - Great Places Brighter Days"
-          className="w-full h-auto object-cover pointer-events-none block"
-        />
       </div>
 
       {/* Toast Notification */}

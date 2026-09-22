@@ -284,8 +284,9 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="w-full px-7 flex flex-col items-center text-center z-20 flex-1 justify-center -mt-2">
+      {/* Main Scrollable Content Area */}
+      <div className="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y scrollbar-none flex flex-col justify-between">
+        <div className="w-full px-7 flex flex-col items-center text-center pt-2 pb-4">
         {/* 3D Phone & Cloud Illustration */}
         <div className="w-full max-w-[280px] h-[130px] sm:h-[150px] flex items-center justify-center mb-1">
           <img
@@ -455,20 +456,21 @@ export default function PhoneNumberPage({ onBack, onNavigate }) {
           </button>
         </p>
 
-        {/* Security Badge */}
-        <div className="flex items-center justify-center gap-1.5 text-[11.5px] text-[#8591b3] font-medium">
-          <Lock className="w-3.5 h-3.5 text-[#8591b3] shrink-0" />
-          <span>Your information is safe with us.</span>
+          {/* Security Badge */}
+          <div className="flex items-center justify-center gap-1.5 text-[11.5px] text-[#8591b3] font-medium">
+            <Lock className="w-3.5 h-3.5 text-[#8591b3] shrink-0" />
+            <span>Your information is safe with us.</span>
+          </div>
         </div>
-      </div>
 
-      {/* Bottom Scenic Illustration */}
-      <div className="w-full relative shrink-0 -mt-4">
-        <img
-          src="/c2-bottom-scenery.png"
-          alt="Santorini Coastal Illustration"
-          className="w-full h-auto object-cover pointer-events-none"
-        />
+        {/* Bottom Scenic Illustration */}
+        <div className="w-full relative shrink-0 mt-auto">
+          <img
+            src="/c2-bottom-scenery.png"
+            alt="Santorini Coastal Illustration"
+            className="w-full h-auto object-cover pointer-events-none block"
+          />
+        </div>
       </div>
 
       {/* Toast Notification */}
