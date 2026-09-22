@@ -18,6 +18,12 @@ export default function CheckoutPage({ onBack, onNavigate }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+  const [cardData, setCardData] = useState({
+    number: '4242 4242 4242 4242',
+    expiry: '12/28',
+    cvc: '123',
+    name: 'Alex Parker',
+  });
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -32,6 +38,7 @@ export default function CheckoutPage({ onBack, onNavigate }) {
         currency: 'usd',
         itemTitle: 'Paris in 3 Days',
         paymentMethod: selectedMethod,
+        cardDetails: selectedMethod === 'card' ? cardData : null,
       });
 
       setIsProcessing(false);
@@ -212,6 +219,62 @@ export default function CheckoutPage({ onBack, onNavigate }) {
                   </div>
                 </div>
               </div>
+
+              {/* Expandable Card Details Form */}
+              {selectedMethod === 'card' && (
+                <div className="mt-3 pt-3 border-t border-[#e8ecf8] space-y-2.5 animate-in fade-in duration-200">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#717ea1] mb-1">
+                      Card Number
+                    </label>
+                    <input
+                      type="text"
+                      value={cardData.number}
+                      onChange={(e) => setCardData({ ...cardData, number: e.target.value })}
+                      placeholder="4242 4242 4242 4242"
+                      className="w-full h-10 px-3 rounded-xl bg-white border border-[#dbe1f5] text-[13px] font-mono font-medium text-[#111936] focus:border-[#544ee5] focus:ring-2 focus:ring-[#544ee5]/15 outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#717ea1] mb-1">
+                        Expires
+                      </label>
+                      <input
+                        type="text"
+                        value={cardData.expiry}
+                        onChange={(e) => setCardData({ ...cardData, expiry: e.target.value })}
+                        placeholder="MM/YY"
+                        className="w-full h-10 px-3 rounded-xl bg-white border border-[#dbe1f5] text-[13px] font-mono font-medium text-[#111936] focus:border-[#544ee5] focus:ring-2 focus:ring-[#544ee5]/15 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#717ea1] mb-1">
+                        CVC
+                      </label>
+                      <input
+                        type="text"
+                        value={cardData.cvc}
+                        onChange={(e) => setCardData({ ...cardData, cvc: e.target.value })}
+                        placeholder="123"
+                        maxLength={4}
+                        className="w-full h-10 px-3 rounded-xl bg-white border border-[#dbe1f5] text-[13px] font-mono font-medium text-[#111936] focus:border-[#544ee5] focus:ring-2 focus:ring-[#544ee5]/15 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10.5px] text-[#717ea1] pt-1">
+                    <span className="flex items-center gap-1 font-medium">
+                      <Lock className="w-3 h-3 text-emerald-600" />
+                      <span>Stripe 256-bit SSL encrypted</span>
+                    </span>
+                    <span className="text-[10px] font-bold text-[#544ee5] bg-indigo-50 px-1.5 py-0.5 rounded">
+                      pk_test active
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Option 2: PayPal */}
