@@ -51,6 +51,8 @@ export const TOP_5_LOCATIONS = [
     hours: 'Open 9:00 AM – 6:00 PM',
     distance: '650 m',
     walkTime: '8 min walk',
+    turn1: 'In 120m, Turn Left onto Pont du Carrousel',
+    turn2: 'Continue straight into Cour Napoléon Glass Pyramid entrance',
     description: 'World’s largest art museum and historic monument home to the Mona Lisa, Venus de Milo, and iconic Glass Pyramid.',
     insideHighlights: [
       'Cour Napoléon & Glass Pyramid',
@@ -60,8 +62,8 @@ export const TOP_5_LOCATIONS = [
     ],
     creatorTip: 'Enter via Carrousel du Louvre underground mall for 70% shorter lines in morning hours.',
     img: '/c6-thumb-paris-museums.png',
-    x: 58,
-    y: 39,
+    x: 62,
+    y: 35,
     color: '#6941c6',
     icon: '🏛️',
   },
@@ -80,6 +82,8 @@ export const TOP_5_LOCATIONS = [
     hours: 'Open 9:00 AM – 11:45 PM',
     distance: '1.8 km',
     walkTime: '22 min walk',
+    turn1: 'In 250m, Continue along Quai Branly towards riverfront',
+    turn2: 'Cross Avenue de la Bourdonnais into Champ de Mars Gate 1',
     description: 'Paris’s defining global emblem on the Champ de Mars with panoramic views spanning the entire Parisian skyline.',
     insideHighlights: [
       'Champ de Mars Central Lawn',
@@ -89,8 +93,8 @@ export const TOP_5_LOCATIONS = [
     ],
     creatorTip: 'Visit 15 minutes before sunset to catch the golden hour glow followed by the hourly sparkle show.',
     img: '/c18-cover-paris.png',
-    x: 33,
-    y: 44,
+    x: 29,
+    y: 47,
     color: '#059669',
     icon: '⭐',
   },
@@ -109,6 +113,8 @@ export const TOP_5_LOCATIONS = [
     hours: 'Open 7:30 AM – 1:30 AM',
     distance: '900 m',
     walkTime: '11 min walk',
+    turn1: 'In 90m, Turn Right onto Rue Bonaparte',
+    turn2: 'Walk 180m south directly to Boulevard Saint-Germain terrace',
     description: 'Historic cafe famous for existentialist writers, artisanal thick hot chocolate, and classic red-awning sidewalk terrace.',
     insideHighlights: [
       'Ground Floor Heated Outdoor Terrace',
@@ -119,7 +125,7 @@ export const TOP_5_LOCATIONS = [
     creatorTip: 'Ask for a terrace table under the green foliage and order the hot chocolate served with fresh chantilly cream in a silver pitcher.',
     img: '/c7-photo-cafe-de-flore.png',
     x: 44,
-    y: 30,
+    y: 29,
     color: '#ea580c',
     icon: '☕',
   },
@@ -138,6 +144,8 @@ export const TOP_5_LOCATIONS = [
     hours: 'Parvis open 8:00 AM – 7:00 PM',
     distance: '1.1 km',
     walkTime: '14 min walk',
+    turn1: 'In 140m, Cross Pont d’Arcole to Île de la Cité',
+    turn2: 'Walk 90m south into Parvis Jean-Paul II square',
     description: 'Masterpiece of French Gothic architecture on Île de la Cité featuring magnificent rose windows and twin western bell towers.',
     insideHighlights: [
       'Parvis Jean-Paul II Main Square',
@@ -147,8 +155,8 @@ export const TOP_5_LOCATIONS = [
     ],
     creatorTip: 'Walk along the south bank of the Seine on Quai de Montebello for the classic postcard view of the flying buttresses.',
     img: '/c15-pop-paris.png',
-    x: 85,
-    y: 50,
+    x: 84,
+    y: 52,
     color: '#059669',
     icon: '⭐',
   },
@@ -167,6 +175,8 @@ export const TOP_5_LOCATIONS = [
     hours: 'Open 10:00 AM – 10:30 PM',
     distance: '2.4 km',
     walkTime: '28 min walk',
+    turn1: 'In 320m, Head northwest on Avenue des Champs-Élysées',
+    turn2: 'Use Passage du Souvenir pedestrian tunnel under the roundabout',
     description: 'Monumental triumphal arch honoring French military history at the western terminus of the Champs-Élysées with sweeping 360° roof views.',
     insideHighlights: [
       'Tomb of the Unknown Soldier & Eternal Flame',
@@ -176,8 +186,8 @@ export const TOP_5_LOCATIONS = [
     ],
     creatorTip: 'Never try to cross the roundabout traffic above ground; use the pedestrian tunnel from the Champs-Élysées side.',
     img: '/c8-thumb-paris.png',
-    x: 82,
-    y: 24,
+    x: 18,
+    y: 19,
     color: '#059669',
     icon: '⭐',
   },
@@ -203,6 +213,28 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
   const [pinThemeColor, setPinThemeColor] = useState('default');
   const [toastMessage, setToastMessage] = useState(null);
+
+  // In-App Live Walking Navigation State
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [navProgress, setNavProgress] = useState(0);
+
+  // Live walking step simulation when navigating
+  useEffect(() => {
+    let interval = null;
+    if (isNavigating && selectedLocation) {
+      interval = setInterval(() => {
+        setNavProgress((prev) => {
+          if (prev >= 100) return 0;
+          return prev + 5;
+        });
+      }, 700);
+    } else {
+      setNavProgress(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isNavigating, selectedLocation]);
 
   // Zoom & Pan Engine State
   const [zoomLevel, setZoomLevel] = useState(1); // 1x to 2.5x
@@ -237,6 +269,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
     setPanOffset({ x: 0, y: 0 });
     setSelectedLocation(null);
     setFocusedPinId(null);
+    setIsNavigating(false);
     showToast("Map centered on Paris");
   };
 
@@ -258,7 +291,28 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
     setShowDirectionsModal(true);
   };
 
-  // Option 1: Explore Inside Map (In-App Zoom & Highlight)
+  // Option 1: Start In-App Live Walking Navigation
+  const handleStartInAppNav = () => {
+    if (!selectedLocation) return;
+    setShowDirectionsModal(false);
+    setShowInsideModal(false);
+    setIsNavigating(true);
+    setNavProgress(0);
+    // Center map on route
+    const midX = -((50 + selectedLocation.x) / 2 - 50) * 2.2;
+    const midY = -((38 + selectedLocation.y) / 2 - 50) * 2.2;
+    setZoomLevel(1.6);
+    setPanOffset({ x: midX, y: midY });
+    showToast(`🟢 In-App Live Navigation active for ${selectedLocation.name}`);
+  };
+
+  const handleStopInAppNav = () => {
+    setIsNavigating(false);
+    setNavProgress(0);
+    showToast("⏹️ In-App Navigation ended");
+  };
+
+  // Option 2: Explore Inside Map (In-App Zoom & Highlight)
   const handleExploreInsideMap = () => {
     if (!selectedLocation) return;
     setShowDirectionsModal(false);
@@ -271,7 +325,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
     showToast(`🗺️ Exploring inside ${selectedLocation.name}`);
   };
 
-  // Option 2: Open in Google Maps Direction
+  // Option 3: Open in Google Maps Direction
   const handleOpenGoogleMaps = () => {
     if (!selectedLocation) return;
     const url = selectedLocation.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedLocation.name + ' ' + selectedLocation.address)}`;
@@ -596,15 +650,33 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                       y1="38%"
                       x2={`${selectedLocation.x}%`}
                       y2={`${selectedLocation.y}%`}
-                      stroke="#544ee5"
-                      strokeWidth={2 / zoomLevel}
+                      stroke={isNavigating ? "#10b981" : "#544ee5"}
+                      strokeWidth={isNavigating ? 3 / zoomLevel : 2 / zoomLevel}
                       strokeDasharray={`${4 / zoomLevel} ${4 / zoomLevel}`}
                       className="animate-pulse"
                     />
                   </svg>
                 )}
 
-                {/* 5 Specific Curated Location Pins on Paris Map (Always perfectly sized) */}
+                {/* Live Animated Walker Marker when In-App Navigating */}
+                {isNavigating && selectedLocation && (
+                  <div
+                    style={{
+                      left: `${50 + (selectedLocation.x - 50) * (navProgress / 100)}%`,
+                      top: `${38 + (selectedLocation.y - 38) * (navProgress / 100)}%`,
+                      transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
+                      transformOrigin: 'center center',
+                    }}
+                    className="absolute z-25 pointer-events-none transition-all duration-300"
+                  >
+                    <div className="w-8 h-8 -ml-4 -mt-4 absolute top-1/2 left-1/2 rounded-full bg-emerald-500/30 animate-ping" />
+                    <div className="w-6 h-6 rounded-full bg-emerald-600 text-white ring-2 ring-white shadow-lg flex items-center justify-center text-xs">
+                      <Footprints className="w-3.5 h-3.5 stroke-[2.5]" />
+                    </div>
+                  </div>
+                )}
+
+                {/* 5 Specific Curated Location Pins on Paris Map (Always crisp & perfectly sized) */}
                 {visibleLocations.map((loc) => {
                   const isSelected = selectedLocation?.id === loc.id;
                   const pinBg = getPinColor(loc.type);
@@ -615,7 +687,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                       style={{
                         left: `${loc.x}%`,
                         top: `${loc.y}%`,
-                        transform: `translate(-50%, -50%) scale(${(isSelected ? 1.15 : 1) / Math.max(1, zoomLevel)})`,
+                        transform: `translate(-50%, -50%) scale(${(isSelected ? 1.2 : 1) / Math.max(1, zoomLevel)})`,
                         transformOrigin: 'center center',
                       }}
                       className="absolute z-20 transition-transform duration-200"
@@ -627,21 +699,49 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                         }}
                         style={{ backgroundColor: pinBg }}
                         className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full text-white flex items-center justify-center text-xs shadow-md ring-2 ring-white cursor-pointer transition-all hover:scale-110 active:scale-95 ${
-                          isSelected ? 'ring-3 ring-indigo-400 shadow-xl' : ''
+                          isSelected ? 'ring-3 ring-indigo-400 shadow-xl scale-110' : ''
                         }`}
                         title={loc.name}
                       >
                         <span className="text-[13px] leading-none select-none">{loc.icon}</span>
                       </button>
 
-                      {/* Small Location Label on Map */}
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[10px] font-bold text-[#0f1738] whitespace-nowrap shadow-sm border border-black/5 pointer-events-none">
-                        {loc.name}
-                      </div>
+                      {/* Small Location Label on Map - only shown when selected or navigating */}
+                      {isSelected && (
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2.5 py-0.5 rounded-full bg-[#0f1738]/95 backdrop-blur-xs text-[10.5px] font-black text-white whitespace-nowrap shadow-lg border border-white/20 pointer-events-none animate-in fade-in zoom-in-95 duration-150">
+                          {loc.name}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
+
+              {/* In-App Live Navigation Top Turn Banner */}
+              {isNavigating && selectedLocation && (
+                <div className="absolute top-3 left-3 right-12 z-40 bg-[#0f1738]/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-2xl border border-emerald-500/40 flex items-center justify-between animate-in slide-in-from-top duration-200">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                      <Navigation className="w-4 h-4 fill-current rotate-45" />
+                    </div>
+                    <div className="flex-1 min-w-0 pr-1">
+                      <div className="text-[11.5px] font-black text-emerald-300 leading-tight">
+                        {selectedLocation.turn1}
+                      </div>
+                      <div className="text-[10px] text-slate-300 font-medium truncate mt-0.5">
+                        {selectedLocation.turn2}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleStopInAppNav}
+                    className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 hover:text-white cursor-pointer shrink-0"
+                    title="Exit Navigation"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
 
               {/* Floating Map Zoom & Navigation Controls */}
               <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-30">
@@ -682,109 +782,155 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               </button>
 
               {/* Floating Top-Left: Start Guided Tour Pill */}
-              <button
-                onClick={() => {
-                  const first = TOP_5_LOCATIONS[0];
-                  handleSelectLocation(first);
-                  showToast("🧭 Starting Paris 5 Highlights Tour");
-                }}
-                className="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-[#544ee5] text-white text-[11px] font-bold shadow-md hover:bg-[#4842db] active:scale-95 transition-all flex items-center gap-1.5 z-30 cursor-pointer"
-              >
-                <Compass className="w-3.5 h-3.5 animate-spin-slow" />
-                <span>Start Tour (5 Stops)</span>
-              </button>
+              {!isNavigating && (
+                <button
+                  onClick={() => {
+                    const first = TOP_5_LOCATIONS[0];
+                    handleSelectLocation(first);
+                    showToast("🧭 Starting Paris 5 Highlights Tour");
+                  }}
+                  className="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-[#544ee5] text-white text-[11px] font-bold shadow-md hover:bg-[#4842db] active:scale-95 transition-all flex items-center gap-1.5 z-30 cursor-pointer"
+                >
+                  <Compass className="w-3.5 h-3.5 animate-spin-slow" />
+                  <span>Start Tour (5 Stops)</span>
+                </button>
+              )}
 
               {/* Bottom Left: Quick Zoom Level Indicator */}
               <div className="absolute bottom-3 left-3 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-xs text-[10px] font-bold text-white z-30 pointer-events-none">
-                {Math.round(zoomLevel * 100)}% Zoom &bull; 5 Places Active
+                {isNavigating ? `🚶 Walking: ${selectedLocation.name}` : `${Math.round(zoomLevel * 100)}% Zoom • 5 Places Active`}
               </div>
             </div>
 
-            {/* Bottom Sheet Panel Overlay */}
-            <div className="w-full bg-white rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(50,70,140,0.06)] border border-[#e8ecf8] space-y-3 mt-2.5">
-              {/* Grab Handle */}
-              <div className="w-9 h-1 rounded-full bg-slate-200 mx-auto -mt-1 mb-1" />
-
-              {/* "Customize Your Map" Banner */}
-              <div className="flex items-start gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-indigo-50 text-[#544ee5] flex items-center justify-center shrink-0 mt-0.5">
-                  <Pencil className="w-3.5 h-3.5" />
+            {/* In-App Live Navigation Active Bottom HUD or Normal Bottom Sheet */}
+            {isNavigating && selectedLocation ? (
+              <div className="w-full bg-[#0f1738] text-white rounded-3xl p-4 shadow-2xl border border-emerald-500/30 space-y-3 mt-2.5 animate-in slide-in-from-bottom duration-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                    <span className="text-xs font-black uppercase tracking-wider text-emerald-400">
+                      In-App Walking Navigation
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-300">
+                    {selectedLocation.name}
+                  </span>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-[13.5px] font-extrabold text-[#0f1738] tracking-tight leading-tight">
-                    Customize Your Map
-                  </h3>
-                  <p className="text-[11px] text-[#717ea1] leading-tight mt-0.5">
-                    Change icon style, color and more to make your map unique.
-                  </p>
+
+                <div className="grid grid-cols-2 gap-2 bg-white/5 p-2.5 rounded-2xl border border-white/5">
+                  <div>
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Remaining</div>
+                    <div className="text-[16px] font-black text-white">{selectedLocation.distance}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Est. Walk Time</div>
+                    <div className="text-[16px] font-black text-emerald-400">{selectedLocation.walkTime}</div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleOpenGoogleMaps}
+                    className="flex-1 py-2.5 px-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-white/10"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Open in Google Maps</span>
+                  </button>
+
+                  <button
+                    onClick={handleStopInAppNav}
+                    className="py-2.5 px-4 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold rounded-xl text-xs transition-all cursor-pointer border border-rose-500/30"
+                  >
+                    End
+                  </button>
                 </div>
               </div>
+            ) : (
+              <div className="w-full bg-white rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(50,70,140,0.06)] border border-[#e8ecf8] space-y-3 mt-2.5">
+                {/* Grab Handle */}
+                <div className="w-9 h-1 rounded-full bg-slate-200 mx-auto -mt-1 mb-1" />
 
-              {/* Customize Button */}
-              <button
-                onClick={() => setShowCustomizeModal(true)}
-                className="w-full h-[44px] sm:h-[46px] bg-[#544ee5] hover:bg-[#4842db] active:bg-[#3f39cc] text-white font-bold text-[14px] rounded-2xl shadow-[0_4px_16px_rgba(84,78,229,0.28)] btn-interactive flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <span>Customize</span>
-                <ArrowRight className="w-4 h-4 stroke-[2.4]" />
-              </button>
+                {/* "Customize Your Map" Banner */}
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-indigo-50 text-[#544ee5] flex items-center justify-center shrink-0 mt-0.5">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-[13.5px] font-extrabold text-[#0f1738] tracking-tight leading-tight">
+                      Customize Your Map
+                    </h3>
+                    <p className="text-[11px] text-[#717ea1] leading-tight mt-0.5">
+                      Change icon style, color and more to make your map unique.
+                    </p>
+                  </div>
+                </div>
 
-              {/* 3 Interactive Stat Summary Cards for 5 Locations */}
-              <div className="grid grid-cols-3 gap-2 pt-0.5">
-                {/* 1 Museum */}
+                {/* Customize Button */}
                 <button
-                  onClick={() => {
-                    setActiveCategory('museum');
-                    const louvre = TOP_5_LOCATIONS.find((l) => l.id === 'louvre');
-                    if (louvre) handleSelectLocation(louvre);
-                  }}
-                  className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer ${
-                    activeCategory === 'museum'
-                      ? 'bg-indigo-100/70 border-2 border-[#544ee5]'
-                      : 'bg-[#f4f6fe] border border-indigo-50/50 hover:bg-indigo-50'
-                  }`}
+                  onClick={() => setShowCustomizeModal(true)}
+                  className="w-full h-[44px] sm:h-[46px] bg-[#544ee5] hover:bg-[#4842db] active:bg-[#3f39cc] text-white font-bold text-[14px] rounded-2xl shadow-[0_4px_16px_rgba(84,78,229,0.28)] btn-interactive flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  <span className="text-base mb-0.5">🏛️</span>
-                  <span className="text-[14px] font-black text-[#0f1738] leading-none">1</span>
-                  <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Museum</span>
+                  <span>Customize</span>
+                  <ArrowRight className="w-4 h-4 stroke-[2.4]" />
                 </button>
 
-                {/* 1 Café */}
-                <button
-                  onClick={() => {
-                    setActiveCategory('cafe');
-                    const flore = TOP_5_LOCATIONS.find((l) => l.id === 'flore');
-                    if (flore) handleSelectLocation(flore);
-                  }}
-                  className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer ${
-                    activeCategory === 'cafe'
-                      ? 'bg-orange-100/70 border-2 border-orange-500'
-                      : 'bg-[#fff1f0] border border-rose-50/50 hover:bg-orange-50'
-                  }`}
-                >
-                  <span className="text-base mb-0.5">☕</span>
-                  <span className="text-[14px] font-black text-[#0f1738] leading-none">1</span>
-                  <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Café</span>
-                </button>
+                {/* 3 Interactive Stat Summary Cards for 5 Locations */}
+                <div className="grid grid-cols-3 gap-2 pt-0.5">
+                  {/* 1 Museum */}
+                  <button
+                    onClick={() => {
+                      setActiveCategory('museum');
+                      const louvre = TOP_5_LOCATIONS.find((l) => l.id === 'louvre');
+                      if (louvre) handleSelectLocation(louvre);
+                    }}
+                    className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer ${
+                      activeCategory === 'museum'
+                        ? 'bg-indigo-100/70 border-2 border-[#544ee5]'
+                        : 'bg-[#f4f6fe] border border-indigo-50/50 hover:bg-indigo-50'
+                    }`}
+                  >
+                    <span className="text-base mb-0.5">🏛️</span>
+                    <span className="text-[14px] font-black text-[#0f1738] leading-none">1</span>
+                    <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Museum</span>
+                  </button>
 
-                {/* 3 Places */}
-                <button
-                  onClick={() => {
-                    setActiveCategory('place');
-                    showToast("Showing 3 Landmark Places");
-                  }}
-                  className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer ${
-                    activeCategory === 'place'
-                      ? 'bg-emerald-100/70 border-2 border-emerald-500'
-                      : 'bg-[#e8f7f2] border border-emerald-50/50 hover:bg-emerald-50'
-                  }`}
-                >
-                  <span className="text-base mb-0.5">⭐</span>
-                  <span className="text-[14px] font-black text-[#0f1738] leading-none">3</span>
-                  <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Places</span>
-                </button>
+                  {/* 1 Café */}
+                  <button
+                    onClick={() => {
+                      setActiveCategory('cafe');
+                      const flore = TOP_5_LOCATIONS.find((l) => l.id === 'flore');
+                      if (flore) handleSelectLocation(flore);
+                    }}
+                    className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer ${
+                      activeCategory === 'cafe'
+                        ? 'bg-orange-100/70 border-2 border-orange-500'
+                        : 'bg-[#fff1f0] border border-rose-50/50 hover:bg-orange-50'
+                    }`}
+                  >
+                    <span className="text-base mb-0.5">☕</span>
+                    <span className="text-[14px] font-black text-[#0f1738] leading-none">1</span>
+                    <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Café</span>
+                  </button>
+
+                  {/* 3 Places */}
+                  <button
+                    onClick={() => {
+                      setActiveCategory('place');
+                      showToast("Showing 3 Landmark Places");
+                    }}
+                    className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer ${
+                      activeCategory === 'place'
+                        ? 'bg-emerald-100/70 border-2 border-emerald-500'
+                        : 'bg-[#e8f7f2] border border-emerald-50/50 hover:bg-emerald-50'
+                    }`}
+                  >
+                    <span className="text-base mb-0.5">⭐</span>
+                    <span className="text-[14px] font-black text-[#0f1738] leading-none">3</span>
+                    <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Places</span>
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </>
       )}
@@ -889,34 +1035,50 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               </div>
             </div>
 
-            {/* THE TWO REQUIRED DIRECTION OPTIONS */}
+            {/* THREE DIRECTION & EXPLORATION OPTIONS */}
             <div className="space-y-2 pt-1">
-              {/* Option 1: Explore Inside Map */}
+              {/* Option 1: Start In-App Live Walking Navigation */}
+              <button
+                onClick={handleStartInAppNav}
+                className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold rounded-2xl text-[13.5px] shadow-md shadow-emerald-200 flex items-center justify-between cursor-pointer transition-all"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center">
+                    <Navigation className="w-4 h-4 fill-current rotate-45" />
+                  </div>
+                  <span>Start In-App Navigation</span>
+                </div>
+                <div className="flex items-center gap-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full">
+                  <span>{selectedLocation.walkTime}</span>
+                </div>
+              </button>
+
+              {/* Option 2: Get Direction in Google Maps */}
+              <button
+                onClick={handleOpenGoogleMaps}
+                className="w-full py-3 px-4 bg-white border border-[#e2e7f5] hover:border-emerald-300 hover:bg-emerald-50/40 active:scale-[0.99] text-[#0f1738] font-bold rounded-2xl text-[13.5px] shadow-xs flex items-center justify-between cursor-pointer transition-all"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </div>
+                  <span>Get Direction in Google Maps</span>
+                </div>
+                <ArrowRight className="w-4 h-4 text-slate-400" />
+              </button>
+
+              {/* Option 3: Explore Inside Highlights & Audio Tour */}
               <button
                 onClick={handleExploreInsideMap}
                 className="w-full py-3 px-4 bg-[#544ee5] hover:bg-[#4842db] active:scale-[0.99] text-white font-bold rounded-2xl text-[13.5px] shadow-md shadow-indigo-200 flex items-center justify-between cursor-pointer transition-all"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center">
                     <MapIcon className="w-3.5 h-3.5" />
                   </div>
-                  <span>Explore Inside Map</span>
+                  <span>Explore Inside Highlights &amp; Audio</span>
                 </div>
                 <ArrowRight className="w-4 h-4" />
-              </button>
-
-              {/* Option 2: Get Google Maps Directions */}
-              <button
-                onClick={handleOpenGoogleMaps}
-                className="w-full py-3 px-4 bg-white border border-[#e2e7f5] hover:border-indigo-300 hover:bg-slate-50 active:scale-[0.99] text-[#0f1738] font-bold rounded-2xl text-[13.5px] shadow-xs flex items-center justify-between cursor-pointer transition-all"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <Navigation className="w-3.5 h-3.5 fill-current rotate-45" />
-                  </div>
-                  <span>Open in Google Maps Direction</span>
-                </div>
-                <ExternalLink className="w-4 h-4 text-slate-400" />
               </button>
             </div>
           </div>

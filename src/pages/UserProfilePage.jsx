@@ -287,50 +287,42 @@ export default function UserProfilePage({ onNavigate }) {
             <p>{profileData.bioLine2}</p>
           </div>
 
-          {/* 4 Stats Cards Grid */}
-          <div className="grid grid-cols-4 gap-2 pt-1">
+          {/* 4 Stats Cards Grid (Clean Stacked Layout - No Collisions) */}
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-2 pt-1">
             {/* Maps */}
-            <div className="bg-[#f4f6fc] rounded-2xl p-2.5 flex items-center gap-2 border border-[#e8ecf8]">
-              <div className="text-[#544ee5] shrink-0">
-                <MapIcon className="w-5 h-5 stroke-[2.2]" />
+            <div className="bg-[#f4f6fc] rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center border border-[#e8ecf8] shadow-2xs">
+              <div className="text-[#544ee5] mb-1">
+                <MapIcon className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-[15px] font-black text-[#0f1738] leading-none">5</span>
-                <span className="text-[10px] text-[#717ea1] font-semibold mt-0.5">Maps</span>
-              </div>
+              <span className="text-[13.5px] sm:text-[15px] font-black text-[#0f1738] leading-none">5</span>
+              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-semibold mt-0.5">Maps</span>
             </div>
 
             {/* Following */}
-            <div className="bg-[#f4f6fc] rounded-2xl p-2.5 flex items-center gap-2 border border-[#e8ecf8]">
-              <div className="text-[#544ee5] shrink-0">
-                <Users className="w-5 h-5 stroke-[2.2]" />
+            <div className="bg-[#f4f6fc] rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center border border-[#e8ecf8] shadow-2xs">
+              <div className="text-[#544ee5] mb-1">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-[15px] font-black text-[#0f1738] leading-none">28</span>
-                <span className="text-[10px] text-[#717ea1] font-semibold mt-0.5">Following</span>
-              </div>
+              <span className="text-[13.5px] sm:text-[15px] font-black text-[#0f1738] leading-none">28</span>
+              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-semibold mt-0.5">Following</span>
             </div>
 
             {/* Followers */}
-            <div className="bg-[#f4f6fc] rounded-2xl p-2.5 flex items-center gap-2 border border-[#e8ecf8]">
-              <div className="text-[#544ee5] shrink-0">
-                <Users className="w-5 h-5 stroke-[2.2]" />
+            <div className="bg-[#f4f6fc] rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center border border-[#e8ecf8] shadow-2xs">
+              <div className="text-[#544ee5] mb-1">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-[15px] font-black text-[#0f1738] leading-none">12.4K</span>
-                <span className="text-[10px] text-[#717ea1] font-semibold mt-0.5">Followers</span>
-              </div>
+              <span className="text-[13.5px] sm:text-[15px] font-black text-[#0f1738] leading-none">12.4K</span>
+              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-semibold mt-0.5">Followers</span>
             </div>
 
             {/* Likes */}
-            <div className="bg-[#f4f6fc] rounded-2xl p-2.5 flex items-center gap-2 border border-[#e8ecf8]">
-              <div className="text-[#544ee5] shrink-0">
-                <Heart className="w-5 h-5 fill-[#544ee5] text-[#544ee5]" />
+            <div className="bg-[#f4f6fc] rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center border border-[#e8ecf8] shadow-2xs">
+              <div className="text-[#544ee5] mb-1">
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-[#544ee5] text-[#544ee5]" />
               </div>
-              <div className="flex flex-col">
-                <span className="text-[15px] font-black text-[#0f1738] leading-none">342</span>
-                <span className="text-[10px] text-[#717ea1] font-semibold mt-0.5">Likes</span>
-              </div>
+              <span className="text-[13.5px] sm:text-[15px] font-black text-[#0f1738] leading-none">342</span>
+              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-semibold mt-0.5">Likes</span>
             </div>
           </div>
 
@@ -399,6 +391,7 @@ export default function UserProfilePage({ onNavigate }) {
                       type="button"
                       onClick={() => toggleMapLike(map.id, map.title)}
                       className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 backdrop-blur-md shadow-sm flex items-center justify-center text-[#111936] hover:bg-white active:scale-90 transition-all cursor-pointer z-10"
+                      title="Toggle Favorite"
                     >
                       <Heart
                         className={`w-3.5 h-3.5 transition-colors ${
@@ -447,7 +440,7 @@ export default function UserProfilePage({ onNavigate }) {
                           <span>{map.views}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Heart className="w-3 h-3 stroke-[2]" />
+                          <Heart className="w-3 h-3 stroke-[2] fill-rose-500 text-rose-500" />
                           <span>{map.likesDisplay}</span>
                         </div>
                       </div>
@@ -479,20 +472,46 @@ export default function UserProfilePage({ onNavigate }) {
                   .map((map) => (
                     <div
                       key={map.id}
-                      className="w-full bg-white rounded-[22px] border border-[#e4e8f7] p-3 shadow-xs flex gap-3 items-center"
+                      className="w-full bg-white rounded-[22px] sm:rounded-[24px] border border-[#e4e8f7] p-3 shadow-[0_2px_10px_rgba(50,70,140,0.03)] hover:border-slate-300 transition-all flex gap-3 items-center"
                     >
-                      <div className="relative w-28 h-24 rounded-2xl overflow-hidden shadow-xs shrink-0">
-                        <img src={map.img} alt={map.title} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-[14px] font-bold text-[#0f1738] truncate">{map.title}</h3>
-                        <p className="text-[11px] text-[#717ea1] mt-0.5">{map.places} &bull; {map.duration}</p>
+                      <div className="relative w-28 h-24 sm:w-32 sm:h-26 rounded-2xl overflow-hidden shadow-xs shrink-0">
+                        <img src={map.img} alt={map.title} className="w-full h-full object-cover pointer-events-none" />
                         <button
-                          onClick={() => onNavigate && onNavigate('map-detail')}
-                          className="mt-2 px-3 py-1 rounded-lg bg-[#544ee5] text-white text-xs font-bold"
+                          type="button"
+                          onClick={() => toggleMapLike(map.id, map.title)}
+                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 backdrop-blur-md shadow-sm flex items-center justify-center text-[#544ee5] hover:bg-white active:scale-90 transition-all cursor-pointer z-10"
+                          title="Unfavorite"
                         >
-                          View Map
+                          <Heart className="w-3.5 h-3.5 fill-[#544ee5] text-[#544ee5]" />
                         </button>
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                        <h3
+                          onClick={() => onNavigate && onNavigate('map-detail')}
+                          className="text-[14px] sm:text-[14.5px] font-bold text-[#0f1738] tracking-tight truncate leading-snug cursor-pointer hover:text-[#544ee5] transition-colors"
+                        >
+                          {map.title}
+                        </h3>
+                        <p className="text-[11px] text-[#717ea1] mt-0.5">{map.places} &bull; {map.duration}</p>
+                        <p className="text-[11px] text-[#717ea1] truncate leading-tight mt-0.5">{map.description}</p>
+                        <div className="flex items-center justify-between pt-2">
+                          <div className="flex items-center gap-2.5 text-[11px] text-[#717ea1] font-medium">
+                            <div className="flex items-center gap-1">
+                              <Eye className="w-3.5 h-3.5 stroke-[2]" />
+                              <span>{map.views}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Heart className="w-3 h-3 stroke-[2] fill-rose-500 text-rose-500" />
+                              <span>{map.likesDisplay}</span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => onNavigate && onNavigate('map-detail')}
+                            className="px-3.5 py-1.5 rounded-xl bg-[#544ee5] hover:bg-[#4842db] text-white font-bold text-[12px] tracking-tight transition-all active:scale-95 cursor-pointer shadow-2xs"
+                          >
+                            View Map
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))
