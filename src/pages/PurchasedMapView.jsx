@@ -573,12 +573,17 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
                 {/* Pulsing Blue Live GPS Radar User Location Marker (Seine River) */}
                 <div
-                  style={{ left: '50%', top: '38%' }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
+                  style={{
+                    left: '50%',
+                    top: '38%',
+                    transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
+                    transformOrigin: 'center center',
+                  }}
+                  className="absolute pointer-events-none z-10"
                 >
-                  <div className="w-12 h-12 -ml-6 -mt-6 absolute top-1/2 left-1/2 rounded-full bg-blue-500/20 animate-ping" />
-                  <div className="w-7 h-7 -ml-3.5 -mt-3.5 absolute top-1/2 left-1/2 rounded-full bg-blue-500/35 animate-pulse" />
-                  <div className="w-4 h-4 rounded-full bg-blue-600 ring-2 ring-white shadow-md relative z-10 flex items-center justify-center">
+                  <div className="w-9 h-9 -ml-[18px] -mt-[18px] absolute top-1/2 left-1/2 rounded-full bg-blue-500/20 animate-ping" />
+                  <div className="w-5 h-5 -ml-[10px] -mt-[10px] absolute top-1/2 left-1/2 rounded-full bg-blue-500/35 animate-pulse" />
+                  <div className="w-3.5 h-3.5 rounded-full bg-blue-600 ring-2 ring-white shadow-md relative z-10 flex items-center justify-center">
                     <div className="w-1.5 h-1.5 bg-white rounded-full" />
                   </div>
                 </div>
@@ -592,14 +597,14 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                       x2={`${selectedLocation.x}%`}
                       y2={`${selectedLocation.y}%`}
                       stroke="#544ee5"
-                      strokeWidth="2.5"
-                      strokeDasharray="4 4"
+                      strokeWidth={2 / zoomLevel}
+                      strokeDasharray={`${4 / zoomLevel} ${4 / zoomLevel}`}
                       className="animate-pulse"
                     />
                   </svg>
                 )}
 
-                {/* 5 Specific Curated Location Pins on Paris Map */}
+                {/* 5 Specific Curated Location Pins on Paris Map (Always perfectly sized) */}
                 {visibleLocations.map((loc) => {
                   const isSelected = selectedLocation?.id === loc.id;
                   const pinBg = getPinColor(loc.type);
@@ -607,28 +612,30 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   return (
                     <div
                       key={loc.id}
-                      style={{ left: `${loc.x}%`, top: `${loc.y}%` }}
-                      className="absolute -translate-x-1/2 -translate-y-1/2 z-20 transition-all duration-200"
+                      style={{
+                        left: `${loc.x}%`,
+                        top: `${loc.y}%`,
+                        transform: `translate(-50%, -50%) scale(${(isSelected ? 1.15 : 1) / Math.max(1, zoomLevel)})`,
+                        transformOrigin: 'center center',
+                      }}
+                      className="absolute z-20 transition-transform duration-200"
                     >
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSelectLocation(loc);
                         }}
-                        style={{
-                          backgroundColor: pinBg,
-                          transform: isSelected ? 'scale(1.3)' : 'scale(1)',
-                        }}
-                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full text-white flex items-center justify-center text-sm shadow-md ring-2 ring-white cursor-pointer transition-all hover:scale-120 active:scale-95 ${
-                          isSelected ? 'ring-4 ring-indigo-300 shadow-2xl animate-bounce' : ''
+                        style={{ backgroundColor: pinBg }}
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full text-white flex items-center justify-center text-xs shadow-md ring-2 ring-white cursor-pointer transition-all hover:scale-110 active:scale-95 ${
+                          isSelected ? 'ring-3 ring-indigo-400 shadow-xl' : ''
                         }`}
                         title={loc.name}
                       >
-                        <span>{loc.icon}</span>
+                        <span className="text-[13px] leading-none select-none">{loc.icon}</span>
                       </button>
 
                       {/* Small Location Label on Map */}
-                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[9.5px] font-bold text-[#0f1738] whitespace-nowrap shadow-xs border border-black/5 pointer-events-none">
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[10px] font-bold text-[#0f1738] whitespace-nowrap shadow-sm border border-black/5 pointer-events-none">
                         {loc.name}
                       </div>
                     </div>
