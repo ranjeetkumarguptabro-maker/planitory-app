@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -17,7 +17,6 @@ import {
   Camera,
   Crosshair,
   MapPin,
-  Footprints,
   Layers,
   Compass,
   Sparkles,
@@ -55,8 +54,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Open 7:30 AM – 1:30 AM',
     distance: '900 m',
     walkTime: '11 min walk',
-    turn1: 'In 90m, Turn Right onto Rue Bonaparte',
-    turn2: 'Walk 180m south directly to Boulevard Saint-Germain terrace',
     shortDesc: 'Historic café with Parisian charm.',
     description: 'Historic cafe famous for existentialist writers, artisanal thick hot chocolate, and classic red-awning sidewalk terrace.',
     insideHighlights: [
@@ -87,8 +84,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Open 9:00 AM – 6:00 PM',
     distance: '650 m',
     walkTime: '8 min walk',
-    turn1: 'In 120m, Turn Left onto Pont du Carrousel',
-    turn2: 'Continue straight into Cour Napoléon Glass Pyramid entrance',
     shortDesc: 'World’s largest art museum & Glass Pyramid.',
     description: 'World’s largest art museum and historic monument home to the Mona Lisa, Venus de Milo, and iconic Glass Pyramid.',
     insideHighlights: [
@@ -119,8 +114,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Open 9:00 AM – 11:45 PM',
     distance: '1.8 km',
     walkTime: '22 min walk',
-    turn1: 'In 250m, Continue along Quai Branly towards riverfront',
-    turn2: 'Cross Avenue de la Bourdonnais into Champ de Mars Gate 1',
     shortDesc: 'Iconic Parisian skyline monument.',
     description: 'Paris’s defining global emblem on the Champ de Mars with panoramic views spanning the entire Parisian skyline.',
     insideHighlights: [
@@ -151,8 +144,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Open 10:00 AM – 10:30 PM',
     distance: '2.4 km',
     walkTime: '28 min walk',
-    turn1: 'In 320m, Head northwest on Avenue des Champs-Élysées',
-    turn2: 'Use Passage du Souvenir pedestrian tunnel under the roundabout',
     shortDesc: 'Monumental triumphal arch at Champs-Élysées.',
     description: 'Monumental triumphal arch honoring French military history at the western terminus of the Champs-Élysées with sweeping 360° roof views.',
     insideHighlights: [
@@ -183,8 +174,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Open 6:30 AM – 10:30 PM',
     distance: '3.1 km',
     walkTime: '38 min walk',
-    turn1: 'In 400m, Take Montmartre Funicular or stairs to hilltop',
-    turn2: 'Enter the Basilica main terrace for panoramic Parisian view',
     shortDesc: 'Stunning hilltop basilica in Montmartre.',
     description: 'White-domed basilica crowning the Montmartre butte with the highest natural elevation in Paris.',
     insideHighlights: [
@@ -215,8 +204,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Open 10:00 AM – 5:00 PM',
     distance: '1.4 km',
     walkTime: '17 min walk',
-    turn1: 'In 180m, Head north on Avenue de l’Opéra',
-    turn2: 'Walk directly to the grand marble entrance rotunda',
     shortDesc: 'Opulent historic Paris opera house.',
     description: 'Masterpiece of 19th-century theater architecture known for its grand marble staircase, gold leaf, and Chagall ceiling.',
     insideHighlights: [
@@ -247,8 +234,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Parvis open 8:00 AM – 7:00 PM',
     distance: '1.1 km',
     walkTime: '14 min walk',
-    turn1: 'In 140m, Cross Pont d’Arcole to Île de la Cité',
-    turn2: 'Walk 90m south into Parvis Jean-Paul II square',
     shortDesc: 'Gothic masterpiece on Île de la Cité.',
     description: 'Masterpiece of French Gothic architecture on Île de la Cité featuring magnificent rose windows and twin western bell towers.',
     insideHighlights: [
@@ -279,8 +264,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Open 12:00 PM – 11:00 PM',
     distance: '1.3 km',
     walkTime: '16 min walk',
-    turn1: 'In 200m, Head northeast along Rue de Rivoli',
-    turn2: 'Turn left into Rue Vieille-du-Temple',
     shortDesc: 'Cozy authentic bistro with French classics.',
     description: 'Charming vintage bistro serving boeuf bourguignon, duck confit, and fresh tarte tatin in the vibrant Marais quarter.',
     insideHighlights: ['Zinc Bar & Wine Selection', 'Fresh Baked Tarte Tatin', 'Quiet Courtyard Patio'],
@@ -306,8 +289,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Open 7:30 AM – 8:00 PM',
     distance: '1.2 km',
     walkTime: '15 min walk',
-    turn1: 'In 150m, Walk south along Boulevard Saint-Michel',
-    turn2: 'Enter via Medici Fountain gate',
     shortDesc: 'Tree-lined garden with iconic green chairs.',
     description: 'Iconic Parisian park surrounding the Luxembourg Palace featuring tree-lined promenades, the Medici Fountain, and model sailboats.',
     insideHighlights: ['Medici Fountain', 'Palais du Luxembourg Lawn', 'Vintage Sailboat Basin'],
@@ -333,8 +314,6 @@ export const TOP_PARIS_LOCATIONS = [
     hours: 'Open 24 hours',
     distance: '750 m',
     walkTime: '9 min walk',
-    turn1: 'In 110m, Walk down stairs at the tip of Pont Neuf',
-    turn2: 'Reach weeping willow tree at the western tip of Île de la Cité',
     shortDesc: 'Panoramic Seine River sunset viewpoint.',
     description: 'Romantic riverside square situated at the western tip of the Île de la Cité offering panoramic Seine views and sunset boats.',
     insideHighlights: ['Weeping Willow Riverfront Bench', '360° Sunset River Views', 'Historic Henri IV Statue'],
@@ -362,38 +341,15 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   // Active Category Filter ('all' | 'museum' | 'cafe' | 'restaurant' | 'park' | 'view')
   const [activeCategory, setActiveCategory] = useState('all');
 
-  // Selected Location (Default is Café de Flore to match the reference mockup)
+  // Selected Location (Default is Café de Flore to match reference mockup)
   const [selectedLocation, setSelectedLocation] = useState(() => TOP_PARIS_LOCATIONS[0]);
 
   // Modals & Map Mode
-  const [showDirectionsModal, setShowDirectionsModal] = useState(false);
   const [showInsideModal, setShowInsideModal] = useState(false);
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
   const [pinThemeColor, setPinThemeColor] = useState('default');
   const [mapMode, setMapMode] = useState('map'); // 'map' | 'satellite' | '3d'
   const [toastMessage, setToastMessage] = useState(null);
-
-  // In-App Live Walking Navigation State
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [navProgress, setNavProgress] = useState(0);
-
-  // Live walking step simulation when navigating
-  useEffect(() => {
-    let interval = null;
-    if (isNavigating && selectedLocation) {
-      interval = setInterval(() => {
-        setNavProgress((prev) => {
-          if (prev >= 100) return 0;
-          return prev + 5;
-        });
-      }, 700);
-    } else {
-      setNavProgress(0);
-    }
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isNavigating, selectedLocation]);
 
   // Zoom & Pan Engine State
   const [zoomLevel, setZoomLevel] = useState(1); // 1x to 3.5x
@@ -433,7 +389,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   const handleResetView = () => {
     setZoomLevel(1);
     setPanOffset({ x: 0, y: 0 });
-    setIsNavigating(false);
     showToast("🧭 Zoom reset & map centered");
   };
 
@@ -453,50 +408,17 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
     showToast(`📍 Selected ${loc.name}`);
   };
 
-  // Option 1: Start In-App Live Walking Navigation
-  const handleStartInAppNav = () => {
-    if (!selectedLocation) return;
-    setShowDirectionsModal(false);
-    setShowInsideModal(false);
-    setIsNavigating(true);
-    setNavProgress(0);
-    // Center map on route
-    const midX = -((46 + selectedLocation.x) / 2 - 50) * 2.2;
-    const midY = -((47 + selectedLocation.y) / 2 - 50) * 2.2;
-    setZoomLevel(1.5);
-    setPanOffset({ x: midX, y: midY });
-    showToast(`🟢 In-App Live Navigation active for ${selectedLocation.name}`);
-  };
-
-  const handleStopInAppNav = () => {
-    setIsNavigating(false);
-    setNavProgress(0);
-    showToast("⏹️ In-App Navigation ended");
-  };
-
-  // Option 2: Explore Inside Map (In-App Zoom & Highlights)
-  const handleExploreInsideMap = () => {
-    if (!selectedLocation) return;
-    setShowDirectionsModal(false);
-    setShowInsideModal(true);
-    // Deep zoom into location
-    const targetX = -(selectedLocation.x - 50) * 3.2;
-    const targetY = -(selectedLocation.y - 50) * 3.2;
-    setZoomLevel(2.0);
-    setPanOffset({ x: targetX, y: targetY });
-    showToast(`🗺️ Exploring inside ${selectedLocation.name}`);
-  };
-
-  // Option 3: Open in Google Maps Directions
-  const handleOpenGoogleMaps = () => {
-    if (!selectedLocation) return;
+  // 🚀 REDIRECT DIRECTLY TO GOOGLE MAPS FOR TURN-BY-TURN DIRECTIONS
+  const handleOpenGoogleMaps = (loc) => {
+    const target = loc || selectedLocation;
+    if (!target) return;
     const url =
-      selectedLocation.googleMapsUrl ||
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        selectedLocation.name + ' ' + selectedLocation.address
+      target.googleMapsUrl ||
+      `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+        target.name + ' ' + target.address
       )}`;
     window.open(url, '_blank', 'noopener,noreferrer');
-    showToast(`🚀 Opening ${selectedLocation.name} in Google Maps...`);
+    showToast(`🚀 Opening ${target.name} in Google Maps Directions...`);
   };
 
   // Pan Gestures (Mouse)
@@ -920,40 +842,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   </div>
                 </div>
 
-                {/* Route Line when Pin is Focused / Navigating */}
-                {selectedLocation && (
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-15">
-                    <line
-                      x1="46%"
-                      y1="47%"
-                      x2={`${selectedLocation.x}%`}
-                      y2={`${selectedLocation.y}%`}
-                      stroke={isNavigating ? '#10b981' : '#544ee5'}
-                      strokeWidth={isNavigating ? 3.5 / zoomLevel : 2.5 / zoomLevel}
-                      strokeDasharray={`${5 / zoomLevel} ${5 / zoomLevel}`}
-                      className="animate-pulse"
-                    />
-                  </svg>
-                )}
-
-                {/* Live Animated Walker Marker when In-App Navigating */}
-                {isNavigating && selectedLocation && (
-                  <div
-                    style={{
-                      left: `${46 + (selectedLocation.x - 46) * (navProgress / 100)}%`,
-                      top: `${47 + (selectedLocation.y - 47) * (navProgress / 100)}%`,
-                      transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
-                      transformOrigin: 'center center',
-                    }}
-                    className="absolute z-25 pointer-events-none transition-all duration-300"
-                  >
-                    <div className="w-9 h-9 -ml-4.5 -mt-4.5 absolute top-1/2 left-1/2 rounded-full bg-emerald-500/30 animate-ping" />
-                    <div className="w-7 h-7 rounded-full bg-emerald-600 text-white ring-2 ring-white shadow-lg flex items-center justify-center text-xs">
-                      <Footprints className="w-4 h-4 stroke-[2.5]" />
-                    </div>
-                  </div>
-                )}
-
                 {/* Interactive Curated Map Pins (Scale Compensated) */}
                 {visibleLocations.map((loc) => {
                   const isSelected = selectedLocation?.id === loc.id;
@@ -970,12 +858,12 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                       }}
                       className="absolute z-20 transition-transform duration-200"
                     >
-                      {/* Floating Callout Tooltip anchored above selected pin (Matches Café de Flore in mockup) */}
-                      {isSelected && !isNavigating && (
+                      {/* Floating Callout Tooltip anchored above selected pin */}
+                      {isSelected && (
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
-                            setShowDirectionsModal(true);
+                            setShowInsideModal(true);
                           }}
                           className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3.5 z-40 bg-white rounded-[20px] p-2.5 shadow-[0_12px_30px_rgba(0,0,0,0.18)] border border-slate-100 flex items-center gap-2.5 min-w-[215px] max-w-[250px] cursor-pointer hover:shadow-2xl active:scale-95 transition-all animate-in zoom-in-95 duration-200"
                         >
@@ -998,9 +886,17 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                               </span>
                             </div>
                           </div>
-                          <div className="w-7 h-7 rounded-full bg-indigo-50 text-[#544ee5] flex items-center justify-center shrink-0">
-                            <ChevronRight className="w-4 h-4 stroke-[2.5]" />
-                          </div>
+                          {/* Navigation Icon Button that Redirects to Google Maps */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenGoogleMaps(loc);
+                            }}
+                            className="w-8 h-8 rounded-full bg-[#544ee5] hover:bg-[#4842db] text-white flex items-center justify-center shrink-0 shadow-xs cursor-pointer active:scale-90 transition-all"
+                            title="Get Direction in Google Maps"
+                          >
+                            <Navigation className="w-4 h-4 fill-current rotate-45" />
+                          </button>
                           {/* Triangle Pointer */}
                           <div className="w-3 h-3 bg-white rotate-45 border-r border-b border-slate-100 absolute -bottom-1.5 left-1/2 -translate-x-1/2" />
                         </div>
@@ -1144,32 +1040,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   3D
                 </button>
               </div>
-
-              {/* In-App Live Navigation Active Top Turn Banner */}
-              {isNavigating && selectedLocation && (
-                <div className="absolute top-3 left-3 right-14 z-40 bg-[#0f1738]/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-2xl border border-emerald-500/40 flex items-center justify-between animate-in slide-in-from-top duration-200">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
-                      <Navigation className="w-4 h-4 fill-current rotate-45" />
-                    </div>
-                    <div className="flex-1 min-w-0 pr-1">
-                      <div className="text-[11.5px] font-black text-emerald-300 leading-tight">
-                        {selectedLocation.turn1}
-                      </div>
-                      <div className="text-[10px] text-slate-300 font-medium truncate mt-0.5">
-                        {selectedLocation.turn2}
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleStopInAppNav}
-                    className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300 hover:text-white cursor-pointer shrink-0"
-                    title="Exit Navigation"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* ===================================================== */}
@@ -1179,60 +1049,21 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               {/* Top Drag Handle Pill */}
               <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto -mt-1 mb-1.5" />
 
-              {/* In-App Live Navigation HUD OR Selected Place Card */}
-              {isNavigating && selectedLocation ? (
-                <div className="w-full bg-[#0f1738] text-white rounded-2xl p-3.5 shadow-xl border border-emerald-500/30 space-y-2.5 animate-in slide-in-from-bottom duration-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                      <span className="text-xs font-black uppercase tracking-wider text-emerald-400">
-                        In-App Walking Navigation
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-bold text-slate-300">
-                      {selectedLocation.name}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 bg-white/5 p-2 rounded-xl border border-white/5">
-                    <div>
-                      <div className="text-[9.5px] text-slate-400 font-semibold uppercase">Remaining</div>
-                      <div className="text-[15px] font-black text-white">{selectedLocation.distance}</div>
-                    </div>
-                    <div>
-                      <div className="text-[9.5px] text-slate-400 font-semibold uppercase">Est. Walk Time</div>
-                      <div className="text-[15px] font-black text-emerald-400">{selectedLocation.walkTime}</div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleOpenGoogleMaps}
-                      className="flex-1 py-2 px-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-white/10"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Open in Google Maps</span>
-                    </button>
-
-                    <button
-                      onClick={handleStopInAppNav}
-                      className="py-2 px-3.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold rounded-xl text-xs transition-all cursor-pointer border border-rose-500/30"
-                    >
-                      End
-                    </button>
-                  </div>
-                </div>
-              ) : selectedLocation ? (
-                /* Selected Location Card (Café de Flore) */
+              {/* Selected Location Card (Café de Flore) with Direct Google Maps Direction Button */}
+              {selectedLocation && (
                 <div className="flex items-center justify-between gap-3 p-1">
                   <img
                     src={selectedLocation.img}
                     alt={selectedLocation.name}
-                    className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover shrink-0 shadow-sm border border-black/5"
+                    className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover shrink-0 shadow-sm border border-black/5 cursor-pointer"
+                    onClick={() => setShowInsideModal(true)}
                   />
 
-                  <div className="flex-1 min-w-0 pr-1">
-                    <h3 className="font-bold font-serif text-[17px] text-[#0f1738] leading-tight truncate">
+                  <div
+                    className="flex-1 min-w-0 pr-1 cursor-pointer"
+                    onClick={() => setShowInsideModal(true)}
+                  >
+                    <h3 className="font-bold font-serif text-[17px] text-[#0f1738] leading-tight truncate hover:text-[#544ee5] transition-colors">
                       {selectedLocation.name}
                     </h3>
                     <p className="text-[11.5px] text-[#717ea1] truncate mt-0.5 font-medium">
@@ -1259,16 +1090,17 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                     </div>
                   </div>
 
-                  {/* "View Details →" Action Pill */}
+                  {/* Direct "Get Direction" Button redirecting to Google Maps */}
                   <button
-                    onClick={() => setShowDirectionsModal(true)}
-                    className="px-3.5 py-2.5 rounded-2xl bg-[#eef1fd] hover:bg-[#e2e7fc] text-[#544ee5] font-bold text-[12px] flex items-center gap-1.5 shrink-0 active:scale-95 transition-all cursor-pointer shadow-2xs"
+                    onClick={() => handleOpenGoogleMaps(selectedLocation)}
+                    className="px-3.5 py-2.5 rounded-2xl bg-[#544ee5] hover:bg-[#4842db] active:scale-95 text-white font-bold text-[12px] flex items-center gap-1.5 shrink-0 transition-all cursor-pointer shadow-md shadow-indigo-300/40"
+                    title="Open in Google Maps"
                   >
-                    <span>View Details</span>
-                    <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <Navigation className="w-3.5 h-3.5 fill-current rotate-45" />
+                    <span>Get Direction</span>
                   </button>
                 </div>
-              ) : null}
+              )}
 
               {/* 3 Interactive Category Stat Summary Cards */}
               <div className="grid grid-cols-3 gap-2.5 pt-1">
@@ -1331,113 +1163,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
       )}
 
       {/* ========================================================= */}
-      {/* 🚀 THREE OPTIONS MODAL: "INSIDE MAP" vs "GOOGLE MAPS"     */}
-      {/* ========================================================= */}
-      {showDirectionsModal && selectedLocation && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-sm bg-white rounded-3xl p-5 shadow-2xl border border-indigo-50 space-y-4 animate-in slide-in-from-bottom duration-200">
-            {/* Header with Photo Thumbnail */}
-            <div className="flex items-start gap-3 pb-2 border-b border-slate-100">
-              <img
-                src={selectedLocation.img}
-                alt={selectedLocation.name}
-                className="w-14 h-14 rounded-2xl object-cover shadow-sm border border-black/5 shrink-0"
-              />
-              <div className="flex-1 min-w-0 pr-1">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs">{selectedLocation.icon}</span>
-                  <h3 className="font-black text-[15px] text-[#0f1738] truncate">
-                    {selectedLocation.name}
-                  </h3>
-                </div>
-                <p className="text-[11px] text-[#717ea1] font-medium truncate">
-                  {selectedLocation.frenchName} &bull; {selectedLocation.area}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[10.5px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <Footprints className="w-3 h-3" />
-                    <span>
-                      {selectedLocation.walkTime} ({selectedLocation.distance})
-                    </span>
-                  </span>
-                  <span className="text-[10.5px] font-bold text-amber-500">
-                    ★ {selectedLocation.rating}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowDirectionsModal(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Location Description */}
-            <p className="text-[11.5px] text-[#556080] leading-relaxed">
-              {selectedLocation.description}
-            </p>
-
-            {/* Creator Tip Badge */}
-            <div className="p-2.5 rounded-2xl bg-[#f5f3ff] border border-indigo-100 flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-[#544ee5] shrink-0 mt-0.5" />
-              <div className="text-[11px] text-[#4b43c6] leading-tight">
-                <strong className="font-bold">Creator Tip:</strong> {selectedLocation.creatorTip}
-              </div>
-            </div>
-
-            {/* THREE DIRECTION & EXPLORATION OPTIONS */}
-            <div className="space-y-2 pt-1">
-              {/* Option 1: Start In-App Live Walking Navigation */}
-              <button
-                onClick={handleStartInAppNav}
-                className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold rounded-2xl text-[13.5px] shadow-md shadow-emerald-200 flex items-center justify-between cursor-pointer transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center">
-                    <Navigation className="w-4 h-4 fill-current rotate-45" />
-                  </div>
-                  <span>Start In-App Navigation</span>
-                </div>
-                <div className="flex items-center gap-1 text-[11px] bg-white/20 px-2 py-0.5 rounded-full">
-                  <span>{selectedLocation.walkTime}</span>
-                </div>
-              </button>
-
-              {/* Option 2: Get Direction in Google Maps */}
-              <button
-                onClick={handleOpenGoogleMaps}
-                className="w-full py-3 px-4 bg-white border border-[#e2e7f5] hover:border-emerald-300 hover:bg-emerald-50/40 active:scale-[0.99] text-[#0f1738] font-bold rounded-2xl text-[13.5px] shadow-xs flex items-center justify-between cursor-pointer transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </div>
-                  <span>Get Direction in Google Maps</span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-400" />
-              </button>
-
-              {/* Option 3: Explore Inside Highlights & Audio */}
-              <button
-                onClick={handleExploreInsideMap}
-                className="w-full py-3 px-4 bg-[#544ee5] hover:bg-[#4842db] active:scale-[0.99] text-white font-bold rounded-2xl text-[13.5px] shadow-md shadow-indigo-200 flex items-center justify-between cursor-pointer transition-all"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center">
-                    <MapIcon className="w-3.5 h-3.5" />
-                  </div>
-                  <span>Explore Inside Highlights &amp; Audio</span>
-                </div>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* 🏛️ INSIDE MAP HIGHLIGHTS DRAWER                          */}
+      {/* 🏛️ PLACE DETAILS & GOOGLE MAPS REDIRECTION DRAWER         */}
       {/* ========================================================= */}
       {showInsideModal && selectedLocation && (
         <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end justify-center p-3 animate-in fade-in duration-200">
@@ -1446,7 +1172,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               <div className="flex items-center gap-2">
                 <span className="text-base">{selectedLocation.icon}</span>
                 <h3 className="font-black text-[16px] text-[#0f1738]">
-                  Inside {selectedLocation.name}
+                  {selectedLocation.name}
                 </h3>
               </div>
               <button
@@ -1458,7 +1184,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
             </div>
 
             {/* Cover Hero Photo */}
-            <div className="relative w-full h-32 rounded-2xl overflow-hidden shadow-inner border border-black/5">
+            <div className="relative w-full h-36 rounded-2xl overflow-hidden shadow-inner border border-black/5">
               <img
                 src={selectedLocation.img}
                 alt={selectedLocation.name}
@@ -1467,6 +1193,30 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs text-white text-[10.5px] font-bold flex items-center gap-1.5">
                 <MapPin className="w-3 h-3 text-red-400" />
                 <span>{selectedLocation.address}</span>
+              </div>
+            </div>
+
+            {/* Location Description & Rating */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-amber-500 font-black text-xs">★ {selectedLocation.rating}</span>
+                  <span className="text-slate-400 text-xs font-semibold">({selectedLocation.reviewsCount || '320'} reviews)</span>
+                </div>
+                <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[10.5px] font-bold">
+                  {selectedLocation.hours}
+                </span>
+              </div>
+              <p className="text-[11.5px] text-[#556080] leading-relaxed pt-0.5">
+                {selectedLocation.description}
+              </p>
+            </div>
+
+            {/* Creator Tip */}
+            <div className="p-2.5 rounded-2xl bg-[#f5f3ff] border border-indigo-100 flex items-start gap-2">
+              <Sparkles className="w-4 h-4 text-[#544ee5] shrink-0 mt-0.5" />
+              <div className="text-[11px] text-[#4b43c6] leading-tight">
+                <strong className="font-bold">Creator Tip:</strong> {selectedLocation.creatorTip}
               </div>
             </div>
 
@@ -1488,7 +1238,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               </div>
             </div>
 
-            {/* Audio Tip Bar */}
+            {/* Audio Story Bar */}
             <div className="p-3 rounded-2xl bg-indigo-50/90 border border-indigo-100 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full bg-[#544ee5] text-white flex items-center justify-center shadow-sm shrink-0">
@@ -1496,18 +1246,18 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 </div>
                 <div>
                   <div className="text-[12px] font-extrabold text-[#0f1738]">
-                    Audio Guide &bull; {selectedLocation.name}
+                    Audio Story Guide
                   </div>
                   <div className="text-[10px] text-[#717ea1] flex items-center gap-1.5 mt-0.5">
                     <span>{selectedLocation.walkTime}</span>
                     <span>&bull;</span>
-                    <span className="text-emerald-600 font-bold">Curated Story Active</span>
+                    <span className="text-emerald-600 font-bold">Narration Ready</span>
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => {
-                  showToast(`🎧 Playing narrated audio guide for ${selectedLocation.name}`);
+                  showToast(`🎧 Playing audio narration for ${selectedLocation.name}`);
                 }}
                 className="px-3.5 py-1.5 bg-[#544ee5] text-white font-bold text-[11.5px] rounded-xl shadow-xs hover:bg-[#4842db] active:scale-95 cursor-pointer transition-all shrink-0"
               >
@@ -1515,14 +1265,15 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               </button>
             </div>
 
-            {/* Bottom Actions */}
+            {/* Primary Get Direction Action Button */}
             <div className="flex gap-2 pt-1">
               <button
-                onClick={handleOpenGoogleMaps}
-                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-[12.5px] shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                onClick={() => handleOpenGoogleMaps(selectedLocation)}
+                className="flex-1 py-3.5 bg-gradient-to-r from-[#544ee5] to-[#6366f1] hover:from-[#4842db] hover:to-[#544ee5] text-white font-bold rounded-2xl text-[13.5px] shadow-lg shadow-indigo-300/40 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]"
               >
-                <Navigation className="w-3.5 h-3.5 fill-current rotate-45" />
-                <span>Navigate in Google Maps</span>
+                <Navigation className="w-4 h-4 fill-current rotate-45" />
+                <span>Get Direction in Google Maps</span>
+                <ExternalLink className="w-3.5 h-3.5 opacity-80" />
               </button>
 
               <button
