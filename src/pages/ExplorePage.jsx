@@ -102,21 +102,21 @@ const FEATURED_MAPS = [
     isBookmarked: false,
   },
   {
-    id: 'nyc-trending',
-    title: 'NYC Best Spots & Food',
-    subtitle: 'Iconic landmarks and rooftop gems.',
-    badge: 'Trending',
-    badgeBg: 'bg-[#1b254b] text-white',
-    thumbnail: '/map-card-nyc-hq.jpg',
+    id: 'tokyo-gems',
+    title: 'Tokyo Hidden Gems',
+    subtitle: 'Off the beaten path, real local spots.',
+    badge: "Editor's Pick",
+    badgeBg: 'bg-[#6b62f6] text-white',
+    thumbnail: '/map-card-tokyo-hq.png',
     hasEmbeddedBadge: true,
-    places: '8 places',
-    duration: '2–3 days',
+    places: '6 places',
+    duration: '1–2 days',
     creatorHandle: 'sarahmaps',
     creatorAvatar: '/c6-traveler-maya.png',
     rating: 4.9,
-    reviewsCount: '412',
-    price: '$12.50',
-    category: 'food',
+    reviewsCount: '267',
+    price: '$8.99',
+    category: 'culture',
     isBookmarked: false,
   },
 ];
@@ -453,19 +453,19 @@ export default function ExplorePage({ onBack, onNavigate }) {
             </button>
           </div>
 
-          {/* Horizontal Scrollable Featured Cards List */}
-          <div className="flex gap-3.5 overflow-x-auto scrollbar-none pb-2 pt-0.5 -mx-1 px-1">
+          {/* 3-Column Featured Cards Grid (Matching Reference Screenshot) */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-2.5 pt-0.5">
             {filteredFeatured.map((card) => (
               <div
                 key={card.id}
-                className="w-[245px] sm:w-[260px] shrink-0 bg-white rounded-[24px] border border-[#e8ecf8] shadow-[0_4px_16px_rgba(50,70,140,0.06)] overflow-hidden flex flex-col justify-between hover:shadow-lg transition-all"
+                className="w-full bg-white rounded-[18px] sm:rounded-[22px] border border-[#e8ecf8] shadow-[0_3px_12px_rgba(50,70,140,0.06)] overflow-hidden flex flex-col justify-between hover:shadow-md transition-all"
               >
-                {/* Top Thumbnail with Badge */}
+                {/* Top Thumbnail with Embedded Badge & Heart */}
                 <div
                   onClick={() => {
                     if (onNavigate) onNavigate('map-detail');
                   }}
-                  className="relative w-full h-[125px] overflow-hidden cursor-pointer bg-slate-100"
+                  className="relative w-full aspect-[16/11] overflow-hidden cursor-pointer bg-slate-100 rounded-t-[18px] sm:rounded-t-[22px]"
                 >
                   <img
                     src={card.thumbnail}
@@ -475,7 +475,7 @@ export default function ExplorePage({ onBack, onNavigate }) {
                   {/* Badge if not already embedded in artwork */}
                   {!card.hasEmbeddedBadge && (
                     <span
-                      className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[10.5px] font-bold shadow-xs ${card.badgeBg}`}
+                      className={`absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-full text-[8.5px] font-bold shadow-xs ${card.badgeBg}`}
                     >
                       {card.badge}
                     </span>
@@ -487,41 +487,41 @@ export default function ExplorePage({ onBack, onNavigate }) {
                       e.stopPropagation();
                       toggleBookmark(card.id);
                     }}
-                    className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer z-10 ${
+                    className={`absolute top-1.5 right-1.5 w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center transition-all cursor-pointer z-10 ${
                       card.isBookmarked ? 'bg-white shadow-xs' : 'bg-transparent'
                     }`}
                     title="Bookmark"
                   >
                     {card.isBookmarked && (
-                      <Heart className="w-4 h-4 fill-[#ff4a73] text-[#ff4a73] scale-110" />
+                      <Heart className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-[#ff4a73] text-[#ff4a73] scale-110" />
                     )}
                   </button>
                 </div>
 
                 {/* Card Body */}
-                <div className="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
+                <div className="p-2 sm:p-2.5 space-y-1.5 flex-1 flex flex-col justify-between">
                   <div>
                     <h3
                       onClick={() => {
                         if (onNavigate) onNavigate('map-detail');
                       }}
-                      className="text-[15px] font-extrabold text-[#0f1738] leading-snug tracking-tight truncate cursor-pointer hover:text-[#544ee5] transition-colors"
+                      className="text-[10.5px] sm:text-[12px] font-black text-[#0f1738] leading-tight line-clamp-2 min-h-[26px] sm:min-h-[30px] cursor-pointer hover:text-[#544ee5] transition-colors"
                     >
                       {card.title}
                     </h3>
-                    <p className="text-[11.5px] text-[#717ea1] leading-tight mt-0.5 truncate font-medium">
+                    <p className="text-[8px] sm:text-[9.5px] text-[#717ea1] leading-tight line-clamp-2 min-h-[20px] sm:min-h-[24px] font-medium mt-0.5">
                       {card.subtitle}
                     </p>
 
                     {/* Stats */}
-                    <div className="flex items-center gap-2 text-[11px] text-[#717ea1] font-semibold mt-1.5">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-[#717ea1]" />
+                    <div className="flex items-center gap-1 text-[7.5px] sm:text-[9px] text-[#717ea1] font-semibold mt-1">
+                      <span className="flex items-center gap-0.5 shrink-0">
+                        <MapPin className="w-2.5 h-2.5 text-[#717ea1]" />
                         {card.places}
                       </span>
                       <span>&bull;</span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-[#717ea1]" />
+                      <span className="flex items-center gap-0.5 shrink-0">
+                        <Clock className="w-2.5 h-2.5 text-[#717ea1]" />
                         {card.duration}
                       </span>
                     </div>
@@ -531,14 +531,14 @@ export default function ExplorePage({ onBack, onNavigate }) {
                       onClick={() => {
                         if (onNavigate) onNavigate('creator-profile');
                       }}
-                      className="flex items-center gap-1.5 mt-2 cursor-pointer hover:opacity-85"
+                      className="flex items-center gap-1 mt-1 cursor-pointer hover:opacity-85"
                     >
                       <img
                         src={card.creatorAvatar}
                         alt={card.creatorHandle}
-                        className="w-5 h-5 rounded-full object-cover ring-1 ring-slate-100"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full object-cover ring-1 ring-slate-100 shrink-0"
                       />
-                      <span className="text-[11.5px] font-semibold text-[#556080]">
+                      <span className="text-[8px] sm:text-[9.5px] font-semibold text-[#556080] truncate">
                         {card.creatorHandle}
                       </span>
                     </div>
@@ -546,34 +546,34 @@ export default function ExplorePage({ onBack, onNavigate }) {
 
                   {/* Bottom Rating & Price */}
                   <div>
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-                      <div className="flex items-center gap-1 text-[11.5px] font-bold text-amber-500">
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 mt-0.5">
+                      <div className="flex items-center gap-0.5 text-[8.5px] sm:text-[10px] font-bold text-amber-500">
                         <span>★ {card.rating}</span>
-                        <span className="text-slate-400 font-normal">({card.reviewsCount})</span>
+                        <span className="text-slate-400 font-normal text-[7.5px] sm:text-[8.5px]">({card.reviewsCount})</span>
                       </div>
-                      <span className="text-[14.5px] font-black text-[#0f1738]">
+                      <span className="text-[10.5px] sm:text-[12.5px] font-black text-[#0f1738]">
                         {card.price}
                       </span>
                     </div>
 
                     {/* Action Buttons: View Map + Bookmark */}
-                    <div className="flex items-center gap-2 pt-2">
+                    <div className="flex items-center gap-1 sm:gap-1.5 pt-1">
                       <button
                         onClick={() => {
                           showToast(`Opening ${card.title} map details...`);
                           if (onNavigate) onNavigate('map-detail');
                         }}
-                        className="flex-1 py-2 rounded-xl bg-[#f0efff] hover:bg-[#544ee5] text-[#544ee5] hover:text-white font-bold text-[12px] transition-all cursor-pointer text-center"
+                        className="flex-1 py-1.5 px-1 rounded-lg sm:rounded-xl bg-[#eeedff] hover:bg-[#544ee5] text-[#544ee5] hover:text-white font-bold text-[8.5px] sm:text-[10.5px] transition-all cursor-pointer text-center truncate"
                       >
                         View Map
                       </button>
                       <button
                         onClick={() => toggleBookmark(card.id)}
-                        className="w-8 h-8 rounded-xl border border-slate-100 flex items-center justify-center text-[#717ea1] hover:text-[#544ee5] hover:bg-slate-50 transition-all cursor-pointer shrink-0"
+                        className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg sm:rounded-xl border border-slate-100 flex items-center justify-center text-[#717ea1] hover:text-[#544ee5] hover:bg-slate-50 transition-all cursor-pointer shrink-0"
                         title="Bookmark map"
                       >
                         <Bookmark
-                          className={`w-4 h-4 ${
+                          className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${
                             card.isBookmarked ? 'fill-[#544ee5] text-[#544ee5]' : ''
                           }`}
                         />
