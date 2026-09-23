@@ -430,7 +430,7 @@ export default function ExplorePage({ onBack, onNavigate }) {
             </h2>
             <button
               onClick={() => {
-                if (onNavigate) onNavigate('search');
+                if (onNavigate) onNavigate('featured-maps');
                 else showToast('Viewing all featured maps');
               }}
               className="text-[#544ee5] hover:text-[#4139cf] font-bold text-[13px] tracking-tight cursor-pointer"

@@ -14,6 +14,7 @@ import UserProfilePage from './pages/UserProfilePage';
 import SearchPage from './pages/SearchPage';
 import NotificationsPage from './pages/NotificationsPage';
 import CreateMapPage from './pages/CreateMapPage';
+import FeaturedMapsPage from './pages/FeaturedMapsPage';
 import { Smartphone, Monitor } from 'lucide-react';
 
 export default function App() {
@@ -86,6 +87,16 @@ export default function App() {
             }`}
           >
             P6: Explore (c6)
+          </button>
+          <button
+            onClick={() => setCurrentPage('featured-maps')}
+            className={`px-2 py-1 rounded-full font-semibold transition-all shrink-0 ${
+              currentPage === 'featured-maps'
+                ? 'bg-[#544ee5] text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Featured Maps
           </button>
           <button
             onClick={() => setCurrentPage('map-detail')}
@@ -257,6 +268,14 @@ export default function App() {
         {currentPage === 'explore' && (
           <ExplorePage
             onBack={() => setCurrentPage('goals')}
+            onNavigate={(page) => setCurrentPage(page)}
+          />
+        )}
+
+        {/* Featured Maps - All Curated Locations Grid View (c6 View All) */}
+        {currentPage === 'featured-maps' && (
+          <FeaturedMapsPage
+            onBack={() => setCurrentPage('explore')}
             onNavigate={(page) => setCurrentPage(page)}
           />
         )}
