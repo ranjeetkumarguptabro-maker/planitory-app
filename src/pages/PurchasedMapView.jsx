@@ -8,13 +8,7 @@ import {
   X,
   Check,
   Star,
-  CheckCircle2,
-  Coffee,
-  Landmark,
-  Trees,
-  UtensilsCrossed,
-  Bed,
-  Camera
+  CheckCircle2
 } from 'lucide-react';
 
 // Custom Map Pins matching c26.png coordinates
@@ -31,7 +25,6 @@ export const MY_MAP_PINS = [
     x: 68.8,
     y: 24.2,
     color: '#854d0e',
-    icon: 'coffee',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Cafe+de+Flore+Paris',
   },
   {
@@ -46,7 +39,6 @@ export const MY_MAP_PINS = [
     x: 70.8,
     y: 35.8,
     color: '#dc2626',
-    icon: 'food',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Le+Comptoir+du+Relais+Paris',
   },
   {
@@ -61,7 +53,6 @@ export const MY_MAP_PINS = [
     x: 79.8,
     y: 54.5,
     color: '#ca8a04',
-    icon: 'camera',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Pont+des+Arts+Paris',
   },
   {
@@ -76,7 +67,6 @@ export const MY_MAP_PINS = [
     x: 33.8,
     y: 19.1,
     color: '#15803d',
-    icon: 'park',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Jardin+du+Luxembourg+Paris',
   },
   {
@@ -91,7 +81,6 @@ export const MY_MAP_PINS = [
     x: 26.8,
     y: 34.5,
     color: '#7e22ce',
-    icon: 'museum',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Musee+dOrsay+Paris',
   },
   {
@@ -106,7 +95,6 @@ export const MY_MAP_PINS = [
     x: 27.8,
     y: 52.8,
     color: '#3b82f6',
-    icon: 'hotel',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Hotel+Lutetia+Paris',
   },
 ];
@@ -239,9 +227,9 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
     MAP_STYLES.find((s) => s.id === selectedMapStyle) || MAP_STYLES[0];
 
   return (
-    <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#e8f1f5] sm:rounded-[44px] flex flex-col justify-between select-none">
+    <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#e8f1f5] sm:rounded-[44px] select-none">
       {/* ========================================================= */}
-      {/* 1. FULL-SCREEN INTERACTIVE MAP CANVAS (c26.png)           */}
+      {/* 1. FULL-SCREEN MAP CANVAS MATCHING c26.png                */}
       {/* ========================================================= */}
       <div
         ref={mapContainerRef}
@@ -265,7 +253,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           }}
           className="relative w-full h-full transition-all duration-300"
         >
-          {/* Base Vector Paris Map Canvas matching c26.png */}
+          {/* Paris Map Vector Graphic matching c26.png */}
           <img
             src="/c26-my-map.png"
             alt="My Map Vector Paris"
@@ -273,7 +261,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
             draggable={false}
           />
 
-          {/* Interactive Tap Hitboxes & Selection Rings over the 6 Pins */}
+          {/* Interactive Tap Hitboxes over the 6 Map Pins in c26 */}
           {MY_MAP_PINS.map((pin) => {
             const isSelected = selectedLocation?.id === pin.id;
 
@@ -291,22 +279,18 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
                   transformOrigin: 'center center',
                 }}
-                className="absolute z-20 w-11 h-11 -ml-1 -mt-1 rounded-full cursor-pointer flex items-center justify-center group"
+                className="absolute z-20 w-12 h-12 -ml-0.5 -mt-0.5 rounded-full cursor-pointer flex items-center justify-center"
                 title={pin.name}
               >
-                {/* Active Selection Glow Ring */}
+                {/* Subtle Active Highlight Glow */}
                 {isSelected && (
-                  <div
-                    className="w-12 h-12 rounded-full ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white shadow-xl animate-in zoom-in-75 duration-150 flex items-center justify-center bg-indigo-500/10"
-                  >
-                    <div className="w-4 h-4 rounded-full animate-ping bg-[#544ee5]/40" />
-                  </div>
+                  <div className="w-12 h-12 rounded-full ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white shadow-xl animate-in zoom-in-75 duration-150 flex items-center justify-center bg-indigo-500/10 pointer-events-none" />
                 )}
               </div>
             );
           })}
 
-          {/* Seine River GPS Beacon Hitbox */}
+          {/* GPS Beacon Tap Hitbox */}
           <div
             onClick={handleLocateUser}
             style={{
@@ -315,123 +299,78 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
               transformOrigin: 'center center',
             }}
-            className="absolute z-20 w-16 h-16 rounded-full cursor-pointer flex items-center justify-center"
-            title="Your Live GPS Beacon"
-          >
-            <div className="w-6 h-6 rounded-full bg-blue-500/20 animate-pulse pointer-events-none" />
-          </div>
+            className="absolute z-20 w-16 h-16 rounded-full cursor-pointer"
+            title="GPS User Location"
+          />
         </div>
       </div>
 
       {/* ========================================================= */}
-      {/* 2. TOP CONTROLS: BACK BUTTON (TOP-LEFT) & ACTION STACK (TOP-RIGHT) */}
+      {/* 2. TOP-LEFT BACK BUTTON (ONLY BACK BUTTON, NO DUPLICATES) */}
       {/* ========================================================= */}
-      <div className="relative z-30 pt-4 px-4 flex items-start justify-between pointer-events-none">
-        {/* Top-Left Back Button (Redirects to Home / Explore) */}
+      <div className="absolute top-4 left-4 z-40">
         <button
           onClick={() => onBack && onBack()}
-          className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.12)] border border-white flex items-center justify-center text-[#0f1738] hover:bg-white active:scale-90 transition-all cursor-pointer pointer-events-auto"
+          className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.14)] border border-white flex items-center justify-center text-[#0f1738] hover:bg-white active:scale-90 transition-all cursor-pointer"
           title="Back to Home"
         >
           <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
         </button>
-
-        {/* Top-Right Control Stack matching c26.png */}
-        <div className="flex flex-col gap-2.5 pointer-events-auto">
-          {/* Layers Button */}
-          <button
-            onClick={() => showToast('Toggle map layers')}
-            className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.12)] border border-white flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
-            title="Map Layers"
-          >
-            <Layers className="w-4.5 h-4.5 stroke-[2.2]" />
-          </button>
-
-          {/* GPS Location Target Button */}
-          <button
-            onClick={handleLocateUser}
-            className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.12)] border border-white flex items-center justify-center text-[#0f1738] hover:text-[#2563eb] active:scale-90 transition-all cursor-pointer"
-            title="My Location"
-          >
-            <Crosshair className="w-4.5 h-4.5 stroke-[2.2]" />
-          </button>
-
-          {/* Map Customization Button (Vibrant Purple Circle matching c26.png) */}
-          <button
-            onClick={() => {
-              setCustomizationStep(1);
-              setShowCustomizeModal(true);
-            }}
-            className="w-10 h-10 rounded-full bg-[#544ee5] text-white shadow-[0_6px_20px_rgba(84,78,229,0.4)] flex items-center justify-center hover:bg-[#4338ca] active:scale-90 transition-all cursor-pointer ring-2 ring-white/60"
-            title="Customize Map Styles & Colors"
-          >
-            <SlidersHorizontal className="w-4.5 h-4.5 stroke-[2.5]" />
-          </button>
-        </div>
       </div>
 
       {/* ========================================================= */}
-      {/* 3. BOTTOM CONTROLS: COMPASS & LOCATION CARD (NO BOTTOM NAV) */}
+      {/* 3. INVISIBLE INTERACTIVE HITBOXES OVER c26 BUTTONS        */}
       {/* ========================================================= */}
-      <div className="relative z-30 px-3 pb-4 pt-1 pointer-events-none space-y-2.5">
-        {/* Bottom-Right Floating Navigation Compass Button (matching c26.png) */}
-        <div className="flex justify-end pr-1">
-          <button
-            onClick={() => handleDirections(selectedLocation)}
-            className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-[0_6px_20px_rgba(0,0,0,0.14)] border border-white flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer pointer-events-auto"
-            title="Compass Navigation"
-          >
-            <Navigation className="w-5 h-5 stroke-[2.2] fill-current rotate-45 text-[#0f1738]" />
-          </button>
-        </div>
+      {/* Top-Right Button Hitbox 1: Layers */}
+      <div
+        onClick={() => showToast('Toggle map layers')}
+        style={{ top: '7.4%', right: '3.6%' }}
+        className="absolute z-30 w-12 h-12 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+        title="Map Layers"
+      />
 
-        {/* Floating Location Detail Card matching c26.png */}
-        {selectedLocation && (
-          <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-[26px] p-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-white/90 animate-in slide-in-from-bottom-2 duration-200">
-            {/* Pull Handle */}
-            <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-2.5" />
+      {/* Top-Right Button Hitbox 2: GPS Recenter */}
+      <div
+        onClick={handleLocateUser}
+        style={{ top: '14.2%', right: '3.6%' }}
+        className="absolute z-30 w-12 h-12 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+        title="My Location"
+      />
 
-            <div className="flex items-center justify-between gap-3">
-              {/* Left Photo */}
-              <img
-                src={selectedLocation.img}
-                alt={selectedLocation.name}
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover shrink-0 shadow-2xs border border-black/5"
-              />
+      {/* Top-Right Button Hitbox 3: Purple Customization Button -> Opens c27 Modal */}
+      <div
+        onClick={() => {
+          setCustomizationStep(1);
+          setShowCustomizeModal(true);
+        }}
+        style={{ top: '21.0%', right: '3.6%' }}
+        className="absolute z-30 w-12 h-12 rounded-full cursor-pointer hover:bg-white/10 active:scale-90 transition-all"
+        title="Customize Map Styles & Colors"
+      />
 
-              {/* Middle Information */}
-              <div
-                onClick={() => onNavigate && onNavigate('map-detail')}
-                className="flex-1 min-w-0 cursor-pointer"
-              >
-                <h3 className="font-extrabold text-[15px] sm:text-[16px] text-[#0f1738] leading-tight truncate hover:text-[#544ee5] transition-colors">
-                  {selectedLocation.name}
-                </h3>
-                <div className="flex items-center gap-1 text-[11.5px] font-bold text-[#0f1738] mt-0.5">
-                  <span>{selectedLocation.rating}</span>
-                  <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500 inline" />
-                  <span className="text-slate-400 font-semibold text-[11px]">
-                    ({selectedLocation.reviews})
-                  </span>
-                </div>
-                <p className="text-[10.5px] text-[#717ea1] font-semibold truncate mt-0.5">
-                  {selectedLocation.category}
-                </p>
-              </div>
+      {/* Bottom-Right Compass Hitbox */}
+      <div
+        onClick={() => handleDirections(selectedLocation)}
+        style={{ bottom: '18.5%', right: '3.6%' }}
+        className="absolute z-30 w-14 h-14 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+        title="Compass Navigation"
+      />
 
-              {/* Right Direct Directions Purple Button (matching c26.png) */}
-              <button
-                onClick={() => handleDirections(selectedLocation)}
-                className="px-4 py-2.5 rounded-2xl bg-[#544ee5] hover:bg-[#4338ca] active:scale-95 text-white font-bold text-[12.5px] flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-indigo-300/40 shrink-0"
-                title="Directions"
-              >
-                <Navigation className="w-3.5 h-3.5 fill-current rotate-45" />
-                <span>Directions</span>
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Bottom Location Card Directions Hitbox */}
+      <div
+        onClick={() => handleDirections(selectedLocation)}
+        style={{ bottom: '3.8%', right: '4.8%', width: '33%', height: '5.2%' }}
+        className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/10 active:scale-95 transition-all"
+        title="Get Directions in Google Maps"
+      />
+
+      {/* Bottom Location Card Detail Tap Hitbox */}
+      <div
+        onClick={() => onNavigate && onNavigate('map-detail')}
+        style={{ bottom: '3.2%', left: '4.5%', width: '58%', height: '6.5%' }}
+        className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5"
+        title="View Place Details"
+      />
 
       {/* ========================================================= */}
       {/* 4. CUSTOMIZE MAP BOTTOM SHEET MODAL (c27.png)             */}
