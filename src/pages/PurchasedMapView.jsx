@@ -396,11 +396,16 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   }, [isNavigating, selectedLocation]);
 
   // Zoom & Pan Engine State
-  const [zoomLevel, setZoomLevel] = useState(1); // 1x to 2.5x
+  const [zoomLevel, setZoomLevel] = useState(1); // 1x to 3.5x
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const mapContainerRef = useRef(null);
+
+  // Multi-Touch Pinch and Double Tap tracking
+  const pinchDistRef = useRef(null);
+  const pinchZoomStartRef = useRef(1);
+  const lastTapRef = useRef(0);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -409,28 +414,31 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   // Zoom In / Out Handlers
   const handleZoomIn = () => {
-    setZoomLevel((prev) => Math.min(2.5, Number((prev + 0.35).toFixed(2))));
-    showToast(`Zoom: ${Math.round(Math.min(2.5, zoomLevel + 0.35) * 100)}%`);
+    setZoomLevel((prev) => {
+      const next = Math.min(3.5, Number((prev + 0.35).toFixed(2)));
+      showToast(`🔍 Zoom: ${Math.round(next * 100)}%`);
+      return next;
+    });
   };
 
   const handleZoomOut = () => {
     setZoomLevel((prev) => {
       const next = Math.max(1, Number((prev - 0.35).toFixed(2)));
       if (next === 1) setPanOffset({ x: 0, y: 0 });
+      showToast(`🔍 Zoom: ${Math.round(next * 100)}%`);
       return next;
     });
-    showToast(`Zoom: ${Math.round(Math.max(1, zoomLevel - 0.35) * 100)}%`);
   };
 
   const handleResetView = () => {
     setZoomLevel(1);
     setPanOffset({ x: 0, y: 0 });
     setIsNavigating(false);
-    showToast("🧭 North oriented & map centered");
+    showToast("🧭 Zoom reset & map centered");
   };
 
   const handleLocateMe = () => {
-    setZoomLevel(1.4);
+    setZoomLevel(1.5);
     setPanOffset({ x: 15, y: -10 });
     showToast("📍 GPS: Seine River / Saint-Germain");
   };
@@ -491,7 +499,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
     showToast(`🚀 Opening ${selectedLocation.name} in Google Maps...`);
   };
 
-  // Pan Gestures (Mouse & Touch)
+  // Pan Gestures (Mouse)
   const handleMouseDown = (e) => {
     setIsDragging(true);
     setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
@@ -499,7 +507,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    const maxBound = (zoomLevel - 1) * 200;
+    const maxBound = (zoomLevel - 1) * 220;
     const newX = Math.max(-maxBound, Math.min(maxBound, e.clientX - dragStart.x));
     const newY = Math.max(-maxBound, Math.min(maxBound, e.clientY - dragStart.y));
     setPanOffset({ x: newX, y: newY });
@@ -507,25 +515,71 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   const handleMouseUp = () => setIsDragging(false);
 
+  // Touch Gestures: Single touch Pan + Double Tap Zoom + 2-Finger Pinch to Zoom
+  const getTouchDist = (t1, t2) => {
+    return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+  };
+
   const handleTouchStart = (e) => {
     if (e.touches.length === 1) {
+      // Double tap detector
+      const now = Date.now();
+      if (now - lastTapRef.current < 320) {
+        setZoomLevel((prev) => {
+          const next = prev > 1.2 ? 1 : 1.8;
+          if (next === 1) setPanOffset({ x: 0, y: 0 });
+          showToast(next === 1 ? "Zoom: 100%" : "Zoom: 180%");
+          return next;
+        });
+      }
+      lastTapRef.current = now;
+
       setIsDragging(true);
       setDragStart({
         x: e.touches[0].clientX - panOffset.x,
         y: e.touches[0].clientY - panOffset.y,
       });
+      pinchDistRef.current = null;
+    } else if (e.touches.length === 2) {
+      setIsDragging(false);
+      pinchDistRef.current = getTouchDist(e.touches[0], e.touches[1]);
+      pinchZoomStartRef.current = zoomLevel;
     }
   };
 
   const handleTouchMove = (e) => {
-    if (!isDragging || e.touches.length !== 1) return;
-    const maxBound = (zoomLevel - 1) * 200;
-    const newX = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientX - dragStart.x));
-    const newY = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientY - dragStart.y));
-    setPanOffset({ x: newX, y: newY });
+    if (e.touches.length === 2 && pinchDistRef.current) {
+      // Pinch to Zoom
+      const dist = getTouchDist(e.touches[0], e.touches[1]);
+      const factor = dist / pinchDistRef.current;
+      const newZoom = Math.min(3.5, Math.max(1, Number((pinchZoomStartRef.current * factor).toFixed(2))));
+      setZoomLevel(newZoom);
+    } else if (e.touches.length === 1 && isDragging) {
+      // Pan
+      const maxBound = (zoomLevel - 1) * 220;
+      const newX = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientX - dragStart.x));
+      const newY = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientY - dragStart.y));
+      setPanOffset({ x: newX, y: newY });
+    }
   };
 
-  const handleTouchEnd = () => setIsDragging(false);
+  const handleTouchEnd = (e) => {
+    if (e.touches.length < 2) {
+      pinchDistRef.current = null;
+    }
+    if (e.touches.length === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  // Mouse Wheel Zoom
+  const handleWheel = (e) => {
+    if (e.deltaY < 0) {
+      handleZoomIn();
+    } else {
+      handleZoomOut();
+    }
+  };
 
   // Filter Locations
   const visibleLocations = TOP_PARIS_LOCATIONS.filter(
@@ -552,7 +606,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   };
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between select-none">
+    <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#fafbfe] sm:rounded-[44px] flex flex-col justify-between select-none">
       {/* ========================================================= */}
       {/* SCENARIO A: USER HAS NO PURCHASED MAPS (EMPTY STATE)     */}
       {/* ========================================================= */}
@@ -642,7 +696,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
       {/* SCENARIO B: REAL 3D ILLUSTRATED WORKING INTERACTIVE MAP   */}
       {/* ========================================================= */}
       {hasPurchased && (
-        <div className="flex-1 flex flex-col justify-between h-full overflow-hidden">
+        <div className="flex-1 flex flex-col justify-between h-full min-h-0 overflow-hidden">
           {/* ===================================================== */}
           {/* 1. TOP HEADER & CATEGORY FILTER ROW (MATCHING MOCKUP) */}
           {/* ===================================================== */}
@@ -816,7 +870,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           {/* ===================================================== */}
           {/* 2. 3D PARIS MAP CANVAS + INTERACTIVE OVERLAY CONTROLS */}
           {/* ===================================================== */}
-          <div className="flex-1 flex flex-col justify-between px-3 sm:px-4 relative overflow-hidden pb-1 min-h-[340px]">
+          <div className="flex-1 min-h-0 flex flex-col justify-between px-3 sm:px-4 relative overflow-hidden pb-1">
             {/* Real Interactive Map Canvas Card */}
             <div
               ref={mapContainerRef}
@@ -827,6 +881,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
+              onWheel={handleWheel}
               className={`relative w-full flex-1 rounded-[26px] overflow-hidden shadow-[0_8px_24px_rgba(50,70,140,0.08)] border border-[#e4e8f7] ${
                 isDragging ? 'cursor-grabbing' : 'cursor-grab'
               } touch-none bg-[#e8f1f5]`}
@@ -981,34 +1036,69 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 <span className="text-[12px] font-bold">Search this area</span>
               </div>
 
-              {/* Top Right: Vertical Control Stack (Layers, Compass, Locate) */}
-              <div className="absolute top-3 right-3 z-30 flex flex-col gap-2">
+              {/* Live Zoom Percentage Badge */}
+              {zoomLevel > 1 && (
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-black/75 backdrop-blur-xs text-white text-[11px] font-black shadow-md pointer-events-none animate-in fade-in duration-150 border border-white/20">
+                  {Math.round(zoomLevel * 100)}% Zoom
+                </div>
+              )}
+
+              {/* Top Right: Vertical Control Stack with Dedicated Zoom Buttons */}
+              <div className="absolute top-3 right-3 z-30 flex flex-col gap-1.5">
+                {/* Dedicated Zoom In (+) Button */}
+                <button
+                  onClick={handleZoomIn}
+                  className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
+                  title="Zoom In (+)"
+                  aria-label="Zoom In"
+                >
+                  <ZoomIn className="w-5 h-5 stroke-[2.4]" />
+                </button>
+
+                {/* Dedicated Zoom Out (-) Button */}
+                <button
+                  onClick={handleZoomOut}
+                  className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
+                  title="Zoom Out (-)"
+                  aria-label="Zoom Out"
+                >
+                  <ZoomOut className="w-5 h-5 stroke-[2.4]" />
+                </button>
+
+                {/* Reset Zoom Button */}
+                {(zoomLevel > 1 || panOffset.x !== 0 || panOffset.y !== 0) && (
+                  <button
+                    onClick={handleResetView}
+                    className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer animate-in fade-in"
+                    title="Reset Map View"
+                    aria-label="Reset Map View"
+                  >
+                    <RotateCcw className="w-4 h-4 stroke-[2.2]" />
+                  </button>
+                )}
+
+                {/* GPS Locate Button */}
+                <button
+                  onClick={handleLocateMe}
+                  className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#544ee5] hover:scale-105 active:scale-90 transition-all cursor-pointer"
+                  title="Locate my position"
+                  aria-label="Locate GPS Position"
+                >
+                  <Crosshair className="w-5 h-5 stroke-[2.4]" />
+                </button>
+
+                {/* Layers Mode Toggle */}
                 <button
                   onClick={() => {
                     const nextMode = mapMode === 'map' ? 'satellite' : mapMode === 'satellite' ? '3d' : 'map';
                     setMapMode(nextMode);
                     showToast(`View Mode: ${nextMode.toUpperCase()}`);
                   }}
-                  className="w-9 h-9 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-95 transition-all cursor-pointer"
+                  className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
                   title="Toggle Layers"
+                  aria-label="Toggle Layers"
                 >
-                  <Layers className="w-4.5 h-4.5 stroke-[2.2]" />
-                </button>
-
-                <button
-                  onClick={handleResetView}
-                  className="w-9 h-9 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-95 transition-all cursor-pointer"
-                  title="Orient Compass North"
-                >
-                  <Navigation className="w-4.5 h-4.5 text-[#0f1738] -rotate-45 stroke-[2.2]" />
-                </button>
-
-                <button
-                  onClick={handleLocateMe}
-                  className="w-9 h-9 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_2px_10px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-95 transition-all cursor-pointer"
-                  title="Locate my position"
-                >
-                  <Crosshair className="w-4.5 h-4.5 text-[#0f1738] stroke-[2.4]" />
+                  <Layers className="w-5 h-5 stroke-[2.2]" />
                 </button>
               </div>
 
@@ -1057,7 +1147,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
               {/* In-App Live Navigation Active Top Turn Banner */}
               {isNavigating && selectedLocation && (
-                <div className="absolute top-3 left-3 right-12 z-40 bg-[#0f1738]/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-2xl border border-emerald-500/40 flex items-center justify-between animate-in slide-in-from-top duration-200">
+                <div className="absolute top-3 left-3 right-14 z-40 bg-[#0f1738]/95 backdrop-blur-md text-white p-3 rounded-2xl shadow-2xl border border-emerald-500/40 flex items-center justify-between animate-in slide-in-from-top duration-200">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
                       <Navigation className="w-4 h-4 fill-current rotate-45" />
