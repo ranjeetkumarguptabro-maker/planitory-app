@@ -486,9 +486,9 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           {/* ===================================================== */}
           {/* 1. TOP HEADER & CATEGORY FILTER ROW (MATCHING MOCKUP) */}
           {/* ===================================================== */}
-          <div className="w-full pt-3 sm:pt-4 px-4 sm:px-5 z-30 shrink-0 bg-[#fafbfe]/95 backdrop-blur-md">
-            {/* iOS Status Bar */}
-            <div className="flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-1.5 px-1">
+          <div className="w-full pt-1.5 sm:pt-4 px-3.5 sm:px-5 z-30 shrink-0 bg-[#fafbfe]/95 backdrop-blur-md">
+            {/* iOS Status Bar (Desktop preview only) */}
+            <div className="hidden sm:flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-1.5 px-1">
               <span className="text-[13px] tracking-tight font-bold">9:41</span>
               <div className="flex items-center gap-1.5">
                 <div className="flex items-end gap-[1.5px] h-3">
@@ -507,7 +507,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
             </div>
 
             {/* Title Bar with Circular Action Buttons */}
-            <div className="flex items-center justify-between py-1">
+            <div className="flex items-center justify-between py-0.5 sm:py-1">
               {/* Circular Back Button */}
               <button
                 onClick={onBack}
@@ -626,7 +626,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           {/* ===================================================== */}
           {/* 2. 3D PARIS MAP CANVAS + INTERACTIVE OVERLAY CONTROLS */}
           {/* ===================================================== */}
-          <div className="flex-1 min-h-0 flex flex-col justify-between px-3 sm:px-4 relative overflow-hidden pb-1">
+          <div className="flex-1 min-h-[290px] sm:min-h-0 flex flex-col justify-between px-2.5 sm:px-4 relative overflow-hidden pb-1">
             {/* Real Interactive Map Canvas Card */}
             <div
               ref={mapContainerRef}
@@ -638,7 +638,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onWheel={handleWheel}
-              className={`relative w-full flex-1 rounded-[26px] overflow-hidden shadow-[0_8px_24px_rgba(50,70,140,0.08)] border border-[#e4e8f7] ${
+              className={`relative w-full h-full flex-1 rounded-[22px] sm:rounded-[26px] overflow-hidden shadow-[0_8px_24px_rgba(50,70,140,0.08)] border border-[#e4e8f7] ${
                 isDragging ? 'cursor-grabbing' : 'cursor-grab'
               } touch-none bg-[#e8f1f5]`}
             >
@@ -923,17 +923,17 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
             {/* ===================================================== */}
             {/* 3. BOTTOM SHEET DRAWER (COMPACT & UNCOMPRESSED)       */}
             {/* ===================================================== */}
-            <div className="w-full bg-white rounded-t-[26px] p-3 sm:p-4 shadow-[0_-4px_24px_rgba(50,70,140,0.06)] border border-[#e8ecf8] space-y-2.5 mt-1.5 shrink-0">
+            <div className="w-full bg-white rounded-t-[22px] sm:rounded-t-[26px] p-2.5 sm:p-3.5 shadow-[0_-4px_24px_rgba(50,70,140,0.06)] border border-[#e8ecf8] space-y-2 mt-1 shrink-0">
               {/* Top Drag Handle Pill */}
-              <div className="w-9 h-1 rounded-full bg-slate-200 mx-auto -mt-0.5 mb-1" />
+              <div className="w-8 h-1 rounded-full bg-slate-200 mx-auto -mt-0.5 mb-0.5" />
 
               {/* Selected Location Card with Direct Google Maps Redirection */}
               {selectedLocation && (
-                <div className="flex items-center justify-between gap-2.5 p-0.5">
+                <div className="flex items-center justify-between gap-2 p-0">
                   <img
                     src={selectedLocation.img}
                     alt={selectedLocation.name}
-                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover shrink-0 shadow-sm border border-black/5 cursor-pointer hover:opacity-90 transition-opacity"
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl object-cover shrink-0 shadow-sm border border-black/5 cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={() => handleOpenGoogleMaps(selectedLocation)}
                   />
 
@@ -941,14 +941,14 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                     className="flex-1 min-w-0 pr-1 cursor-pointer"
                     onClick={() => handleOpenGoogleMaps(selectedLocation)}
                   >
-                    <h3 className="font-bold font-serif text-[15.5px] sm:text-[17px] text-[#0f1738] leading-tight truncate hover:text-[#544ee5] transition-colors">
+                    <h3 className="font-bold font-serif text-[14px] sm:text-[16px] text-[#0f1738] leading-tight truncate hover:text-[#544ee5] transition-colors">
                       {selectedLocation.name}
                     </h3>
-                    <p className="text-[11px] text-[#717ea1] truncate mt-0.5 font-medium">
+                    <p className="text-[10px] sm:text-[11px] text-[#717ea1] truncate mt-0.5 font-medium">
                       {selectedLocation.shortDesc || selectedLocation.description}
                     </p>
 
-                    <div className="flex items-center gap-2 text-[10.5px] text-[#717ea1] font-semibold mt-1 flex-wrap">
+                    <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10.5px] text-[#717ea1] font-semibold mt-0.5 flex-wrap">
                       <span className="text-amber-500 font-bold flex items-center gap-0.5">
                         ★ {selectedLocation.rating}{' '}
                         <span className="text-slate-400 font-normal">
@@ -957,7 +957,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                       </span>
                       <span>&bull;</span>
                       <span className="flex items-center gap-0.5 text-slate-600">
-                        <MapPin className="w-3 h-3 text-[#544ee5]" />
+                        <MapPin className="w-2.5 h-2.5 text-[#544ee5]" />
                         {selectedLocation.area || 'Saint-Germain'}
                       </span>
                     </div>
@@ -966,17 +966,17 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   {/* Direct "Get Direction" Button redirecting to Google Maps */}
                   <button
                     onClick={() => handleOpenGoogleMaps(selectedLocation)}
-                    className="px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-2xl bg-[#4f46e5] hover:bg-[#4338ca] active:scale-95 text-white font-bold text-[11.5px] sm:text-[12px] flex items-center gap-1.5 shrink-0 transition-all cursor-pointer shadow-md shadow-indigo-300/40"
+                    className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl bg-[#4f46e5] hover:bg-[#4338ca] active:scale-95 text-white font-bold text-[10.5px] sm:text-[11.5px] flex items-center gap-1 shrink-0 transition-all cursor-pointer shadow-md shadow-indigo-300/40"
                     title="Open in Google Maps"
                   >
-                    <Navigation className="w-3.5 h-3.5 fill-current rotate-45" />
+                    <Navigation className="w-3 h-3 fill-current rotate-45" />
                     <span>Get Direction</span>
                   </button>
                 </div>
               )}
 
               {/* 3 Interactive Category Stat Summary Cards */}
-              <div className="grid grid-cols-3 gap-2 pt-0.5">
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-0.5">
                 {/* 1 Museum */}
                 <button
                   onClick={() => {
@@ -984,15 +984,15 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                     const louvre = TOP_PARIS_LOCATIONS.find((l) => l.id === 'louvre');
                     if (louvre) handleSelectLocation(louvre);
                   }}
-                  className={`py-2 px-1 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                  className={`py-1.5 sm:py-2 px-1 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                     activeCategory === 'museum'
                       ? 'bg-indigo-100/80 border-2 border-indigo-600 shadow-xs'
                       : 'bg-[#f5f4ff] border border-indigo-100/60 hover:bg-indigo-50/80'
                   }`}
                 >
-                  <Landmark className="w-4 h-4 text-purple-600 mb-0.5" />
-                  <span className="text-[14px] font-black text-[#0f1738] leading-none">1</span>
-                  <span className="text-[10px] font-semibold text-[#717ea1]">Museum</span>
+                  <Landmark className="w-3.5 h-3.5 text-purple-600 mb-0.5" />
+                  <span className="text-[12.5px] sm:text-[14px] font-black text-[#0f1738] leading-none">1</span>
+                  <span className="text-[9px] sm:text-[10px] font-semibold text-[#717ea1]">Museum</span>
                 </button>
 
                 {/* 1 Café */}
@@ -1002,15 +1002,15 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                     const flore = TOP_PARIS_LOCATIONS.find((l) => l.id === 'flore');
                     if (flore) handleSelectLocation(flore);
                   }}
-                  className={`py-2 px-1 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                  className={`py-1.5 sm:py-2 px-1 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                     activeCategory === 'cafe'
                       ? 'bg-orange-100/80 border-2 border-orange-600 shadow-xs'
                       : 'bg-[#fdf4f0] border border-orange-100/60 hover:bg-orange-50/80'
                   }`}
                 >
-                  <Coffee className="w-4 h-4 text-amber-700 mb-0.5" />
-                  <span className="text-[14px] font-black text-[#0f1738] leading-none">1</span>
-                  <span className="text-[10px] font-semibold text-[#717ea1]">Café</span>
+                  <Coffee className="w-3.5 h-3.5 text-amber-700 mb-0.5" />
+                  <span className="text-[12.5px] sm:text-[14px] font-black text-[#0f1738] leading-none">1</span>
+                  <span className="text-[9px] sm:text-[10px] font-semibold text-[#717ea1]">Café</span>
                 </button>
 
                 {/* 3 Landmarks */}
@@ -1022,15 +1022,15 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                     const nextLandmark = landmarks[(currentIndex + 1) % landmarks.length] || landmarks[0];
                     handleSelectLocation(nextLandmark);
                   }}
-                  className={`py-2 px-1 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
+                  className={`py-1.5 sm:py-2 px-1 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
                     activeCategory === 'place'
                       ? 'bg-emerald-100/80 border-2 border-emerald-600 shadow-xs'
                       : 'bg-[#f0f9f4] border border-emerald-100/60 hover:bg-emerald-50/80'
                   }`}
                 >
-                  <Trees className="w-4 h-4 text-emerald-600 mb-0.5" />
-                  <span className="text-[14px] font-black text-[#0f1738] leading-none">3</span>
-                  <span className="text-[10px] font-semibold text-[#717ea1]">Landmarks</span>
+                  <Trees className="w-3.5 h-3.5 text-emerald-600 mb-0.5" />
+                  <span className="text-[12.5px] sm:text-[14px] font-black text-[#0f1738] leading-none">3</span>
+                  <span className="text-[9px] sm:text-[10px] font-semibold text-[#717ea1]">Landmarks</span>
                 </button>
               </div>
             </div>
