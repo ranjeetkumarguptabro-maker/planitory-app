@@ -386,18 +386,19 @@ export default function UserProfilePage({ onNavigate }) {
                       className="w-full h-full object-cover pointer-events-none"
                     />
 
-                    {/* Floating Heart Button */}
+                    {/* Interactive Heart Button aligned over baked circle */}
                     <button
                       type="button"
-                      onClick={() => toggleMapLike(map.id, map.title)}
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 backdrop-blur-md shadow-sm flex items-center justify-center text-[#111936] hover:bg-white active:scale-90 transition-all cursor-pointer z-10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleMapLike(map.id, map.title);
+                      }}
+                      className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform z-10"
                       title="Toggle Favorite"
                     >
-                      <Heart
-                        className={`w-3.5 h-3.5 transition-colors ${
-                          map.isLiked ? 'fill-[#544ee5] text-[#544ee5]' : 'text-[#111936]'
-                        }`}
-                      />
+                      {map.isLiked && (
+                        <Heart className="w-4 h-4 fill-[#544ee5] text-[#544ee5] animate-in zoom-in-50 duration-150" />
+                      )}
                     </button>
                   </div>
 
@@ -478,11 +479,14 @@ export default function UserProfilePage({ onNavigate }) {
                         <img src={map.img} alt={map.title} className="w-full h-full object-cover pointer-events-none" />
                         <button
                           type="button"
-                          onClick={() => toggleMapLike(map.id, map.title)}
-                          className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 backdrop-blur-md shadow-sm flex items-center justify-center text-[#544ee5] hover:bg-white active:scale-90 transition-all cursor-pointer z-10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMapLike(map.id, map.title);
+                          }}
+                          className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full flex items-center justify-center cursor-pointer active:scale-90 transition-transform z-10"
                           title="Unfavorite"
                         >
-                          <Heart className="w-3.5 h-3.5 fill-[#544ee5] text-[#544ee5]" />
+                          <Heart className="w-4 h-4 fill-[#544ee5] text-[#544ee5] animate-in zoom-in-50 duration-150" />
                         </button>
                       </div>
                       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
