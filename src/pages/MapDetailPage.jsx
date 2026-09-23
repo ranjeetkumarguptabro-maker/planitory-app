@@ -50,23 +50,39 @@ export default function MapDetailPage({ onBack, onNavigate }) {
             className="w-full h-full object-cover pointer-events-none"
           />
 
-          {/* Clean Interactive Overlays matching baked buttons in c7-hero.png */}
+          {/* Clean Interactive Overlays matching buttons in c7-hero.png */}
           {/* Back Button Hitbox */}
           <button
-            onClick={onBack}
-            className="absolute left-[7.5%] top-[25.5%] w-[11%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-20"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (onBack) onBack();
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              if (onBack) onBack();
+            }}
+            className="absolute left-[5%] top-[12%] w-[16%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-30 flex items-center justify-center"
             title="Back to Explore"
+            aria-label="Back to Explore"
           />
 
           {/* Favorite Button Hitbox */}
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               const next = !isLiked;
               setIsLiked(next);
               showToast(next ? "Saved to your favorites!" : "Removed from favorites");
             }}
-            className="absolute right-[19.2%] top-[25.5%] w-[11%] aspect-square rounded-full flex items-center justify-center cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-20"
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              const next = !isLiked;
+              setIsLiked(next);
+              showToast(next ? "Saved to your favorites!" : "Removed from favorites");
+            }}
+            className="absolute right-[19%] top-[12%] w-[15%] aspect-square rounded-full flex items-center justify-center cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-30"
             title="Favorite"
+            aria-label="Favorite"
           >
             {isLiked && (
               <Heart className="w-5 h-5 fill-[#ff4a73] text-[#ff4a73] animate-in zoom-in-50 duration-150" />
@@ -75,9 +91,17 @@ export default function MapDetailPage({ onBack, onNavigate }) {
 
           {/* Share Button Hitbox */}
           <button
-            onClick={handleShare}
-            className="absolute right-[7.5%] top-[25.5%] w-[11%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-20"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShare();
+            }}
+            onTouchEnd={(e) => {
+              e.stopPropagation();
+              handleShare();
+            }}
+            className="absolute right-[5%] top-[12%] w-[15%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-30 flex items-center justify-center"
             title="Share"
+            aria-label="Share"
           />
         </div>
 
