@@ -417,9 +417,9 @@ export default function FeaturedMapsPage({ onBack, onNavigate }) {
                     <img
                       src={card.creatorAvatar}
                       alt={card.creatorHandle}
-                      className="w-4.5 h-4.5 rounded-full object-cover ring-1 ring-slate-100"
+                      className="w-5 h-5 rounded-full object-cover ring-1 ring-slate-100 shrink-0"
                     />
-                    <span className="text-[10.5px] font-semibold text-[#556080] truncate">
+                    <span className="text-[11px] font-semibold text-[#556080] truncate">
                       {card.creatorHandle}
                     </span>
                   </div>

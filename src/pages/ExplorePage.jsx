@@ -308,7 +308,7 @@ export default function ExplorePage({ onBack, onNavigate }) {
 
         {/* Search & Filter Bar */}
         <div className="w-full h-[48px] rounded-2xl bg-white border border-[#e4e8f7] shadow-[0_2px_8px_rgba(50,70,140,0.03)] flex items-center px-3.5 gap-2.5 focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-[#544ee5]/15 transition-all mb-2.5 hover:border-indigo-200">
-          <Search className="w-4.5 h-4.5 text-[#717ea1] shrink-0" />
+          <Search className="w-[18px] h-[18px] text-[#717ea1] shrink-0" />
           <input
             type="text"
             placeholder="Search city, country or theme..."
@@ -324,7 +324,7 @@ export default function ExplorePage({ onBack, onNavigate }) {
             className="text-[#131b38] hover:text-[#544ee5] active:scale-95 transition-colors shrink-0 cursor-pointer"
             title="Filter search"
           >
-            <SlidersHorizontal className="w-4.5 h-4.5" />
+            <SlidersHorizontal className="w-[18px] h-[18px]" />
           </button>
         </div>
       </div>
@@ -652,7 +652,7 @@ export default function ExplorePage({ onBack, onNavigate }) {
                     className="p-1 rounded-full hover:bg-slate-50 transition-colors cursor-pointer"
                   >
                     <Heart
-                      className={`w-4.5 h-4.5 transition-all ${
+                      className={`w-4 h-4 transition-all ${
                         map.isLiked
                           ? 'fill-[#ff4a73] text-[#ff4a73] scale-110'
                           : 'text-[#8b95b5] hover:text-[#ff4a73]'
