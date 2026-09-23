@@ -479,440 +479,398 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
       )}
 
       {/* ========================================================= */}
-      {/* SCENARIO B: REAL 3D ILLUSTRATED WORKING INTERACTIVE MAP   */}
+      {/* SCENARIO B: FULL-SCREEN WORKING INTERACTIVE 3D MAP        */}
       {/* ========================================================= */}
       {hasPurchased && (
-        <div className="flex-1 flex flex-col justify-between h-full min-h-0 overflow-hidden">
+        <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#e8f1f5] sm:rounded-[44px] select-none">
           {/* ===================================================== */}
-          {/* 1. TOP HEADER & CATEGORY FILTER ROW (MATCHING MOCKUP) */}
+          {/* 1. FULL-BLEED 3D PARIS MAP CANVAS (100% OF SCREEN)    */}
           {/* ===================================================== */}
-          <div className="w-full pt-1.5 sm:pt-4 px-3.5 sm:px-5 z-30 shrink-0 bg-[#fafbfe]/95 backdrop-blur-md">
-            {/* iOS Status Bar (Desktop preview only) */}
-            <div className="hidden sm:flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-1.5 px-1">
-              <span className="text-[13px] tracking-tight font-bold">9:41</span>
-              <div className="flex items-center gap-1.5">
-                <div className="flex items-end gap-[1.5px] h-3">
-                  <div className="w-[3px] h-1 bg-[#0f1738] rounded-[0.5px]" />
-                  <div className="w-[3px] h-1.5 bg-[#0f1738] rounded-[0.5px]" />
-                  <div className="w-[3px] h-2 bg-[#0f1738] rounded-[0.5px]" />
-                  <div className="w-[3px] h-3 bg-[#0f1738] rounded-[0.5px]" />
-                </div>
-                <svg className="w-3.5 h-3.5 fill-[#0f1738]" viewBox="0 0 24 24">
-                  <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z" />
-                </svg>
-                <div className="w-5 h-2.5 border border-[#0f1738] rounded-[3px] p-[1px] flex items-center">
-                  <div className="w-full h-full bg-[#0f1738] rounded-[1px]" />
+          <div
+            ref={mapContainerRef}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onWheel={handleWheel}
+            className={`absolute inset-0 w-full h-full overflow-hidden ${
+              isDragging ? 'cursor-grabbing' : 'cursor-grab'
+            } touch-none bg-[#e8f1f5] z-0`}
+          >
+            {/* Zoomable & Pannable Inner Map Layer */}
+            <div
+              style={{
+                transform: `scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`,
+                transformOrigin: 'center center',
+                transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.2, 0, 0, 1)',
+              }}
+              className="relative w-full h-full"
+            >
+              {/* 3D Paris Map Graphic */}
+              <img
+                src="/c21-map-canvas.png"
+                alt="3D Paris Street Map"
+                className="w-full h-full object-cover pointer-events-none select-none"
+                draggable={false}
+              />
+
+              {/* Pulsing Blue Live GPS Radar User Beacon (Seine River) */}
+              <div
+                style={{
+                  left: '49.8%',
+                  top: '56.3%',
+                  transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
+                  transformOrigin: 'center center',
+                }}
+                className="absolute pointer-events-none z-10"
+              >
+                <div className="w-16 h-16 -ml-8 -mt-8 absolute top-1/2 left-1/2 rounded-full bg-blue-400/20 animate-ping" />
+                <div className="w-10 h-10 -ml-5 -mt-5 absolute top-1/2 left-1/2 rounded-full bg-blue-500/25 animate-pulse" />
+                <div className="w-4 h-4 rounded-full bg-[#3b82f6] ring-3 ring-white shadow-lg relative z-10 flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-white rounded-full" />
                 </div>
               </div>
-            </div>
 
-            {/* Title Bar with Circular Action Buttons */}
-            <div className="flex items-center justify-between py-0.5 sm:py-1">
-              {/* Circular Back Button */}
+              {/* Interactive Curated Map Pins (All 5 Locations Always Clickable) */}
+              {TOP_PARIS_LOCATIONS.map((loc) => {
+                const isSelected = selectedLocation?.id === loc.id;
+                const isDimmed = activeCategory !== 'all' && (
+                  (activeCategory === 'museum' && loc.type !== 'museum') ||
+                  (activeCategory === 'cafe' && loc.type !== 'cafe') ||
+                  ((activeCategory === 'place' || activeCategory === 'landmark') && loc.type !== 'place')
+                );
+
+                const isLeftEdge = loc.x < 35;
+                const isRightEdge = loc.x > 68;
+                const isTopEdge = loc.y < 25;
+
+                return (
+                  <div
+                    key={loc.id}
+                    style={{
+                      left: `${loc.x}%`,
+                      top: `${loc.y}%`,
+                      transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
+                      transformOrigin: 'center center',
+                    }}
+                    className={`absolute transition-transform duration-200 ${
+                      isSelected ? 'z-50' : 'z-20'
+                    }`}
+                  >
+                    {/* Floating Callout Tooltip anchored above active landmark */}
+                    {isSelected && (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenGoogleMaps(loc);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.stopPropagation();
+                          handleOpenGoogleMaps(loc);
+                        }}
+                        style={{
+                          transform: isLeftEdge
+                            ? 'translateX(-12%)'
+                            : isRightEdge
+                            ? 'translateX(-88%)'
+                            : 'translateX(-50%)',
+                        }}
+                        className={`absolute ${
+                          isTopEdge ? 'top-full mt-4' : 'bottom-full mb-4'
+                        } left-1/2 z-50 bg-white/95 backdrop-blur-md rounded-[22px] p-2.5 shadow-[0_16px_36px_rgba(0,0,0,0.24)] border border-slate-100 flex items-center gap-2.5 min-w-[210px] max-w-[250px] cursor-pointer hover:shadow-2xl active:scale-95 transition-all animate-in zoom-in-95 duration-200`}
+                      >
+                        <img
+                          src={loc.img}
+                          alt={loc.name}
+                          className="w-11 h-11 rounded-xl object-cover shrink-0 shadow-2xs border border-black/5 pointer-events-none"
+                        />
+                        <div className="flex-1 min-w-0 pr-1">
+                          <h4 className="font-black text-[12.5px] text-[#0f1738] leading-tight truncate">
+                            {loc.name}
+                          </h4>
+                          <p className="text-[9.5px] text-[#717ea1] truncate leading-tight mt-0.5">
+                            {loc.shortDesc || loc.description}
+                          </p>
+                          <div className="flex items-center gap-1 text-[10.5px] font-black text-amber-500 mt-0.5">
+                            <span>★ {loc.rating}</span>
+                            <span className="text-slate-400 font-medium text-[9.5px]">
+                              ({loc.reviewsCount || '320'})
+                            </span>
+                          </div>
+                        </div>
+                        {/* Navigation Icon Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenGoogleMaps(loc);
+                          }}
+                          className="w-8 h-8 rounded-full bg-[#544ee5] text-white flex items-center justify-center hover:bg-[#4338ca] active:scale-90 transition-all shrink-0 shadow-md shadow-indigo-300"
+                          title="Directions in Google Maps"
+                        >
+                          <Navigation className="w-3.5 h-3.5 fill-current rotate-45" />
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Animated Ripple for selected pin */}
+                    {isSelected && (
+                      <div
+                        className="absolute inset-0 rounded-full animate-ping opacity-75"
+                        style={{ backgroundColor: getMarkerColor(loc.type, loc.color) }}
+                      />
+                    )}
+
+                    {/* Primary Interactive Pin */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectLocation(loc);
+                      }}
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        handleSelectLocation(loc);
+                      }}
+                      className={`relative flex items-center justify-center rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.35)] transition-all duration-200 cursor-pointer ${
+                        isSelected
+                          ? 'w-10 h-10 ring-4 ring-white shadow-2xl scale-110 z-40'
+                          : isDimmed
+                          ? 'w-7 h-7 opacity-40 hover:opacity-100 hover:scale-110'
+                          : 'w-8 h-8 hover:scale-125 ring-2 ring-white/90 hover:ring-white'
+                      }`}
+                      style={{
+                        backgroundColor: getMarkerColor(loc.type, loc.color),
+                      }}
+                      title={`${loc.name} - ${loc.frenchName}`}
+                    >
+                      <span className={`${isSelected ? 'text-[17px]' : 'text-[13px]'} select-none drop-shadow-sm`}>
+                        {loc.icon}
+                      </span>
+                    </button>
+
+                    {/* Pin Label Badge */}
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectLocation(loc);
+                      }}
+                      className={`absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-0.5 rounded-full text-[9.5px] font-bold whitespace-nowrap shadow-sm border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-[#0f1738] text-white border-white/20 shadow-md font-extrabold z-40 scale-105'
+                          : isDimmed
+                          ? 'bg-white/70 text-[#0f1738]/50 border-slate-200/50'
+                          : 'bg-white/95 text-[#0f1738] border-slate-200/80 hover:bg-white'
+                      }`}
+                    >
+                      {loc.name}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ===================================================== */}
+          {/* 2. FLOATING TOP HEADER & FILTER PILLS OVER MAP        */}
+          {/* ===================================================== */}
+          <div className="absolute top-0 left-0 right-0 z-30 pt-2 sm:pt-4 px-3 sm:px-4 bg-gradient-to-b from-black/25 via-black/10 to-transparent pb-4 pointer-events-none">
+            {/* Floating Header Bar */}
+            <div className="flex items-center justify-between pointer-events-auto bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-white/60">
               <button
                 onClick={onBack}
-                className="w-10 h-10 rounded-full bg-white shadow-[0_2px_8px_rgba(50,70,140,0.06)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-95 transition-all cursor-pointer shrink-0"
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[#0f1738] active:scale-95 transition-all cursor-pointer shrink-0 shadow-2xs"
                 title="Go back"
               >
-                <ArrowLeft className="w-5 h-5 stroke-[2.4]" />
+                <ArrowLeft className="w-4.5 h-4.5 stroke-[2.4]" />
               </button>
 
-              {/* Center Title with Eiffel Icon Badge */}
               <div className="flex flex-col items-center text-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-full bg-[#faf4ea] border border-[#f0e2cd] flex items-center justify-center text-sm shadow-2xs">
-                    🗼
-                  </div>
-                  <h1 className="text-[20px] font-extrabold text-[#0f1738] tracking-tight font-serif leading-tight">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">🗼</span>
+                  <h1 className="text-[16px] sm:text-[18px] font-extrabold text-[#0f1738] tracking-tight font-serif leading-tight">
                     Paris Essentials
                   </h1>
                 </div>
-                <p className="text-[11.5px] text-[#717ea1] font-medium tracking-tight mt-0.5">
-                  Museums &bull; Cafés &bull; Top Places
+                <p className="text-[10px] text-[#717ea1] font-semibold">
+                  5 Curated Locations
                 </p>
               </div>
 
-              {/* Right Action Buttons (Favorite + More) */}
-              <div className="flex items-center gap-1.5 shrink-0">
+              <div className="flex items-center gap-1 shrink-0">
                 <button
                   onClick={() => showToast("❤️ Saved Paris Essentials to Favorites")}
-                  className="w-10 h-10 rounded-full bg-white shadow-[0_2px_8px_rgba(50,70,140,0.06)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-95 transition-all cursor-pointer"
-                  title="Favorite map"
+                  className="w-9 h-9 rounded-full bg-slate-100 hover:text-[#544ee5] flex items-center justify-center text-[#0f1738] active:scale-95 transition-all cursor-pointer shadow-2xs"
+                  title="Favorite"
                 >
-                  <Heart className="w-4.5 h-4.5 stroke-[2]" />
+                  <Heart className="w-4 h-4 stroke-[2]" />
                 </button>
-
                 <button
                   onClick={() => setShowCustomizeModal(true)}
-                  className="w-10 h-10 rounded-full bg-white shadow-[0_2px_8px_rgba(50,70,140,0.06)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-95 transition-all cursor-pointer"
-                  title="Map Options"
+                  className="w-9 h-9 rounded-full bg-slate-100 hover:text-[#544ee5] flex items-center justify-center text-[#0f1738] active:scale-95 transition-all cursor-pointer shadow-2xs"
+                  title="Options"
                 >
-                  <MoreVertical className="w-4.5 h-4.5 stroke-[2]" />
+                  <MoreVertical className="w-4 h-4 stroke-[2]" />
                 </button>
               </div>
             </div>
 
-            {/* Category Filter Pills (Horizontal Row) */}
-            <div className="flex items-center gap-2 py-2 overflow-x-auto scrollbar-none">
-              {/* All (5) */}
+            {/* Floating Category Filter Pills */}
+            <div className="flex items-center gap-1.5 pt-2 overflow-x-auto scrollbar-none pointer-events-auto">
               <button
-                onClick={() => {
-                  setActiveCategory('all');
-                  showToast("Showing All 5 Curated Spots");
-                }}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl font-bold text-[12px] transition-all cursor-pointer shrink-0 ${
+                onClick={() => { setActiveCategory('all'); showToast("Showing All 5 Curated Spots"); }}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-[11px] backdrop-blur-md transition-all cursor-pointer shrink-0 shadow-sm ${
                   activeCategory === 'all'
-                    ? 'bg-[#0f1738] text-white shadow-md'
-                    : 'bg-white text-[#0f1738] border border-slate-100 shadow-2xs hover:bg-slate-50'
+                    ? 'bg-[#0f1738] text-white'
+                    : 'bg-white/90 text-[#0f1738] border border-white/60 hover:bg-white'
                 }`}
               >
-                <LayoutGrid className="w-3.5 h-3.5" />
+                <LayoutGrid className="w-3 h-3" />
                 <span>All (5)</span>
               </button>
 
-              {/* Museums (1) */}
               <button
                 onClick={() => {
                   setActiveCategory('museum');
                   const louvre = TOP_PARIS_LOCATIONS.find((l) => l.id === 'louvre');
                   if (louvre) handleSelectLocation(louvre);
                 }}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl font-bold text-[12px] transition-all cursor-pointer shrink-0 ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-[11px] backdrop-blur-md transition-all cursor-pointer shrink-0 shadow-sm ${
                   activeCategory === 'museum'
-                    ? 'bg-[#0f1738] text-white shadow-md'
-                    : 'bg-white text-[#0f1738] border border-slate-100 shadow-2xs hover:bg-slate-50'
+                    ? 'bg-[#0f1738] text-white'
+                    : 'bg-white/90 text-[#0f1738] border border-white/60 hover:bg-white'
                 }`}
               >
-                <Landmark className="w-3.5 h-3.5 text-purple-600" />
+                <Landmark className="w-3 h-3 text-purple-600" />
                 <span>1 Museum</span>
               </button>
 
-              {/* Cafes (1) */}
               <button
                 onClick={() => {
                   setActiveCategory('cafe');
                   const flore = TOP_PARIS_LOCATIONS.find((l) => l.id === 'flore');
                   if (flore) handleSelectLocation(flore);
                 }}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl font-bold text-[12px] transition-all cursor-pointer shrink-0 ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-[11px] backdrop-blur-md transition-all cursor-pointer shrink-0 shadow-sm ${
                   activeCategory === 'cafe'
-                    ? 'bg-[#0f1738] text-white shadow-md'
-                    : 'bg-white text-[#0f1738] border border-slate-100 shadow-2xs hover:bg-slate-50'
+                    ? 'bg-[#0f1738] text-white'
+                    : 'bg-white/90 text-[#0f1738] border border-white/60 hover:bg-white'
                 }`}
               >
-                <Coffee className="w-3.5 h-3.5 text-amber-700" />
+                <Coffee className="w-3 h-3 text-amber-700" />
                 <span>1 Café</span>
               </button>
 
-              {/* Landmarks (3) */}
               <button
                 onClick={() => {
                   setActiveCategory('place');
                   const eiffel = TOP_PARIS_LOCATIONS.find((l) => l.id === 'eiffel');
                   if (eiffel) handleSelectLocation(eiffel);
                 }}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl font-bold text-[12px] transition-all cursor-pointer shrink-0 ${
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-[11px] backdrop-blur-md transition-all cursor-pointer shrink-0 shadow-sm ${
                   activeCategory === 'place'
-                    ? 'bg-[#0f1738] text-white shadow-md'
-                    : 'bg-white text-[#0f1738] border border-slate-100 shadow-2xs hover:bg-slate-50'
+                    ? 'bg-[#0f1738] text-white'
+                    : 'bg-white/90 text-[#0f1738] border border-white/60 hover:bg-white'
                 }`}
               >
-                <Trees className="w-3.5 h-3.5 text-emerald-600" />
+                <Trees className="w-3 h-3 text-emerald-600" />
                 <span>3 Landmarks</span>
               </button>
             </div>
           </div>
 
           {/* ===================================================== */}
-          {/* 2. 3D PARIS MAP CANVAS + INTERACTIVE OVERLAY CONTROLS */}
+          {/* 3. FLOATING RIGHT CONTROL STACK                       */}
           {/* ===================================================== */}
-          <div className="flex-1 min-h-[290px] sm:min-h-0 flex flex-col justify-between px-2.5 sm:px-4 relative overflow-hidden pb-1">
-            {/* Real Interactive Map Canvas Card */}
-            <div
-              ref={mapContainerRef}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onWheel={handleWheel}
-              className={`relative w-full h-full flex-1 rounded-[22px] sm:rounded-[26px] overflow-hidden shadow-[0_8px_24px_rgba(50,70,140,0.08)] border border-[#e4e8f7] ${
-                isDragging ? 'cursor-grabbing' : 'cursor-grab'
-              } touch-none bg-[#e8f1f5]`}
+          <div className="absolute right-3 top-28 sm:top-28 z-20 flex flex-col gap-1.5">
+            {/* Zoom In Button */}
+            <button
+              onClick={() => handleZoomStep(0.25)}
+              className="w-9 h-9 rounded-xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
+              title="Zoom In"
             >
-              {/* Zoomable & Pannable Inner Map Layer */}
-              <div
-                style={{
-                  transform: `scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`,
-                  transformOrigin: 'center center',
-                  transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.2, 0, 0, 1)',
-                }}
-                className="relative w-full h-full"
+              <ZoomIn className="w-4 h-4 stroke-[2.2]" />
+            </button>
+
+            {/* Zoom Out Button */}
+            <button
+              onClick={() => handleZoomStep(-0.25)}
+              className="w-9 h-9 rounded-xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-4 h-4 stroke-[2.2]" />
+            </button>
+
+            {/* Reset View Button */}
+            {(zoomLevel !== 1 || panOffset.x !== 0 || panOffset.y !== 0) && (
+              <button
+                onClick={handleResetView}
+                className="w-9 h-9 rounded-xl bg-indigo-50/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-indigo-200 flex items-center justify-center text-[#544ee5] hover:bg-indigo-100 active:scale-90 transition-all cursor-pointer animate-in fade-in zoom-in-75 duration-150"
+                title="Reset View to 100%"
               >
-                {/* 3D Paris Map Graphic (c21.png reference) */}
-                <img
-                  src="/c21-map-canvas.png"
-                  alt="3D Paris Street Map"
-                  className="w-full h-full object-cover pointer-events-none select-none"
-                  draggable={false}
-                />
+                <RotateCcw className="w-4 h-4 stroke-[2.2]" />
+              </button>
+            )}
 
-                {/* Pulsing Blue Live GPS Radar User Beacon (Seine River) */}
-                <div
-                  style={{
-                    left: '49.8%',
-                    top: '56.3%',
-                    transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
-                    transformOrigin: 'center center',
-                  }}
-                  className="absolute pointer-events-none z-10"
-                >
-                  <div className="w-16 h-16 -ml-8 -mt-8 absolute top-1/2 left-1/2 rounded-full bg-blue-400/20 animate-ping" />
-                  <div className="w-10 h-10 -ml-5 -mt-5 absolute top-1/2 left-1/2 rounded-full bg-blue-500/25 animate-pulse" />
-                  <div className="w-4 h-4 rounded-full bg-[#3b82f6] ring-3 ring-white shadow-lg relative z-10 flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                  </div>
-                </div>
+            {/* GPS Recenter */}
+            <button
+              onClick={handleLocateUser}
+              className="w-9 h-9 rounded-xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#3b82f6] hover:text-[#1d4ed8] active:scale-90 transition-all cursor-pointer"
+              title="Recenter on My Location"
+            >
+              <Crosshair className="w-4 h-4 stroke-[2.2]" />
+            </button>
 
-                {/* Interactive Curated Map Pins (All 5 Locations Always Clickable) */}
-                {TOP_PARIS_LOCATIONS.map((loc) => {
-                  const isSelected = selectedLocation?.id === loc.id;
-                  const isDimmed = activeCategory !== 'all' && (
-                    (activeCategory === 'museum' && loc.type !== 'museum') ||
-                    (activeCategory === 'cafe' && loc.type !== 'cafe') ||
-                    ((activeCategory === 'place' || activeCategory === 'landmark') && loc.type !== 'place')
-                  );
+            {/* Layers Toggle */}
+            <button
+              onClick={() => {
+                const nextMode = mapMode === 'map' ? 'satellite' : mapMode === 'satellite' ? '3d' : 'map';
+                setMapMode(nextMode);
+                showToast(`Switched map layer to: ${nextMode.toUpperCase()}`);
+              }}
+              className="w-9 h-9 rounded-xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
+              title="Toggle Layers"
+            >
+              <Layers className="w-4 h-4 stroke-[2.2]" />
+            </button>
+          </div>
 
-                  // Smart tooltip alignment to prevent screen edge clipping
-                  const isLeftEdge = loc.x < 35;
-                  const isRightEdge = loc.x > 68;
-                  const isTopEdge = loc.y < 25;
-
-                  return (
-                    <div
-                      key={loc.id}
-                      style={{
-                        left: `${loc.x}%`,
-                        top: `${loc.y}%`,
-                        transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
-                        transformOrigin: 'center center',
-                      }}
-                      className={`absolute transition-transform duration-200 ${
-                        isSelected ? 'z-50' : 'z-20'
-                      }`}
-                    >
-                      {/* Floating Callout Tooltip anchored cleanly above active landmark */}
-                      {isSelected && (
-                        <div
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenGoogleMaps(loc);
-                          }}
-                          onTouchEnd={(e) => {
-                            e.stopPropagation();
-                            handleOpenGoogleMaps(loc);
-                          }}
-                          style={{
-                            transform: isLeftEdge
-                              ? 'translateX(-12%)'
-                              : isRightEdge
-                              ? 'translateX(-88%)'
-                              : 'translateX(-50%)',
-                          }}
-                          className={`absolute ${
-                            isTopEdge ? 'top-full mt-4' : 'bottom-full mb-4'
-                          } left-1/2 z-50 bg-white rounded-[22px] p-2.5 shadow-[0_16px_36px_rgba(0,0,0,0.24)] border border-slate-100 flex items-center gap-2.5 min-w-[220px] max-w-[260px] cursor-pointer hover:shadow-2xl active:scale-95 transition-all animate-in zoom-in-95 duration-200`}
-                        >
-                          <img
-                            src={loc.img}
-                            alt={loc.name}
-                            className="w-12 h-12 rounded-xl object-cover shrink-0 shadow-2xs border border-black/5 pointer-events-none"
-                          />
-                          <div className="flex-1 min-w-0 pr-1">
-                            <h4 className="font-black text-[13px] text-[#0f1738] leading-tight truncate">
-                              {loc.name}
-                            </h4>
-                            <p className="text-[10px] text-[#717ea1] truncate leading-tight mt-0.5">
-                              {loc.shortDesc || loc.description}
-                            </p>
-                            <div className="flex items-center gap-1 text-[11px] font-black text-amber-500 mt-0.5">
-                              <span>★ {loc.rating}</span>
-                              <span className="text-slate-400 font-medium text-[10px]">
-                                ({loc.reviewsCount || '320'})
-                              </span>
-                            </div>
-                          </div>
-                          {/* Navigation Icon Button that Redirects to Google Maps */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenGoogleMaps(loc);
-                            }}
-                            onTouchEnd={(e) => {
-                              e.stopPropagation();
-                              handleOpenGoogleMaps(loc);
-                            }}
-                            className="w-9 h-9 rounded-full bg-[#4f46e5] hover:bg-[#4338ca] text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-300/50 cursor-pointer active:scale-90 transition-all"
-                            title="Get Direction in Google Maps"
-                          >
-                            <Navigation className="w-4 h-4 fill-current rotate-45" />
-                          </button>
-                          {/* Pointer Triangle */}
-                          <div
-                            style={{
-                              left: isLeftEdge ? '22%' : isRightEdge ? '78%' : '50%',
-                            }}
-                            className={`w-3.5 h-3.5 bg-white rotate-45 border-r border-b border-slate-100 absolute ${
-                              isTopEdge ? '-top-1.5 border-t border-l border-r-0 border-b-0' : '-bottom-1.5'
-                            } -translate-x-1/2 pointer-events-none`}
-                          />
-                        </div>
-                      )}
-
-                      {/* Generous Interactive Hotspot Button for Easy Mobile Tapping */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectLocation(loc);
-                        }}
-                        onTouchEnd={(e) => {
-                          e.stopPropagation();
-                          handleSelectLocation(loc);
-                        }}
-                        className={`w-20 h-20 -ml-10 -mt-10 absolute top-1/2 left-1/2 rounded-full flex items-center justify-center cursor-pointer transition-all ${
-                          isSelected
-                            ? 'ring-3 ring-indigo-600 bg-indigo-500/25 shadow-xl shadow-indigo-500/30'
-                            : 'hover:bg-indigo-500/15 active:scale-95'
-                        }`}
-                        title={loc.name}
-                        aria-label={`Select ${loc.name}`}
-                      >
-                        {/* Glowing Active Target Pulse */}
-                        {isSelected && (
-                          <div className="w-8 h-8 rounded-full border-2 border-indigo-600 animate-ping opacity-80 pointer-events-none" />
-                        )}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Floating Map Overlay Elements */}
-
-              {/* Top Left: Search this area pill */}
-              <div
-                onClick={() => showToast("🔍 Searching Paris area landmarks...")}
-                className="absolute top-3 left-3 z-30 flex items-center gap-2 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] border border-slate-100/80 text-xs text-[#0f1738] font-bold cursor-pointer hover:bg-white active:scale-95 transition-all"
-              >
-                <Search className="w-3.5 h-3.5 text-slate-500 stroke-[2.4]" />
-                <span className="text-[12px] font-bold">Search this area</span>
-              </div>
-
-              {/* Live Zoom Percentage Badge */}
-              {zoomLevel > 1 && (
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 px-3 py-1 rounded-full bg-black/75 backdrop-blur-xs text-white text-[11px] font-black shadow-md pointer-events-none animate-in fade-in duration-150 border border-white/20">
-                  {Math.round(zoomLevel * 100)}% Zoom
-                </div>
-              )}
-
-              {/* Top Right: Vertical Control Stack with Dedicated Zoom Buttons */}
-              <div className="absolute top-3 right-3 z-30 flex flex-col gap-1.5">
-                {/* Dedicated Zoom In (+) Button */}
-                <button
-                  onClick={handleZoomIn}
-                  className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
-                  title="Zoom In (+)"
-                  aria-label="Zoom In"
-                >
-                  <ZoomIn className="w-5 h-5 stroke-[2.4]" />
-                </button>
-
-                {/* Dedicated Zoom Out (-) Button */}
-                <button
-                  onClick={handleZoomOut}
-                  className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
-                  title="Zoom Out (-)"
-                  aria-label="Zoom Out"
-                >
-                  <ZoomOut className="w-5 h-5 stroke-[2.4]" />
-                </button>
-
-                {/* Reset Zoom Button */}
-                {(zoomLevel > 1 || panOffset.x !== 0 || panOffset.y !== 0) && (
-                  <button
-                    onClick={handleResetView}
-                    className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer animate-in fade-in"
-                    title="Reset Map View"
-                    aria-label="Reset Map View"
-                  >
-                    <RotateCcw className="w-4 h-4 stroke-[2.2]" />
-                  </button>
-                )}
-
-                {/* GPS Locate Button */}
-                <button
-                  onClick={handleLocateMe}
-                  className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#544ee5] hover:scale-105 active:scale-90 transition-all cursor-pointer"
-                  title="Locate my position"
-                  aria-label="Locate GPS Position"
-                >
-                  <Crosshair className="w-5 h-5 stroke-[2.4]" />
-                </button>
-
-                {/* Layers Mode Toggle */}
-                <button
-                  onClick={() => {
-                    const nextMode = mapMode === 'map' ? 'satellite' : mapMode === 'satellite' ? '3d' : 'map';
-                    setMapMode(nextMode);
-                    showToast(`View Mode: ${nextMode.toUpperCase()}`);
-                  }}
-                  className="w-10 h-10 rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
-                  title="Toggle Layers"
-                  aria-label="Toggle Layers"
-                >
-                  <Layers className="w-5 h-5 stroke-[2.2]" />
-                </button>
-              </div>
-
-              {/* Bottom Left: Gradient "Customize Map" Pill */}
+          {/* ===================================================== */}
+          {/* 4. FLOATING BOTTOM CONTROLS & LOCATION CARD          */}
+          {/* ===================================================== */}
+          <div className="absolute bottom-2.5 left-2.5 right-2.5 z-30 space-y-2 pointer-events-none">
+            {/* Mode switcher + Customize Pill row */}
+            <div className="flex items-center justify-between pointer-events-auto px-0.5">
               <button
                 onClick={() => setShowCustomizeModal(true)}
-                className="absolute bottom-3 left-3 z-30 bg-gradient-to-r from-[#5a50ec] to-[#746af4] text-white px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl shadow-[0_4px_16px_rgba(90,80,236,0.35)] flex items-center gap-1.5 sm:gap-2 text-[11.5px] sm:text-[12.5px] font-bold active:scale-95 hover:shadow-indigo-400/50 transition-all cursor-pointer"
+                className="bg-gradient-to-r from-[#5a50ec] to-[#746af4] text-white px-3 py-1.5 rounded-full shadow-md flex items-center gap-1 text-[11px] font-bold active:scale-95 hover:shadow-indigo-400/50 transition-all cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 text-amber-200" />
-                <span>Customize Map</span>
+                <Sparkles className="w-3 h-3 text-amber-200" />
+                <span>Customize</span>
               </button>
 
-              {/* Bottom Right: Map View Mode Switcher Pill */}
-              <div className="absolute bottom-3 right-3 z-30 bg-white/95 backdrop-blur-md p-1 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center gap-1 text-[11px] sm:text-[11.5px] font-bold">
+              <div className="bg-white/95 backdrop-blur-md p-0.5 rounded-full shadow-md border border-slate-100 flex items-center gap-0.5 text-[10.5px] font-bold">
                 <button
                   onClick={() => setMapMode('map')}
-                  className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl transition-all cursor-pointer ${
-                    mapMode === 'map'
-                      ? 'bg-[#0f1738] text-white shadow-xs'
-                      : 'text-[#717ea1] hover:text-[#0f1738]'
+                  className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                    mapMode === 'map' ? 'bg-[#0f1738] text-white shadow-xs' : 'text-slate-600 hover:text-black'
                   }`}
                 >
                   Map
                 </button>
                 <button
                   onClick={() => setMapMode('satellite')}
-                  className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl transition-all cursor-pointer ${
-                    mapMode === 'satellite'
-                      ? 'bg-[#0f1738] text-white shadow-xs'
-                      : 'text-[#717ea1] hover:text-[#0f1738]'
+                  className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                    mapMode === 'satellite' ? 'bg-[#0f1738] text-white shadow-xs' : 'text-slate-600 hover:text-black'
                   }`}
                 >
                   Satellite
                 </button>
                 <button
                   onClick={() => setMapMode('3d')}
-                  className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-xl transition-all cursor-pointer ${
-                    mapMode === '3d'
-                      ? 'bg-[#0f1738] text-white shadow-xs'
-                      : 'text-[#717ea1] hover:text-[#0f1738]'
+                  className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
+                    mapMode === '3d' ? 'bg-[#0f1738] text-white shadow-xs' : 'text-slate-600 hover:text-black'
                   }`}
                 >
                   3D
@@ -920,124 +878,47 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               </div>
             </div>
 
-            {/* ===================================================== */}
-            {/* 3. BOTTOM SHEET DRAWER (COMPACT & UNCOMPRESSED)       */}
-            {/* ===================================================== */}
-            <div className="w-full bg-white rounded-t-[22px] sm:rounded-t-[26px] p-2.5 sm:p-3.5 shadow-[0_-4px_24px_rgba(50,70,140,0.06)] border border-[#e8ecf8] space-y-2 mt-1 shrink-0">
-              {/* Top Drag Handle Pill */}
-              <div className="w-8 h-1 rounded-full bg-slate-200 mx-auto -mt-0.5 mb-0.5" />
+            {/* Floating Location Detail Card */}
+            {selectedLocation && (
+              <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-[22px] p-2.5 sm:p-3 shadow-[0_8px_30px_rgba(0,0,0,0.18)] border border-slate-100 flex items-center justify-between gap-2.5 animate-in slide-in-from-bottom-2 duration-200">
+                <img
+                  src={selectedLocation.img}
+                  alt={selectedLocation.name}
+                  className="w-13 h-13 sm:w-14 sm:h-14 rounded-2xl object-cover shrink-0 shadow-xs border border-black/5 cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => handleOpenGoogleMaps(selectedLocation)}
+                />
 
-              {/* Selected Location Card with Direct Google Maps Redirection */}
-              {selectedLocation && (
-                <div className="flex items-center justify-between gap-2 p-0">
-                  <img
-                    src={selectedLocation.img}
-                    alt={selectedLocation.name}
-                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl object-cover shrink-0 shadow-sm border border-black/5 cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => handleOpenGoogleMaps(selectedLocation)}
-                  />
-
-                  <div
-                    className="flex-1 min-w-0 pr-1 cursor-pointer"
-                    onClick={() => handleOpenGoogleMaps(selectedLocation)}
-                  >
-                    <h3 className="font-bold font-serif text-[14px] sm:text-[16px] text-[#0f1738] leading-tight truncate hover:text-[#544ee5] transition-colors">
-                      {selectedLocation.name}
-                    </h3>
-                    <p className="text-[10px] sm:text-[11px] text-[#717ea1] truncate mt-0.5 font-medium">
-                      {selectedLocation.shortDesc || selectedLocation.description}
-                    </p>
-
-                    <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10.5px] text-[#717ea1] font-semibold mt-0.5 flex-wrap">
-                      <span className="text-amber-500 font-bold flex items-center gap-0.5">
-                        ★ {selectedLocation.rating}{' '}
-                        <span className="text-slate-400 font-normal">
-                          ({selectedLocation.reviewsCount || '320'})
-                        </span>
-                      </span>
-                      <span>&bull;</span>
-                      <span className="flex items-center gap-0.5 text-slate-600">
-                        <MapPin className="w-2.5 h-2.5 text-[#544ee5]" />
-                        {selectedLocation.area || 'Saint-Germain'}
-                      </span>
-                    </div>
+                <div
+                  className="flex-1 min-w-0 pr-0.5 cursor-pointer"
+                  onClick={() => handleOpenGoogleMaps(selectedLocation)}
+                >
+                  <h3 className="font-bold font-serif text-[14.5px] sm:text-[16px] text-[#0f1738] leading-tight truncate hover:text-[#544ee5] transition-colors">
+                    {selectedLocation.name}
+                  </h3>
+                  <p className="text-[10px] sm:text-[11px] text-[#717ea1] truncate mt-0.5 font-medium">
+                    {selectedLocation.shortDesc || selectedLocation.description}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-[9.5px] sm:text-[10.5px] text-[#717ea1] font-semibold mt-0.5">
+                    <span className="text-amber-500 font-bold">★ {selectedLocation.rating}</span>
+                    <span>&bull;</span>
+                    <span className="text-slate-600">{selectedLocation.area || 'Paris'}</span>
                   </div>
-
-                  {/* Direct "Get Direction" Button redirecting to Google Maps */}
-                  <button
-                    onClick={() => handleOpenGoogleMaps(selectedLocation)}
-                    className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl bg-[#4f46e5] hover:bg-[#4338ca] active:scale-95 text-white font-bold text-[10.5px] sm:text-[11.5px] flex items-center gap-1 shrink-0 transition-all cursor-pointer shadow-md shadow-indigo-300/40"
-                    title="Open in Google Maps"
-                  >
-                    <Navigation className="w-3 h-3 fill-current rotate-45" />
-                    <span>Get Direction</span>
-                  </button>
                 </div>
-              )}
 
-              {/* 3 Interactive Category Stat Summary Cards */}
-              <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-0.5">
-                {/* 1 Museum */}
+                {/* Direct Google Maps Navigation Button */}
                 <button
-                  onClick={() => {
-                    setActiveCategory('museum');
-                    const louvre = TOP_PARIS_LOCATIONS.find((l) => l.id === 'louvre');
-                    if (louvre) handleSelectLocation(louvre);
-                  }}
-                  className={`py-1.5 sm:py-2 px-1 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
-                    activeCategory === 'museum'
-                      ? 'bg-indigo-100/80 border-2 border-indigo-600 shadow-xs'
-                      : 'bg-[#f5f4ff] border border-indigo-100/60 hover:bg-indigo-50/80'
-                  }`}
+                  onClick={() => handleOpenGoogleMaps(selectedLocation)}
+                  className="px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl sm:rounded-2xl bg-[#4f46e5] hover:bg-[#4338ca] active:scale-95 text-white font-bold text-[11px] sm:text-[12px] flex items-center gap-1 shrink-0 transition-all cursor-pointer shadow-md shadow-indigo-300/40"
+                  title="Open in Google Maps"
                 >
-                  <Landmark className="w-3.5 h-3.5 text-purple-600 mb-0.5" />
-                  <span className="text-[12.5px] sm:text-[14px] font-black text-[#0f1738] leading-none">1</span>
-                  <span className="text-[9px] sm:text-[10px] font-semibold text-[#717ea1]">Museum</span>
-                </button>
-
-                {/* 1 Café */}
-                <button
-                  onClick={() => {
-                    setActiveCategory('cafe');
-                    const flore = TOP_PARIS_LOCATIONS.find((l) => l.id === 'flore');
-                    if (flore) handleSelectLocation(flore);
-                  }}
-                  className={`py-1.5 sm:py-2 px-1 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
-                    activeCategory === 'cafe'
-                      ? 'bg-orange-100/80 border-2 border-orange-600 shadow-xs'
-                      : 'bg-[#fdf4f0] border border-orange-100/60 hover:bg-orange-50/80'
-                  }`}
-                >
-                  <Coffee className="w-3.5 h-3.5 text-amber-700 mb-0.5" />
-                  <span className="text-[12.5px] sm:text-[14px] font-black text-[#0f1738] leading-none">1</span>
-                  <span className="text-[9px] sm:text-[10px] font-semibold text-[#717ea1]">Café</span>
-                </button>
-
-                {/* 3 Landmarks */}
-                <button
-                  onClick={() => {
-                    setActiveCategory('place');
-                    const landmarks = TOP_PARIS_LOCATIONS.filter((l) => l.type === 'place');
-                    const currentIndex = landmarks.findIndex((l) => l.id === selectedLocation?.id);
-                    const nextLandmark = landmarks[(currentIndex + 1) % landmarks.length] || landmarks[0];
-                    handleSelectLocation(nextLandmark);
-                  }}
-                  className={`py-1.5 sm:py-2 px-1 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
-                    activeCategory === 'place'
-                      ? 'bg-emerald-100/80 border-2 border-emerald-600 shadow-xs'
-                      : 'bg-[#f0f9f4] border border-emerald-100/60 hover:bg-emerald-50/80'
-                  }`}
-                >
-                  <Trees className="w-3.5 h-3.5 text-emerald-600 mb-0.5" />
-                  <span className="text-[12.5px] sm:text-[14px] font-black text-[#0f1738] leading-none">3</span>
-                  <span className="text-[9px] sm:text-[10px] font-semibold text-[#717ea1]">Landmarks</span>
+                  <Navigation className="w-3 h-3 fill-current rotate-45" />
+                  <span>Get Direction</span>
                 </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
-
       {/* ========================================================= */}
       {/* 🏛️ PLACE DETAILS & GOOGLE MAPS REDIRECTION DRAWER         */}
       {/* ========================================================= */}
