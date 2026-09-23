@@ -8,25 +8,16 @@ import {
   X,
   Check,
   Star,
-  Bookmark,
   CheckCircle2,
-  Home,
-  Map as MapIcon,
-  Users,
-  User,
-  Plus,
-  Compass,
-  Palette,
-  Sparkles,
-  Bed,
-  Camera,
   Coffee,
   Landmark,
   Trees,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Bed,
+  Camera
 } from 'lucide-react';
 
-// Custom Map Pins matching c26.png exactly
+// Custom Map Pins matching c26.png coordinates
 export const MY_MAP_PINS = [
   {
     id: 'flore',
@@ -34,12 +25,12 @@ export const MY_MAP_PINS = [
     type: 'cafe',
     category: 'Café • Saint-Germain',
     address: '172 Boulevard Saint-Germain, 75006 Paris',
-    rating: 4.8,
+    rating: '4.8',
     reviews: '320',
     img: '/c7-photo-cafe-de-flore.png',
-    x: 69.5,
+    x: 68.8,
     y: 24.2,
-    color: '#854d0e', // Brown coffee pin in c26
+    color: '#854d0e',
     icon: 'coffee',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Cafe+de+Flore+Paris',
   },
@@ -49,12 +40,12 @@ export const MY_MAP_PINS = [
     type: 'food',
     category: 'Restaurant • Odéon',
     address: '9 Carrefour de l’Odéon, 75006 Paris',
-    rating: 4.9,
+    rating: '4.9',
     reviews: '410',
     img: '/c7-photo-croissant.png',
-    x: 71,
+    x: 70.8,
     y: 35.8,
-    color: '#dc2626', // Red/pink fork & knife pin in c26
+    color: '#dc2626',
     icon: 'food',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Le+Comptoir+du+Relais+Paris',
   },
@@ -64,12 +55,12 @@ export const MY_MAP_PINS = [
     type: 'camera',
     category: 'Photo Spot • Seine',
     address: 'Pont des Arts, 75006 Paris',
-    rating: 4.9,
+    rating: '4.9',
     reviews: '280',
     img: '/map-card-paris-hq.png',
-    x: 80.2,
+    x: 79.8,
     y: 54.5,
-    color: '#ca8a04', // Gold camera pin in c26
+    color: '#ca8a04',
     icon: 'camera',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Pont+des+Arts+Paris',
   },
@@ -79,12 +70,12 @@ export const MY_MAP_PINS = [
     type: 'park',
     category: 'Park • 6th Arr.',
     address: '75006 Paris, France',
-    rating: 4.9,
+    rating: '4.9',
     reviews: '520',
     img: '/c4-thumb-europe.png',
     x: 33.8,
-    y: 19,
-    color: '#15803d', // Green tree pin in c26
+    y: 19.1,
+    color: '#15803d',
     icon: 'park',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Jardin+du+Luxembourg+Paris',
   },
@@ -94,12 +85,12 @@ export const MY_MAP_PINS = [
     type: 'museum',
     category: 'Museum • 7th Arr.',
     address: '1 Rue de la Légion d’Honneur, Paris',
-    rating: 4.9,
+    rating: '4.9',
     reviews: '340',
     img: '/c6-thumb-paris-museums.png',
     x: 26.8,
     y: 34.5,
-    color: '#7e22ce', // Purple museum pin in c26
+    color: '#7e22ce',
     icon: 'museum',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Musee+dOrsay+Paris',
   },
@@ -109,12 +100,12 @@ export const MY_MAP_PINS = [
     type: 'hotel',
     category: 'Luxury Hotel • Rive Gauche',
     address: '45 Boulevard Raspail, 75006 Paris',
-    rating: 4.8,
+    rating: '4.8',
     reviews: '195',
     img: '/c8-thumb-paris.png',
     x: 27.8,
     y: 52.8,
-    color: '#3b82f6', // Blue hotel bed pin in c26
+    color: '#3b82f6',
     icon: 'hotel',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Hotel+Lutetia+Paris',
   },
@@ -169,7 +160,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   const [customizationStep, setCustomizationStep] = useState(1); // 1 = Map Style, 2 = Pin Colors & Icons
   const [selectedMapStyle, setSelectedMapStyle] = useState('default');
   const [pinColorTheme, setPinColorTheme] = useState('original');
-  const [pinIconStyle, setPinIconStyle] = useState('classic'); // 'classic' | 'minimal' | 'emoji'
+  const [pinIconStyle, setPinIconStyle] = useState('classic');
 
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -187,7 +178,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   // Recenter GPS
   const handleLocateUser = () => {
-    setZoomLevel(1.4);
+    setZoomLevel(1.35);
     setPanOffset({ x: 0, y: 0 });
     showToast('📍 Recentered on Live GPS Beacon (Seine River)');
   };
@@ -243,16 +234,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   const handleTouchEnd = () => setIsDragging(false);
 
-  // Helper for pin dynamic color theme
-  const getDynamicPinColor = (pin) => {
-    if (pinColorTheme === 'rose') return '#f43f5e';
-    if (pinColorTheme === 'emerald') return '#10b981';
-    if (pinColorTheme === 'sunset') return '#f59e0b';
-    if (pinColorTheme === 'purple') return '#6366f1';
-    if (pinColorTheme === 'slate') return '#475569';
-    return pin.color; // Original matching c26
-  };
-
   // Get active CSS filter for selected map style
   const activeStyleConfig =
     MAP_STYLES.find((s) => s.id === selectedMapStyle) || MAP_STYLES[0];
@@ -284,7 +265,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           }}
           className="relative w-full h-full transition-all duration-300"
         >
-          {/* Angled Paris Map Canvas matching c26.png */}
+          {/* Base Vector Paris Map Canvas matching c26.png */}
           <img
             src="/c26-my-map.png"
             alt="My Map Vector Paris"
@@ -292,27 +273,9 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
             draggable={false}
           />
 
-          {/* Central Blue Pulsing GPS Beacon (Seine River in c26) */}
-          <div
-            style={{
-              left: '44.8%',
-              top: '44.6%',
-              transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
-              transformOrigin: 'center center',
-            }}
-            className="absolute pointer-events-none z-10"
-          >
-            <div className="w-24 h-24 -ml-12 -mt-12 absolute top-1/2 left-1/2 rounded-full bg-blue-400/25 animate-ping" />
-            <div className="w-14 h-14 -ml-7 -mt-7 absolute top-1/2 left-1/2 rounded-full bg-blue-500/30 animate-pulse" />
-            <div className="w-5.5 h-5.5 rounded-full bg-[#2563eb] ring-3 ring-white shadow-2xl relative z-10 flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full" />
-            </div>
-          </div>
-
-          {/* Custom Styled Pins matching c26.png */}
+          {/* Interactive Tap Hitboxes & Selection Rings over the 6 Pins */}
           {MY_MAP_PINS.map((pin) => {
             const isSelected = selectedLocation?.id === pin.id;
-            const pinBgColor = getDynamicPinColor(pin);
 
             return (
               <div
@@ -328,77 +291,53 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
                   transformOrigin: 'center center',
                 }}
-                className={`absolute transition-all duration-200 cursor-pointer ${
-                  isSelected ? 'z-40 scale-125' : 'z-20 hover:scale-115'
-                }`}
+                className="absolute z-20 w-11 h-11 -ml-1 -mt-1 rounded-full cursor-pointer flex items-center justify-center group"
+                title={pin.name}
               >
-                {/* Teardrop Pin matching c26.png */}
-                <div
-                  className="relative flex items-center justify-center rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.32)] ring-2 ring-white/90"
-                  style={{
-                    backgroundColor: pinBgColor,
-                    width: isSelected ? '36px' : '30px',
-                    height: isSelected ? '36px' : '30px',
-                  }}
-                  title={pin.name}
-                >
-                  {pinIconStyle === 'emoji' ? (
-                    <span className="text-[14px]">
-                      {pin.icon === 'coffee' && '☕'}
-                      {pin.icon === 'food' && '🍝'}
-                      {pin.icon === 'camera' && '📸'}
-                      {pin.icon === 'park' && '🌲'}
-                      {pin.icon === 'museum' && '🏛️'}
-                      {pin.icon === 'hotel' && '🏨'}
-                    </span>
-                  ) : (
-                    <>
-                      {pin.icon === 'coffee' && (
-                        <Coffee className="w-3.5 h-3.5 text-white stroke-[2.4]" />
-                      )}
-                      {pin.icon === 'food' && (
-                        <UtensilsCrossed className="w-3.5 h-3.5 text-white stroke-[2.4]" />
-                      )}
-                      {pin.icon === 'camera' && (
-                        <Camera className="w-3.5 h-3.5 text-white stroke-[2.4]" />
-                      )}
-                      {pin.icon === 'park' && (
-                        <Trees className="w-3.5 h-3.5 text-white stroke-[2.4]" />
-                      )}
-                      {pin.icon === 'museum' && (
-                        <Landmark className="w-3.5 h-3.5 text-white stroke-[2.4]" />
-                      )}
-                      {pin.icon === 'hotel' && (
-                        <Bed className="w-3.5 h-3.5 text-white stroke-[2.4]" />
-                      )}
-                    </>
-                  )}
-                </div>
-
-                {/* Animated Ripple when selected */}
+                {/* Active Selection Glow Ring */}
                 {isSelected && (
                   <div
-                    className="absolute inset-0 rounded-full animate-ping opacity-60 pointer-events-none"
-                    style={{ backgroundColor: pinBgColor }}
-                  />
+                    className="w-12 h-12 rounded-full ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white shadow-xl animate-in zoom-in-75 duration-150 flex items-center justify-center bg-indigo-500/10"
+                  >
+                    <div className="w-4 h-4 rounded-full animate-ping bg-[#544ee5]/40" />
+                  </div>
                 )}
               </div>
             );
           })}
+
+          {/* Seine River GPS Beacon Hitbox */}
+          <div
+            onClick={handleLocateUser}
+            style={{
+              left: '44.8%',
+              top: '44.6%',
+              transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
+              transformOrigin: 'center center',
+            }}
+            className="absolute z-20 w-16 h-16 rounded-full cursor-pointer flex items-center justify-center"
+            title="Your Live GPS Beacon"
+          >
+            <div className="w-6 h-6 rounded-full bg-blue-500/20 animate-pulse pointer-events-none" />
+          </div>
         </div>
       </div>
 
       {/* ========================================================= */}
-      {/* 2. TOP STATUS BAR (9:41) & FLOATING CONTROLS (c26.png)   */}
+      {/* 2. TOP CONTROLS: BACK BUTTON (TOP-LEFT) & ACTION STACK (TOP-RIGHT) */}
       {/* ========================================================= */}
-      <div className="relative z-30 pt-3 px-4 flex items-center justify-between pointer-events-none">
-        {/* Mock iOS Status Bar Time */}
-        <span className="text-[14px] font-bold text-[#0f1738] tracking-tight pl-1 pointer-events-auto">
-          9:41
-        </span>
+      <div className="relative z-30 pt-4 px-4 flex items-start justify-between pointer-events-none">
+        {/* Top-Left Back Button (Redirects to Home / Explore) */}
+        <button
+          onClick={() => onBack && onBack()}
+          className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.12)] border border-white flex items-center justify-center text-[#0f1738] hover:bg-white active:scale-90 transition-all cursor-pointer pointer-events-auto"
+          title="Back to Home"
+        >
+          <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+        </button>
 
         {/* Top-Right Control Stack matching c26.png */}
-        <div className="flex flex-col gap-2 pointer-events-auto">
+        <div className="flex flex-col gap-2.5 pointer-events-auto">
           {/* Layers Button */}
           <button
             onClick={() => showToast('Toggle map layers')}
@@ -432,10 +371,10 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
       </div>
 
       {/* ========================================================= */}
-      {/* 3. BOTTOM LOCATION CARD, COMPASS & NAV BAR (c26.png)      */}
+      {/* 3. BOTTOM CONTROLS: COMPASS & LOCATION CARD (NO BOTTOM NAV) */}
       {/* ========================================================= */}
-      <div className="relative z-30 px-3 pb-2 pt-1 pointer-events-none space-y-2">
-        {/* Bottom-Right Floating Navigation Compass Button (c26.png) */}
+      <div className="relative z-30 px-3 pb-4 pt-1 pointer-events-none space-y-2.5">
+        {/* Bottom-Right Floating Navigation Compass Button (matching c26.png) */}
         <div className="flex justify-end pr-1">
           <button
             onClick={() => handleDirections(selectedLocation)}
@@ -448,9 +387,9 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
         {/* Floating Location Detail Card matching c26.png */}
         {selectedLocation && (
-          <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-[26px] p-3 shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-white/90 animate-in slide-in-from-bottom-2 duration-200">
+          <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-[26px] p-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.16)] border border-white/90 animate-in slide-in-from-bottom-2 duration-200">
             {/* Pull Handle */}
-            <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-2" />
+            <div className="w-10 h-1 bg-slate-200 rounded-full mx-auto mb-2.5" />
 
             <div className="flex items-center justify-between gap-3">
               {/* Left Photo */}
@@ -492,49 +431,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
             </div>
           </div>
         )}
-
-        {/* Global Bottom Navigation Bar */}
-        <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-full px-5 py-2.5 shadow-[0_4px_24px_rgba(0,0,0,0.1)] border border-slate-100 flex items-center justify-between max-w-sm mx-auto">
-          <button
-            onClick={() => onNavigate && onNavigate('explore')}
-            className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-[#544ee5] transition-colors cursor-pointer"
-          >
-            <Home className="w-4.5 h-4.5" />
-            <span className="text-[9.5px] font-semibold">Explore</span>
-          </button>
-
-          <button
-            onClick={() => onNavigate && onNavigate('purchased-map')}
-            className="flex flex-col items-center gap-0.5 text-[#544ee5] cursor-pointer"
-          >
-            <MapIcon className="w-4.5 h-4.5 stroke-[2.4]" />
-            <span className="text-[9.5px] font-bold">My Maps</span>
-          </button>
-
-          <button
-            onClick={() => onNavigate && onNavigate('create')}
-            className="w-10 h-10 -my-2 rounded-full bg-[#544ee5] text-white flex items-center justify-center shadow-md shadow-indigo-300 active:scale-95 transition-all cursor-pointer"
-            title="Create new map"
-          >
-            <Plus className="w-5 h-5 stroke-[2.6]" />
-          </button>
-
-          <button
-            onClick={() => onNavigate && onNavigate('creators')}
-            className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-[#544ee5] transition-colors cursor-pointer"
-          >
-            <Users className="w-4.5 h-4.5" />
-            <span className="text-[9.5px] font-semibold">Creators</span>
-          </button>
-
-          <button
-            onClick={() => onNavigate && onNavigate('user-profile')}
-            className="flex flex-col items-center gap-0.5 text-slate-400 hover:text-[#544ee5] transition-colors cursor-pointer"
-          >
-            <User className="w-4.5 h-4.5" />
-            <span className="text-[9.5px] font-semibold">Profile</span>
-          </button>
-        </div>
       </div>
 
       {/* ========================================================= */}
@@ -617,7 +513,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   })}
                 </div>
 
-                {/* Action Buttons */}
+                {/* Action Button: Next */}
                 <div className="pt-2">
                   <button
                     onClick={() => setCustomizationStep(2)}
