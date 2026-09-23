@@ -25,252 +25,159 @@ import {
   ExternalLink,
   MapPin,
   Layers,
-  ShoppingBag
+  ShoppingBag,
+  Footprints,
+  Clock,
+  Share2,
+  Volume2,
+  Info,
+  Maximize2
 } from 'lucide-react';
 
-export const ALL_LOCATIONS = [
-  // 🏛️ Museums (5)
+// Exactly 5 Top Curated Paris Locations
+export const TOP_5_LOCATIONS = [
   {
-    id: 'm-louvre',
+    id: 'louvre',
     type: 'museum',
     name: 'Louvre Museum',
     frenchName: 'Musée du Louvre',
     area: '1st Arr.',
-    address: 'Rue de Rivoli, 75001 Paris',
-    rating: 4.8,
-    reviews: '142k reviews',
-    hours: 'Open 9:00 AM – 6:00 PM (Closed Tue)',
-    description: 'World’s largest art museum and historic monument home to the Mona Lisa and Venus de Milo.',
-    x: 58,
-    y: 38,
-    color: '#6941c6',
-    icon: '🏛️',
-  },
-  {
-    id: 'm-orsay',
-    type: 'museum',
-    name: 'Musée d’Orsay',
-    frenchName: 'Musée d’Orsay',
-    area: '7th Arr.',
-    address: '1 Rue de la Légion d’Honneur, 75007 Paris',
+    address: 'Rue de Rivoli, 75001 Paris, France',
+    lat: 48.8606,
+    lng: 2.3376,
+    googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Louvre+Museum+Paris',
     rating: 4.9,
-    reviews: '98k reviews',
-    hours: 'Open 9:30 AM – 6:00 PM (Closed Mon)',
-    description: 'Premier collection of Impressionist and Post-Impressionist masterpieces in a grand Beaux-Arts railway station.',
-    x: 42,
-    y: 42,
+    reviews: '142k reviews',
+    hours: 'Open 9:00 AM – 6:00 PM',
+    distance: '650 m',
+    walkTime: '8 min walk',
+    description: 'World’s largest art museum and historic monument home to the Mona Lisa, Venus de Milo, and iconic Glass Pyramid.',
+    insideHighlights: [
+      'Cour Napoléon & Glass Pyramid',
+      'Denon Wing — Mona Lisa Room',
+      'Richelieu Wing — French Sculptures',
+      'Medieval Moat Underground Walkway'
+    ],
+    creatorTip: 'Enter via Carrousel du Louvre underground mall for 70% shorter lines in morning hours.',
+    img: '/c6-thumb-paris-museums.png',
+    x: 58,
+    y: 39,
     color: '#6941c6',
     icon: '🏛️',
   },
   {
-    id: 'm-pompidou',
-    type: 'museum',
-    name: 'Centre Pompidou',
-    frenchName: 'Centre Pompidou',
-    area: '4th Arr.',
-    address: 'Place Georges-Pompidou, 75004 Paris',
-    rating: 4.6,
-    reviews: '72k reviews',
-    hours: 'Open 11:00 AM – 9:00 PM (Closed Tue)',
-    description: 'High-tech architectural icon housing Europe’s largest collection of modern and contemporary art.',
-    x: 68,
-    y: 28,
-    color: '#6941c6',
-    icon: '🏛️',
-  },
-  {
-    id: 'm-rodin',
-    type: 'museum',
-    name: 'Musée Rodin',
-    frenchName: 'Musée Rodin',
-    area: '7th Arr.',
-    address: '77 Rue de Varenne, 75007 Paris',
-    rating: 4.7,
-    reviews: '34k reviews',
-    hours: 'Open 10:00 AM – 6:30 PM (Closed Mon)',
-    description: 'Sculptures by Auguste Rodin set in his former residence and serene rose gardens.',
-    x: 27,
-    y: 49,
-    color: '#6941c6',
-    icon: '🏛️',
-  },
-  {
-    id: 'm-cluny',
-    type: 'museum',
-    name: 'Musée de Cluny',
-    frenchName: 'Musée National du Moyen Âge',
-    area: '5th Arr.',
-    address: '28 Rue du Sommerard, 75005 Paris',
-    rating: 4.7,
-    reviews: '18k reviews',
-    hours: 'Open 9:30 AM – 6:15 PM (Closed Mon)',
-    description: 'National museum of the Middle Ages, famous for The Lady and the Unicorn tapestries and Roman thermal baths.',
-    x: 66,
-    y: 52,
-    color: '#6941c6',
-    icon: '🏛️',
-  },
-
-  // ☕ Cafés (5)
-  {
-    id: 'c-flore',
-    type: 'cafe',
-    name: 'Café de Flore',
-    frenchName: 'Café de Flore',
-    area: '6th Arr.',
-    address: '172 Boulevard Saint-Germain, 75006 Paris',
-    rating: 4.6,
-    reviews: '26k reviews',
-    hours: 'Open 7:30 AM – 1:30 AM daily',
-    description: 'Historic cafe famous for existentialist philosophers, artisanal hot chocolate, and classic Parisian terrace vibes.',
-    x: 43,
-    y: 31,
-    color: '#ea580c',
-    icon: '☕',
-  },
-  {
-    id: 'c-magots',
-    type: 'cafe',
-    name: 'Les Deux Magots',
-    frenchName: 'Les Deux Magots',
-    area: '6th Arr.',
-    address: '6 Place Saint-Germain des Prés, 75006 Paris',
-    rating: 4.5,
-    reviews: '21k reviews',
-    hours: 'Open 7:30 AM – 1:00 AM daily',
-    description: 'Celebrated literary cafe overlooking the medieval church of Saint-Germain-des-Prés.',
-    x: 71,
-    y: 34,
-    color: '#ea580c',
-    icon: '☕',
-  },
-  {
-    id: 'c-carette',
-    type: 'cafe',
-    name: 'Carette',
-    frenchName: 'Carette Paris',
-    area: '4th Arr.',
-    address: '25 Place des Vosges, 75004 Paris',
-    rating: 4.7,
-    reviews: '19k reviews',
-    hours: 'Open 7:30 AM – 11:30 PM daily',
-    description: 'Iconic tearoom known for rich hot chocolate, mountain of chantilly cream, and flaky fresh pastries.',
-    x: 9,
-    y: 33,
-    color: '#ea580c',
-    icon: '☕',
-  },
-  {
-    id: 'c-boot',
-    type: 'cafe',
-    name: 'Boot Café',
-    frenchName: 'Boot Café Marais',
-    area: '3rd Arr.',
-    address: '19 Rue du Pont aux Choux, 75003 Paris',
-    rating: 4.7,
-    reviews: '3.4k reviews',
-    hours: 'Open 10:00 AM – 5:00 PM daily',
-    description: 'Charming micro-cafe housed in a historic vintage cobbler shop serving specialty pour-overs.',
-    x: 52,
-    y: 54,
-    color: '#ea580c',
-    icon: '☕',
-  },
-  {
-    id: 'c-kitsune',
-    type: 'cafe',
-    name: 'Café Kitsuné',
-    frenchName: 'Café Kitsuné Palais Royal',
-    area: '1st Arr.',
-    address: '51 Galerie de Montpensier, 75001 Paris',
-    rating: 4.6,
-    reviews: '8.2k reviews',
-    hours: 'Open 9:00 AM – 7:00 PM daily',
-    description: 'Japanese-Parisian specialty coffee bar tucked under the peaceful arcades of Jardin du Palais Royal.',
-    x: 73,
-    y: 57,
-    color: '#ea580c',
-    icon: '☕',
-  },
-
-  // ⭐ Places & Landmarks (5)
-  {
-    id: 'p-eiffel',
+    id: 'eiffel',
     type: 'place',
     name: 'Tour Eiffel',
     frenchName: 'La Tour Eiffel',
     area: '7th Arr.',
-    address: 'Champ de Mars, 5 Av. Anatole France, 75007 Paris',
+    address: 'Champ de Mars, 5 Av. Anatole France, 75007 Paris, France',
+    lat: 48.8584,
+    lng: 2.2945,
+    googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Eiffel+Tower+Paris',
     rating: 4.9,
     reviews: '340k reviews',
-    hours: 'Open 9:00 AM – 11:45 PM daily',
-    description: 'The world-famous wrought-iron lattice tower on the Champ de Mars, Paris’s defining global emblem.',
-    x: 35,
-    y: 43,
+    hours: 'Open 9:00 AM – 11:45 PM',
+    distance: '1.8 km',
+    walkTime: '22 min walk',
+    description: 'Paris’s defining global emblem on the Champ de Mars with panoramic views spanning the entire Parisian skyline.',
+    insideHighlights: [
+      'Champ de Mars Central Lawn',
+      '1st Floor Glass Floor Observation Deck',
+      '2nd Floor Jules Verne Restaurant View',
+      'Summit Skydeck & Gustave Eiffel Office'
+    ],
+    creatorTip: 'Visit 15 minutes before sunset to catch the golden hour glow followed by the hourly sparkle show.',
+    img: '/c18-cover-paris.png',
+    x: 33,
+    y: 44,
     color: '#059669',
     icon: '⭐',
   },
   {
-    id: 'p-arc',
-    type: 'place',
-    name: 'Arc de Triomphe',
-    frenchName: 'Arc de Triomphe de l’Étoile',
-    area: '8th Arr.',
-    address: 'Place Charles de Gaulle, 75008 Paris',
-    rating: 4.8,
-    reviews: '190k reviews',
-    hours: 'Open 10:00 AM – 10:30 PM daily',
-    description: 'Monumental triumphal arch at the western end of the Champs-Élysées with panoramic terrace views.',
-    x: 83,
-    y: 25,
-    color: '#059669',
-    icon: '⭐',
+    id: 'flore',
+    type: 'cafe',
+    name: 'Café de Flore',
+    frenchName: 'Café de Flore',
+    area: '6th Arr.',
+    address: '172 Boulevard Saint-Germain, 75006 Paris, France',
+    lat: 48.8543,
+    lng: 2.3328,
+    googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Cafe+de+Flore+Paris',
+    rating: 4.7,
+    reviews: '26k reviews',
+    hours: 'Open 7:30 AM – 1:30 AM',
+    distance: '900 m',
+    walkTime: '11 min walk',
+    description: 'Historic cafe famous for existentialist writers, artisanal thick hot chocolate, and classic red-awning sidewalk terrace.',
+    insideHighlights: [
+      'Ground Floor Heated Outdoor Terrace',
+      'Art Deco Mahogany Booths',
+      'Signature Chocolat Chaud Spécial',
+      'Fresh Morning Croissants & Brioche'
+    ],
+    creatorTip: 'Ask for a terrace table under the green foliage and order the hot chocolate served with fresh chantilly cream in a silver pitcher.',
+    img: '/c7-photo-cafe-de-flore.png',
+    x: 44,
+    y: 30,
+    color: '#ea580c',
+    icon: '☕',
   },
   {
-    id: 'p-notre-dame',
+    id: 'notre-dame',
     type: 'place',
     name: 'Notre-Dame Cathedral',
     frenchName: 'Cathédrale Notre-Dame de Paris',
     area: '4th Arr.',
-    address: '6 Parvis Notre-Dame - Pl. Jean-Paul II, 75004 Paris',
+    address: '6 Parvis Notre-Dame - Pl. Jean-Paul II, 75004 Paris, France',
+    lat: 48.8530,
+    lng: 2.3499,
+    googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Notre-Dame+Cathedral+Paris',
     rating: 4.8,
     reviews: '210k reviews',
-    hours: 'Parvis open daily 8:00 AM – 7:00 PM',
-    description: 'Masterpiece of French Gothic architecture with rose windows, twin bell towers, and gargoyles on Île de la Cité.',
-    x: 86,
+    hours: 'Parvis open 8:00 AM – 7:00 PM',
+    distance: '1.1 km',
+    walkTime: '14 min walk',
+    description: 'Masterpiece of French Gothic architecture on Île de la Cité featuring magnificent rose windows and twin western bell towers.',
+    insideHighlights: [
+      'Parvis Jean-Paul II Main Square',
+      'West Façade Portal of the Virgin',
+      'South Rose Window & Spire View',
+      'Square Jean XXIII Riverside Garden'
+    ],
+    creatorTip: 'Walk along the south bank of the Seine on Quai de Montebello for the classic postcard view of the flying buttresses.',
+    img: '/c15-pop-paris.png',
+    x: 85,
     y: 50,
     color: '#059669',
     icon: '⭐',
   },
   {
-    id: 'p-bastille',
+    id: 'arc',
     type: 'place',
-    name: 'Place de la Bastille',
-    frenchName: 'Place de la Bastille',
-    area: '11th Arr.',
-    address: 'Place de la Bastille, 75011 Paris',
-    rating: 4.6,
-    reviews: '45k reviews',
-    hours: 'Open 24 hours',
-    description: 'Historic square where the storming of the Bastille prison began the French Revolution, centered by the July Column.',
-    x: 81,
-    y: 42,
-    color: '#059669',
-    icon: '⭐',
-  },
-  {
-    id: 'p-montmartre',
-    type: 'place',
-    name: 'Montmartre & Sacré-Cœur',
-    frenchName: 'Basilique du Sacré-Cœur',
-    area: '18th Arr.',
-    address: '35 Rue du Chevalier de la Barre, 75018 Paris',
-    rating: 4.9,
-    reviews: '175k reviews',
-    hours: 'Open 6:30 AM – 10:30 PM daily',
-    description: 'Hilltop basilica offering sweeping vistas across Paris, cobbled artist alleyways, and bohemian heritage.',
-    x: 53,
-    y: 12,
+    name: 'Arc de Triomphe',
+    frenchName: 'Arc de Triomphe de l’Étoile',
+    area: '8th Arr.',
+    address: 'Place Charles de Gaulle, 75008 Paris, France',
+    lat: 48.8738,
+    lng: 2.2950,
+    googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Arc+de+Triomphe+Paris',
+    rating: 4.8,
+    reviews: '190k reviews',
+    hours: 'Open 10:00 AM – 10:30 PM',
+    distance: '2.4 km',
+    walkTime: '28 min walk',
+    description: 'Monumental triumphal arch honoring French military history at the western terminus of the Champs-Élysées with sweeping 360° roof views.',
+    insideHighlights: [
+      'Tomb of the Unknown Soldier & Eternal Flame',
+      'Rooftop 360° Panoramic Terrace',
+      'Interior Sculpture & History Museum',
+      'Champs-Élysées Central Vista Axis'
+    ],
+    creatorTip: 'Never try to cross the roundabout traffic above ground; use the pedestrian tunnel from the Champs-Élysées side.',
+    img: '/c8-thumb-paris.png',
+    x: 82,
+    y: 24,
     color: '#059669',
     icon: '⭐',
   },
@@ -283,7 +190,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
       const saved = localStorage.getItem('planitory_purchased_maps');
       if (saved) return JSON.parse(saved);
     } catch (e) {}
-    // Default to unlocked for seamless demonstration / purchase flow
     return ['paris-essentials'];
   });
 
@@ -292,8 +198,10 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   // Active Map Controls
   const [activeCategory, setActiveCategory] = useState('all'); // 'all' | 'museum' | 'cafe' | 'place'
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [showDirectionsModal, setShowDirectionsModal] = useState(false);
+  const [showInsideModal, setShowInsideModal] = useState(false);
   const [showCustomizeModal, setShowCustomizeModal] = useState(false);
-  const [pinThemeColor, setPinThemeColor] = useState('default'); // 'default' | 'rose' | 'emerald' | 'sunset'
+  const [pinThemeColor, setPinThemeColor] = useState('default');
   const [toastMessage, setToastMessage] = useState(null);
 
   // Zoom & Pan Engine State
@@ -301,6 +209,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [focusedPinId, setFocusedPinId] = useState(null);
   const mapContainerRef = useRef(null);
 
   const showToast = (msg) => {
@@ -317,7 +226,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   const handleZoomOut = () => {
     setZoomLevel((prev) => {
       const next = Math.max(1, Number((prev - 0.35).toFixed(2)));
-      if (next === 1) setPanOffset({ x: 0, y: 0 }); // reset pan on full zoom out
+      if (next === 1) setPanOffset({ x: 0, y: 0 });
       return next;
     });
     showToast(`Zoom: ${Math.round(Math.max(1, zoomLevel - 0.35) * 100)}%`);
@@ -327,13 +236,47 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
     setZoomLevel(1);
     setPanOffset({ x: 0, y: 0 });
     setSelectedLocation(null);
-    showToast("Map view reset & centered");
+    setFocusedPinId(null);
+    showToast("Map centered on Paris");
   };
 
   const handleLocateMe = () => {
-    setZoomLevel(1.4);
-    setPanOffset({ x: -10, y: -20 });
-    showToast("📍 Centered on your GPS location: Seine River (1st Arr.)");
+    setZoomLevel(1.5);
+    setPanOffset({ x: 0, y: 0 });
+    showToast("📍 GPS Position: Seine River (1st Arr.)");
+  };
+
+  // Focus directly onto a location
+  const handleSelectLocation = (loc) => {
+    setSelectedLocation(loc);
+    setFocusedPinId(loc.id);
+    // Smoothly pan & zoom towards location
+    const targetX = -(loc.x - 50) * 2.8;
+    const targetY = -(loc.y - 50) * 2.8;
+    setZoomLevel(1.6);
+    setPanOffset({ x: targetX, y: targetY });
+    setShowDirectionsModal(true);
+  };
+
+  // Option 1: Explore Inside Map (In-App Zoom & Highlight)
+  const handleExploreInsideMap = () => {
+    if (!selectedLocation) return;
+    setShowDirectionsModal(false);
+    setShowInsideModal(true);
+    // Deep zoom into location
+    const targetX = -(selectedLocation.x - 50) * 3.5;
+    const targetY = -(selectedLocation.y - 50) * 3.5;
+    setZoomLevel(2.2);
+    setPanOffset({ x: targetX, y: targetY });
+    showToast(`🗺️ Exploring inside ${selectedLocation.name}`);
+  };
+
+  // Option 2: Open in Google Maps Direction
+  const handleOpenGoogleMaps = () => {
+    if (!selectedLocation) return;
+    const url = selectedLocation.googleMapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedLocation.name + ' ' + selectedLocation.address)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+    showToast(`🚀 Opening ${selectedLocation.name} in Google Maps...`);
   };
 
   // Pan Gestures (Mouse & Touch)
@@ -344,7 +287,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    const maxBound = (zoomLevel - 1) * 180;
+    const maxBound = (zoomLevel - 1) * 200;
     const newX = Math.max(-maxBound, Math.min(maxBound, e.clientX - dragStart.x));
     const newY = Math.max(-maxBound, Math.min(maxBound, e.clientY - dragStart.y));
     setPanOffset({ x: newX, y: newY });
@@ -364,7 +307,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   const handleTouchMove = (e) => {
     if (!isDragging || e.touches.length !== 1) return;
-    const maxBound = (zoomLevel - 1) * 180;
+    const maxBound = (zoomLevel - 1) * 200;
     const newX = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientX - dragStart.x));
     const newY = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientY - dragStart.y));
     setPanOffset({ x: newX, y: newY });
@@ -372,8 +315,8 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   const handleTouchEnd = () => setIsDragging(false);
 
-  // Filter Locations by Active Category
-  const visibleLocations = ALL_LOCATIONS.filter(
+  // Filter 5 Locations
+  const visibleLocations = TOP_5_LOCATIONS.filter(
     (loc) => activeCategory === 'all' || loc.type === activeCategory
   );
 
@@ -388,7 +331,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
     if (pinThemeColor === 'sunset') {
       return type === 'museum' ? '#d97706' : type === 'cafe' ? '#f59e0b' : '#fbbf24';
     }
-    // Default palette matching UI
     return type === 'museum' ? '#544ee5' : type === 'cafe' ? '#ea580c' : '#059669';
   };
 
@@ -433,7 +375,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
           {/* Empty State Body */}
           <div className="flex-1 flex flex-col items-center justify-center px-6 text-center space-y-4 -mt-10">
-            {/* Animated Compass & Map Pin Badge */}
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-100 to-indigo-50 flex items-center justify-center shadow-inner border border-indigo-100">
                 <MapIcon className="w-11 h-11 text-[#544ee5] stroke-[1.8]" />
@@ -455,7 +396,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               </p>
             </div>
 
-            {/* Action Buttons */}
             <div className="w-full max-w-xs space-y-2.5 pt-2">
               <button
                 onClick={() => onNavigate && onNavigate('explore')}
@@ -465,12 +405,11 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 <span>Explore Maps</span>
               </button>
 
-              {/* Quick Sample Map Demo */}
               <button
                 onClick={() => {
                   setPurchasedMaps(['paris-essentials']);
                   localStorage.setItem('planitory_purchased_maps', JSON.stringify(['paris-essentials']));
-                  showToast("✨ Paris Essentials map unlocked for preview!");
+                  showToast("✨ Paris Essentials unlocked with 5 top locations!");
                 }}
                 className="w-full py-3 bg-white border border-[#e4e8f7] hover:border-indigo-200 active:scale-[0.99] text-[#544ee5] font-bold rounded-2xl text-[13px] shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-all"
               >
@@ -483,7 +422,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
       )}
 
       {/* ========================================================= */}
-      {/* SCENARIO B: USER HAS PURCHASED MAPS (REAL INTERACTIVE MAP) */}
+      {/* SCENARIO B: REAL WORKING INTERACTIVE MAP (5 TOP LOCATIONS) */}
       {/* ========================================================= */}
       {hasPurchased && (
         <>
@@ -528,7 +467,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               </div>
 
               <button
-                onClick={() => showToast("Map Settings: Offline cache active & high-accuracy GPS")}
+                onClick={() => showToast("Map Settings: High-accuracy GPS active")}
                 className="w-9 h-9 -mr-2 rounded-full flex items-center justify-center text-[#111936] hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
                 title="Settings"
               >
@@ -536,13 +475,12 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               </button>
             </div>
 
-            {/* Category Filter Pills Row (Exact layout from uploaded image) */}
+            {/* Category Filter Pills Row */}
             <div className="flex items-center gap-2 py-2 overflow-x-auto scrollbar-none">
-              {/* All */}
               <button
                 onClick={() => {
                   setActiveCategory('all');
-                  showToast("Showing all 15 locations");
+                  showToast("Showing all 5 highlights");
                 }}
                 className={`px-4 py-1.5 rounded-full font-bold text-[12.5px] transition-all cursor-pointer shrink-0 ${
                   activeCategory === 'all'
@@ -550,14 +488,13 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                     : 'bg-white text-[#717ea1] border border-slate-200/80 hover:text-slate-900'
                 }`}
               >
-                All
+                All (5)
               </button>
 
-              {/* Museums */}
               <button
                 onClick={() => {
                   setActiveCategory('museum');
-                  showToast("Filtered: 5 Museums");
+                  showToast("Filtered: Louvre Museum");
                 }}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold text-[12.5px] transition-all cursor-pointer shrink-0 ${
                   activeCategory === 'museum'
@@ -569,11 +506,10 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 <span>Museums</span>
               </button>
 
-              {/* Cafés */}
               <button
                 onClick={() => {
                   setActiveCategory('cafe');
-                  showToast("Filtered: 5 Cafés");
+                  showToast("Filtered: Café de Flore");
                 }}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold text-[12.5px] transition-all cursor-pointer shrink-0 ${
                   activeCategory === 'cafe'
@@ -585,11 +521,10 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 <span>Cafés</span>
               </button>
 
-              {/* Places */}
               <button
                 onClick={() => {
                   setActiveCategory('place');
-                  showToast("Filtered: Top Landmark Places");
+                  showToast("Filtered: Eiffel Tower, Notre-Dame, Arc de Triomphe");
                 }}
                 className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-bold text-[12.5px] transition-all cursor-pointer shrink-0 ${
                   activeCategory === 'place'
@@ -628,7 +563,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 }}
                 className="relative w-full h-full"
               >
-                {/* Real High-Resolution Paris Map Graphic */}
+                {/* Real Paris Street Map Graphic */}
                 <img
                   src="/c10-paris-map.png"
                   alt="Interactive Paris Street Map"
@@ -636,17 +571,35 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   draggable={false}
                 />
 
-                {/* Pulsing Blue Live GPS Radar User Location Marker */}
+                {/* Pulsing Blue Live GPS Radar User Location Marker (Seine River) */}
                 <div
                   style={{ left: '50%', top: '38%' }}
                   className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10"
                 >
-                  <div className="w-10 h-10 -ml-5 -mt-5 absolute top-1/2 left-1/2 rounded-full bg-blue-500/20 animate-ping" />
-                  <div className="w-6 h-6 -ml-3 -mt-3 absolute top-1/2 left-1/2 rounded-full bg-blue-500/35 animate-pulse" />
-                  <div className="w-3.5 h-3.5 rounded-full bg-blue-600 ring-2 ring-white shadow-md relative z-10" />
+                  <div className="w-12 h-12 -ml-6 -mt-6 absolute top-1/2 left-1/2 rounded-full bg-blue-500/20 animate-ping" />
+                  <div className="w-7 h-7 -ml-3.5 -mt-3.5 absolute top-1/2 left-1/2 rounded-full bg-blue-500/35 animate-pulse" />
+                  <div className="w-4 h-4 rounded-full bg-blue-600 ring-2 ring-white shadow-md relative z-10 flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                  </div>
                 </div>
 
-                {/* Specific Location Pins on Paris Map */}
+                {/* Route Line when Pin is Focused */}
+                {selectedLocation && (
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none z-15">
+                    <line
+                      x1="50%"
+                      y1="38%"
+                      x2={`${selectedLocation.x}%`}
+                      y2={`${selectedLocation.y}%`}
+                      stroke="#544ee5"
+                      strokeWidth="2.5"
+                      strokeDasharray="4 4"
+                      className="animate-pulse"
+                    />
+                  </svg>
+                )}
+
+                {/* 5 Specific Curated Location Pins on Paris Map */}
                 {visibleLocations.map((loc) => {
                   const isSelected = selectedLocation?.id === loc.id;
                   const pinBg = getPinColor(loc.type);
@@ -660,15 +613,14 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedLocation(loc);
-                          showToast(`📍 ${loc.name} (${loc.area})`);
+                          handleSelectLocation(loc);
                         }}
                         style={{
                           backgroundColor: pinBg,
-                          transform: isSelected ? 'scale(1.25)' : 'scale(1)',
+                          transform: isSelected ? 'scale(1.3)' : 'scale(1)',
                         }}
-                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full text-white flex items-center justify-center text-xs sm:text-sm shadow-md ring-2 ring-white cursor-pointer transition-all hover:scale-115 active:scale-95 ${
-                          isSelected ? 'ring-4 ring-indigo-300 shadow-xl' : ''
+                        className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full text-white flex items-center justify-center text-sm shadow-md ring-2 ring-white cursor-pointer transition-all hover:scale-120 active:scale-95 ${
+                          isSelected ? 'ring-4 ring-indigo-300 shadow-2xl animate-bounce' : ''
                         }`}
                         title={loc.name}
                       >
@@ -676,19 +628,16 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                       </button>
 
                       {/* Small Location Label on Map */}
-                      {zoomLevel >= 1.2 && (
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-1.5 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-[9px] font-bold text-[#0f1738] whitespace-nowrap shadow-xs border border-black/5 pointer-events-none">
-                          {loc.name}
-                        </div>
-                      )}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-xs text-[9.5px] font-bold text-[#0f1738] whitespace-nowrap shadow-xs border border-black/5 pointer-events-none">
+                        {loc.name}
+                      </div>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Floating Map Zoom & Navigation Controls (+ / - / Reset / Locate) */}
+              {/* Floating Map Zoom & Navigation Controls */}
               <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-30">
-                {/* Zoom In Button */}
                 <button
                   onClick={handleZoomIn}
                   className="w-8 h-8 rounded-xl bg-white/95 backdrop-blur-md shadow-md border border-slate-200/80 text-[#0f1738] hover:text-[#544ee5] active:scale-90 flex items-center justify-center transition-all cursor-pointer"
@@ -697,7 +646,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   <ZoomIn className="w-4 h-4 stroke-[2.4]" />
                 </button>
 
-                {/* Zoom Out Button */}
                 <button
                   onClick={handleZoomOut}
                   className="w-8 h-8 rounded-xl bg-white/95 backdrop-blur-md shadow-md border border-slate-200/80 text-[#0f1738] hover:text-[#544ee5] active:scale-90 flex items-center justify-center transition-all cursor-pointer"
@@ -706,7 +654,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   <ZoomOut className="w-4 h-4 stroke-[2.4]" />
                 </button>
 
-                {/* Reset Zoom Button */}
                 {(zoomLevel > 1 || panOffset.x !== 0 || panOffset.y !== 0) && (
                   <button
                     onClick={handleResetView}
@@ -729,52 +676,11 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
               {/* Bottom Left: Quick Zoom Level Indicator */}
               <div className="absolute bottom-3 left-3 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-xs text-[10px] font-bold text-white z-30 pointer-events-none">
-                {Math.round(zoomLevel * 100)}% Zoom &bull; Paris
+                {Math.round(zoomLevel * 100)}% Zoom &bull; 5 Places Active
               </div>
-
-              {/* Selected Pin Detail Sheet Overlay */}
-              {selectedLocation && (
-                <div className="absolute top-3 left-3 right-14 bg-white/98 backdrop-blur-md p-3 rounded-2xl shadow-xl border border-indigo-100 z-40 flex items-start justify-between animate-in fade-in duration-150">
-                  <div className="flex-1 pr-2">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="text-sm">{selectedLocation.icon}</span>
-                      <h4 className="text-xs font-black text-[#0f1738] truncate">
-                        {selectedLocation.name}
-                      </h4>
-                      <span className="text-[10px] font-bold text-amber-500 flex items-center">
-                        ★ {selectedLocation.rating}
-                      </span>
-                    </div>
-                    <p className="text-[10.5px] text-[#717ea1] leading-tight line-clamp-1 mb-1.5">
-                      {selectedLocation.description}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-semibold text-slate-500">
-                        {selectedLocation.area}
-                      </span>
-                      <button
-                        onClick={() =>
-                          showToast(`Opening directions to ${selectedLocation.name}...`)
-                        }
-                        className="text-[10px] font-bold text-[#544ee5] hover:underline flex items-center gap-0.5 cursor-pointer"
-                      >
-                        <span>Directions</span>
-                        <ExternalLink className="w-2.5 h-2.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setSelectedLocation(null)}
-                    className="p-1 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
             </div>
 
-            {/* Bottom Sheet Panel Overlay (Exact from user screenshot) */}
+            {/* Bottom Sheet Panel Overlay */}
             <div className="w-full bg-white rounded-3xl p-3.5 sm:p-4 shadow-[0_4px_20px_rgba(50,70,140,0.06)] border border-[#e8ecf8] space-y-3 mt-2.5">
               {/* Grab Handle */}
               <div className="w-9 h-1 rounded-full bg-slate-200 mx-auto -mt-1 mb-1" />
@@ -803,13 +709,14 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 <ArrowRight className="w-4 h-4 stroke-[2.4]" />
               </button>
 
-              {/* 3 Interactive Stat Summary Cards (Museums, Cafes, Places) */}
+              {/* 3 Interactive Stat Summary Cards for 5 Locations */}
               <div className="grid grid-cols-3 gap-2 pt-0.5">
-                {/* 5 Museums */}
+                {/* 1 Museum */}
                 <button
                   onClick={() => {
                     setActiveCategory('museum');
-                    showToast("Filtered map: 5 Museums");
+                    const louvre = TOP_5_LOCATIONS.find((l) => l.id === 'louvre');
+                    if (louvre) handleSelectLocation(louvre);
                   }}
                   className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer ${
                     activeCategory === 'museum'
@@ -818,15 +725,16 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   }`}
                 >
                   <span className="text-base mb-0.5">🏛️</span>
-                  <span className="text-[14px] font-black text-[#0f1738] leading-none">5</span>
-                  <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Museums</span>
+                  <span className="text-[14px] font-black text-[#0f1738] leading-none">1</span>
+                  <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Museum</span>
                 </button>
 
-                {/* 5 Cafés */}
+                {/* 1 Café */}
                 <button
                   onClick={() => {
                     setActiveCategory('cafe');
-                    showToast("Filtered map: 5 Cafés");
+                    const flore = TOP_5_LOCATIONS.find((l) => l.id === 'flore');
+                    if (flore) handleSelectLocation(flore);
                   }}
                   className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer ${
                     activeCategory === 'cafe'
@@ -835,15 +743,15 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   }`}
                 >
                   <span className="text-base mb-0.5">☕</span>
-                  <span className="text-[14px] font-black text-[#0f1738] leading-none">5</span>
-                  <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Cafés</span>
+                  <span className="text-[14px] font-black text-[#0f1738] leading-none">1</span>
+                  <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Café</span>
                 </button>
 
-                {/* 15 Places */}
+                {/* 3 Places */}
                 <button
                   onClick={() => {
                     setActiveCategory('place');
-                    showToast("Filtered map: Top Landmark Places");
+                    showToast("Showing 3 Landmark Places");
                   }}
                   className={`flex flex-col items-center justify-center p-2 rounded-2xl transition-all cursor-pointer ${
                     activeCategory === 'place'
@@ -852,7 +760,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   }`}
                 >
                   <span className="text-base mb-0.5">⭐</span>
-                  <span className="text-[14px] font-black text-[#0f1738] leading-none">15</span>
+                  <span className="text-[14px] font-black text-[#0f1738] leading-none">3</span>
                   <span className="text-[11px] font-semibold text-[#717ea1] mt-0.5">Places</span>
                 </button>
               </div>
@@ -863,7 +771,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
       {/* Floating Bottom Navigation Bar */}
       <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#e8ecf8] px-6 pt-2 pb-3 sm:pb-2.5 shadow-[0_-4px_20px_rgba(50,70,140,0.06)] flex items-center justify-between">
-        {/* Explore Tab */}
         <button
           onClick={() => onNavigate && onNavigate('explore')}
           className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
@@ -872,7 +779,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           <span className="text-[11px] font-semibold">Explore</span>
         </button>
 
-        {/* My Maps Tab (ACTIVE in purple!) */}
         <button
           onClick={() => showToast("You are on My Maps")}
           className="flex flex-col items-center gap-1 text-[#544ee5] transition-all cursor-pointer"
@@ -881,7 +787,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           <span className="text-[11px] font-bold">My Maps</span>
         </button>
 
-        {/* Center Floating Action Button (+ Create) */}
         <div className="-mt-6 flex flex-col items-center">
           <button
             onClick={() => onNavigate && onNavigate('create')}
@@ -893,7 +798,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           <span className="text-[10.5px] font-bold text-[#544ee5] mt-0.5">Create</span>
         </div>
 
-        {/* Creators Tab */}
         <button
           onClick={() => onNavigate && onNavigate('creators')}
           className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
@@ -902,7 +806,6 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           <span className="text-[10.5px] font-semibold">Creators</span>
         </button>
 
-        {/* Profile Tab */}
         <button
           onClick={() => onNavigate && onNavigate('user-profile')}
           className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
@@ -911,6 +814,186 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           <span className="text-[10.5px] font-semibold">Profile</span>
         </button>
       </div>
+
+      {/* ========================================================= */}
+      {/* 🚀 TWO OPTIONS MODAL: "INSIDE MAP" vs "GOOGLE MAPS"       */}
+      {/* ========================================================= */}
+      {showDirectionsModal && selectedLocation && (
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-white rounded-3xl p-5 shadow-2xl border border-indigo-50 space-y-4 animate-in slide-in-from-bottom duration-200">
+            {/* Header with Photo Thumbnail */}
+            <div className="flex items-start gap-3 pb-2 border-b border-slate-100">
+              <img
+                src={selectedLocation.img}
+                alt={selectedLocation.name}
+                className="w-14 h-14 rounded-2xl object-cover shadow-sm border border-black/5 shrink-0"
+              />
+              <div className="flex-1 min-w-0 pr-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs">{selectedLocation.icon}</span>
+                  <h3 className="font-black text-[15px] text-[#0f1738] truncate">
+                    {selectedLocation.name}
+                  </h3>
+                </div>
+                <p className="text-[11px] text-[#717ea1] font-medium truncate">
+                  {selectedLocation.frenchName} &bull; {selectedLocation.area}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10.5px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Footprints className="w-3 h-3" />
+                    <span>{selectedLocation.walkTime} ({selectedLocation.distance})</span>
+                  </span>
+                  <span className="text-[10.5px] font-bold text-amber-500">
+                    ★ {selectedLocation.rating}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDirectionsModal(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Location Description */}
+            <p className="text-[11.5px] text-[#556080] leading-relaxed">
+              {selectedLocation.description}
+            </p>
+
+            {/* Creator Tip Badge */}
+            <div className="p-2.5 rounded-2xl bg-[#f5f3ff] border border-indigo-100 flex items-start gap-2">
+              <Sparkles className="w-4 h-4 text-[#544ee5] shrink-0 mt-0.5" />
+              <div className="text-[11px] text-[#4b43c6] leading-tight">
+                <strong className="font-bold">Creator Tip:</strong> {selectedLocation.creatorTip}
+              </div>
+            </div>
+
+            {/* THE TWO REQUIRED DIRECTION OPTIONS */}
+            <div className="space-y-2 pt-1">
+              {/* Option 1: Explore Inside Map */}
+              <button
+                onClick={handleExploreInsideMap}
+                className="w-full py-3 px-4 bg-[#544ee5] hover:bg-[#4842db] active:scale-[0.99] text-white font-bold rounded-2xl text-[13.5px] shadow-md shadow-indigo-200 flex items-center justify-between cursor-pointer transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center">
+                    <MapIcon className="w-3.5 h-3.5" />
+                  </div>
+                  <span>Explore Inside Map</span>
+                </div>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              {/* Option 2: Get Google Maps Directions */}
+              <button
+                onClick={handleOpenGoogleMaps}
+                className="w-full py-3 px-4 bg-white border border-[#e2e7f5] hover:border-indigo-300 hover:bg-slate-50 active:scale-[0.99] text-[#0f1738] font-bold rounded-2xl text-[13.5px] shadow-xs flex items-center justify-between cursor-pointer transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <Navigation className="w-3.5 h-3.5 fill-current rotate-45" />
+                  </div>
+                  <span>Open in Google Maps Direction</span>
+                </div>
+                <ExternalLink className="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* 🏛️ INSIDE MAP HIGHLIGHTS DRAWER (OPTION 1 VIEW)          */}
+      {/* ========================================================= */}
+      {showInsideModal && selectedLocation && (
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end justify-center p-3 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-white rounded-3xl p-5 shadow-2xl border border-indigo-50 space-y-3.5 max-h-[85vh] overflow-y-auto scrollbar-none">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-base">{selectedLocation.icon}</span>
+                <h3 className="font-black text-[16px] text-[#0f1738]">
+                  Inside {selectedLocation.name}
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowInsideModal(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Cover Hero Photo */}
+            <div className="relative w-full h-32 rounded-2xl overflow-hidden shadow-inner border border-black/5">
+              <img
+                src={selectedLocation.img}
+                alt={selectedLocation.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-xs text-white text-[10.5px] font-bold flex items-center gap-1.5">
+                <MapPin className="w-3 h-3 text-red-400" />
+                <span>{selectedLocation.address}</span>
+              </div>
+            </div>
+
+            {/* Key Highlights Checklist */}
+            <div className="space-y-1.5">
+              <span className="text-[12px] font-extrabold text-[#0f1738] block">
+                Must-See Highlights & Spots
+              </span>
+              <div className="space-y-1.5">
+                {selectedLocation.insideHighlights.map((hl, idx) => (
+                  <div
+                    key={idx}
+                    className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-[11.5px] font-semibold text-[#1f2937] flex items-center gap-2"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#544ee5] shrink-0" />
+                    <span>{hl}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Audio Tip Bar */}
+            <div className="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#544ee5] text-white flex items-center justify-center shadow-xs">
+                  <Volume2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[11.5px] font-extrabold text-[#0f1738]">Audio Tour Guide</div>
+                  <div className="text-[10px] text-[#717ea1]">1 min 45 sec curated story</div>
+                </div>
+              </div>
+              <button
+                onClick={() => showToast("Playing audio story for " + selectedLocation.name)}
+                className="px-3 py-1.5 bg-white text-[#544ee5] font-bold text-[11px] rounded-xl shadow-xs border border-indigo-100 cursor-pointer active:scale-95"
+              >
+                Play Audio
+              </button>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={handleOpenGoogleMaps}
+                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-[12.5px] shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Navigation className="w-3.5 h-3.5 fill-current rotate-45" />
+                <span>Navigate in Google Maps</span>
+              </button>
+
+              <button
+                onClick={() => setShowInsideModal(false)}
+                className="py-3 px-4 bg-slate-100 text-slate-700 font-bold rounded-2xl text-[12.5px] cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Map Customization Modal */}
       {showCustomizeModal && (
