@@ -71,7 +71,8 @@ const FEATURED_MAPS = [
     subtitle: 'Art, history and must-see highlights.',
     badge: 'Bestseller',
     badgeBg: 'bg-[#1b254b] text-white',
-    thumbnail: '/thumb-paris-map.png',
+    thumbnail: '/map-card-paris-hq.png',
+    hasEmbeddedBadge: true,
     places: '5 places',
     duration: '1–2 days',
     creatorHandle: 'travelwithjulie',
@@ -88,7 +89,8 @@ const FEATURED_MAPS = [
     subtitle: 'Explore iconic places and hidden gems.',
     badge: 'New',
     badgeBg: 'bg-[#eeedff] text-[#544ee5]',
-    thumbnail: '/thumb-rome-map.png',
+    thumbnail: '/map-card-rome-hq.jpg',
+    hasEmbeddedBadge: true,
     places: '7 places',
     duration: '2–3 days',
     creatorHandle: 'explorerchris',
@@ -100,20 +102,21 @@ const FEATURED_MAPS = [
     isBookmarked: false,
   },
   {
-    id: 'tokyo-gems',
-    title: 'Tokyo Hidden Gems',
-    subtitle: 'Off the beaten path, real local spots.',
-    badge: "Editor's Pick",
-    badgeBg: 'bg-[#6b62f6] text-white',
-    thumbnail: '/thumb-tokyo-map.png',
-    places: '6 places',
-    duration: '1–2 days',
+    id: 'nyc-trending',
+    title: 'NYC Best Spots & Food',
+    subtitle: 'Iconic landmarks and rooftop gems.',
+    badge: 'Trending',
+    badgeBg: 'bg-[#1b254b] text-white',
+    thumbnail: '/map-card-nyc-hq.jpg',
+    hasEmbeddedBadge: true,
+    places: '8 places',
+    duration: '2–3 days',
     creatorHandle: 'sarahmaps',
     creatorAvatar: '/c6-traveler-maya.png',
     rating: 4.9,
-    reviewsCount: '267',
-    price: '$8.99',
-    category: 'culture',
+    reviewsCount: '412',
+    price: '$12.50',
+    category: 'food',
     isBookmarked: false,
   },
 ];
@@ -123,7 +126,7 @@ const POPULAR_MAPS = [
     id: 'paris-popular',
     title: 'Top 5 Museums in Paris',
     subtitle: 'Art, history and must-see highlights.',
-    thumbnail: '/thumb-paris-map.png',
+    thumbnail: '/map-card-paris-hq.png',
     places: '5 places',
     duration: '1–2 days',
     price: '$10',
@@ -134,11 +137,22 @@ const POPULAR_MAPS = [
     id: 'rome-popular',
     title: 'Rome in a Weekend',
     subtitle: 'Explore iconic places and hidden gems.',
-    thumbnail: '/thumb-rome-map.png',
+    thumbnail: '/map-card-rome-hq.jpg',
     places: '7 places',
     duration: '2–3 days',
     price: '$11.99',
     category: 'culture',
+    isLiked: false,
+  },
+  {
+    id: 'nyc-popular',
+    title: 'NYC Best Spots & Food',
+    subtitle: 'Iconic landmarks and rooftop gems.',
+    thumbnail: '/map-card-nyc-hq.jpg',
+    places: '8 places',
+    duration: '2–3 days',
+    price: '$12.50',
+    category: 'food',
     isLiked: false,
   },
 ];
@@ -451,19 +465,37 @@ export default function ExplorePage({ onBack, onNavigate }) {
                   onClick={() => {
                     if (onNavigate) onNavigate('map-detail');
                   }}
-                  className="relative w-full h-[125px] overflow-hidden cursor-pointer"
+                  className="relative w-full h-[125px] overflow-hidden cursor-pointer bg-slate-100"
                 >
                   <img
                     src={card.thumbnail}
                     alt={card.title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 pointer-events-none"
                   />
-                  {/* Badge */}
-                  <span
-                    className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[10.5px] font-bold shadow-xs ${card.badgeBg}`}
+                  {/* Badge if not already embedded in artwork */}
+                  {!card.hasEmbeddedBadge && (
+                    <span
+                      className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full text-[10.5px] font-bold shadow-xs ${card.badgeBg}`}
+                    >
+                      {card.badge}
+                    </span>
+                  )}
+
+                  {/* Top-Right Heart Favorite Button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleBookmark(card.id);
+                    }}
+                    className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer z-10 ${
+                      card.isBookmarked ? 'bg-white shadow-xs' : 'bg-transparent'
+                    }`}
+                    title="Bookmark"
                   >
-                    {card.badge}
-                  </span>
+                    {card.isBookmarked && (
+                      <Heart className="w-4 h-4 fill-[#ff4a73] text-[#ff4a73] scale-110" />
+                    )}
+                  </button>
                 </div>
 
                 {/* Card Body */}

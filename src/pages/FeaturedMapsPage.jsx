@@ -32,7 +32,8 @@ const ALL_FEATURED_MAPS = [
     subtitle: 'Art, history and must-see highlights.',
     badge: 'Bestseller',
     badgeBg: 'bg-[#1b254b] text-white',
-    thumbnail: '/grid-paris-map.png',
+    thumbnail: '/map-card-paris-hq.png',
+    hasEmbeddedBadge: true,
     places: '5 places',
     duration: '1–2 days',
     creatorHandle: 'travelwithjulie',
@@ -50,7 +51,8 @@ const ALL_FEATURED_MAPS = [
     subtitle: 'Explore iconic places and hidden gems.',
     badge: 'New',
     badgeBg: 'bg-[#eeedff] text-[#544ee5]',
-    thumbnail: '/grid-rome-map.png',
+    thumbnail: '/map-card-rome-hq.jpg',
+    hasEmbeddedBadge: true,
     places: '7 places',
     duration: '2–3 days',
     creatorHandle: 'explorerchris',
@@ -69,6 +71,7 @@ const ALL_FEATURED_MAPS = [
     badge: "Editor's Pick",
     badgeBg: 'bg-[#6b62f6] text-white',
     thumbnail: '/grid-tokyo-map.png',
+    hasEmbeddedBadge: false,
     places: '6 places',
     duration: '1–2 days',
     creatorHandle: 'sarahmaps',
@@ -86,7 +89,8 @@ const ALL_FEATURED_MAPS = [
     subtitle: 'Iconic bites and local favorites.',
     badge: 'Trending',
     badgeBg: 'bg-[#1b254b] text-white',
-    thumbnail: '/grid-nyc-map.png',
+    thumbnail: '/map-card-nyc-hq.jpg',
+    hasEmbeddedBadge: true,
     places: '10 places',
     duration: '2–4 days',
     creatorHandle: 'matthewgoes',
@@ -333,7 +337,7 @@ export default function FeaturedMapsPage({ onBack, onNavigate }) {
                 onClick={() => {
                   if (onNavigate) onNavigate('map-detail');
                 }}
-                className="relative w-full aspect-[16/10] overflow-hidden cursor-pointer"
+                className="relative w-full aspect-[16/10] overflow-hidden cursor-pointer bg-slate-100"
               >
                 <img
                   src={card.thumbnail}
@@ -341,12 +345,14 @@ export default function FeaturedMapsPage({ onBack, onNavigate }) {
                   className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 pointer-events-none"
                 />
 
-                {/* Badge (Bestseller, New, Editor's Pick, etc.) */}
-                <span
-                  className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9.5px] font-bold shadow-xs ${card.badgeBg}`}
-                >
-                  {card.badge}
-                </span>
+                {/* Badge (if not already embedded in artwork) */}
+                {!card.hasEmbeddedBadge && (
+                  <span
+                    className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9.5px] font-bold shadow-xs ${card.badgeBg}`}
+                  >
+                    {card.badge}
+                  </span>
+                )}
 
                 {/* Heart Favorite Button */}
                 <button
@@ -354,14 +360,22 @@ export default function FeaturedMapsPage({ onBack, onNavigate }) {
                     e.stopPropagation();
                     toggleLike(card.id);
                   }}
-                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/95 backdrop-blur-xs flex items-center justify-center text-[#0f1738] shadow-xs hover:scale-110 active:scale-90 transition-all cursor-pointer z-10"
+                  className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-[#0f1738] transition-all cursor-pointer z-10 ${
+                    card.isLiked
+                      ? 'bg-white shadow-xs'
+                      : card.hasEmbeddedBadge
+                      ? 'bg-transparent'
+                      : 'bg-white/95 backdrop-blur-xs shadow-xs hover:scale-110 active:scale-90'
+                  }`}
                   title="Favorite"
                 >
-                  <Heart
-                    className={`w-3.5 h-3.5 transition-all ${
-                      card.isLiked ? 'fill-[#ff4a73] text-[#ff4a73] scale-110' : 'text-[#717ea1]'
-                    }`}
-                  />
+                  {(card.isLiked || !card.hasEmbeddedBadge) && (
+                    <Heart
+                      className={`w-3.5 h-3.5 transition-all ${
+                        card.isLiked ? 'fill-[#ff4a73] text-[#ff4a73] scale-110' : 'text-[#717ea1]'
+                      }`}
+                    />
+                  )}
                 </button>
               </div>
 
