@@ -681,6 +681,19 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 <Navigation className="w-4 h-4 fill-current rotate-45" />
               </button>
 
+              {/* Floating Top-Left: Start Guided Tour Pill */}
+              <button
+                onClick={() => {
+                  const first = TOP_5_LOCATIONS[0];
+                  handleSelectLocation(first);
+                  showToast("🧭 Starting Paris 5 Highlights Tour");
+                }}
+                className="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-[#544ee5] text-white text-[11px] font-bold shadow-md hover:bg-[#4842db] active:scale-95 transition-all flex items-center gap-1.5 z-30 cursor-pointer"
+              >
+                <Compass className="w-3.5 h-3.5 animate-spin-slow" />
+                <span>Start Tour (5 Stops)</span>
+              </button>
+
               {/* Bottom Left: Quick Zoom Level Indicator */}
               <div className="absolute bottom-3 left-3 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-xs text-[10px] font-bold text-white z-30 pointer-events-none">
                 {Math.round(zoomLevel * 100)}% Zoom &bull; 5 Places Active
@@ -962,22 +975,74 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
               </div>
             </div>
 
-            {/* Audio Tip Bar */}
-            <div className="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-[#544ee5] text-white flex items-center justify-center shadow-xs">
+            {/* Audio Tip Bar with Interactive Play/Pause & Equalizer */}
+            <div className="p-3 rounded-2xl bg-indigo-50/90 border border-indigo-100 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-full bg-[#544ee5] text-white flex items-center justify-center shadow-sm shrink-0">
                   <Volume2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-[11.5px] font-extrabold text-[#0f1738]">Audio Tour Guide</div>
-                  <div className="text-[10px] text-[#717ea1]">1 min 45 sec curated story</div>
+                  <div className="text-[12px] font-extrabold text-[#0f1738]">
+                    Audio Guide &bull; {selectedLocation.name}
+                  </div>
+                  <div className="text-[10px] text-[#717ea1] flex items-center gap-1.5 mt-0.5">
+                    <span>{selectedLocation.walkTime}</span>
+                    <span>&bull;</span>
+                    <span className="text-emerald-600 font-bold">Curated Story Active</span>
+                  </div>
                 </div>
               </div>
               <button
-                onClick={() => showToast("Playing audio story for " + selectedLocation.name)}
-                className="px-3 py-1.5 bg-white text-[#544ee5] font-bold text-[11px] rounded-xl shadow-xs border border-indigo-100 cursor-pointer active:scale-95"
+                onClick={() => {
+                  showToast(`🎧 Playing narrated audio guide for ${selectedLocation.name}`);
+                }}
+                className="px-3.5 py-1.5 bg-[#544ee5] text-white font-bold text-[11.5px] rounded-xl shadow-xs hover:bg-[#4842db] active:scale-95 cursor-pointer transition-all shrink-0"
               >
-                Play Audio
+                Play Audio 🔊
+              </button>
+            </div>
+
+            {/* Tour Step-Through Navigation (Stop 1 to 5) */}
+            <div className="pt-1 pb-1 flex items-center justify-between border-t border-slate-100">
+              {/* Previous Stop Button */}
+              <button
+                onClick={() => {
+                  const currentIndex = TOP_5_LOCATIONS.findIndex((l) => l.id === selectedLocation.id);
+                  const prevIndex = (currentIndex - 1 + TOP_5_LOCATIONS.length) % TOP_5_LOCATIONS.length;
+                  const prevLoc = TOP_5_LOCATIONS[prevIndex];
+                  setSelectedLocation(prevLoc);
+                  const targetX = -(prevLoc.x - 50) * 3.5;
+                  const targetY = -(prevLoc.y - 50) * 3.5;
+                  setZoomLevel(2.2);
+                  setPanOffset({ x: targetX, y: targetY });
+                  showToast(`Tour Step: ${prevLoc.name}`);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+              >
+                <span>&larr; Prev Stop</span>
+              </button>
+
+              {/* Stop Indicator */}
+              <div className="text-[11px] font-extrabold text-[#544ee5] bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100/50">
+                Stop {TOP_5_LOCATIONS.findIndex((l) => l.id === selectedLocation.id) + 1} of 5
+              </div>
+
+              {/* Next Stop Button */}
+              <button
+                onClick={() => {
+                  const currentIndex = TOP_5_LOCATIONS.findIndex((l) => l.id === selectedLocation.id);
+                  const nextIndex = (currentIndex + 1) % TOP_5_LOCATIONS.length;
+                  const nextLoc = TOP_5_LOCATIONS[nextIndex];
+                  setSelectedLocation(nextLoc);
+                  const targetX = -(nextLoc.x - 50) * 3.5;
+                  const targetY = -(nextLoc.y - 50) * 3.5;
+                  setZoomLevel(2.2);
+                  setPanOffset({ x: targetX, y: targetY });
+                  showToast(`Tour Step: ${nextLoc.name}`);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-[#544ee5] hover:bg-[#4842db] text-white text-xs font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-xs"
+              >
+                <span>Next Stop &rarr;</span>
               </button>
             </div>
 
@@ -993,7 +1058,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
               <button
                 onClick={() => setShowInsideModal(false)}
-                className="py-3 px-4 bg-slate-100 text-slate-700 font-bold rounded-2xl text-[12.5px] cursor-pointer"
+                className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-[12.5px] cursor-pointer"
               >
                 Close
               </button>
