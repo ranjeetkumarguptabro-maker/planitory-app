@@ -299,7 +299,7 @@ export default function App() {
         {/* Page 9: Purchased Map View - Paris Essentials (c10.png) */}
         {currentPage === 'purchased-map' && (
           <PurchasedMapView
-            onBack={() => setCurrentPage('checkout')}
+            onBack={() => setCurrentPage('explore')}
             onNavigate={(page) => setCurrentPage(page)}
           />
         )}
