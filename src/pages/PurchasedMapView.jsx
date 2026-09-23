@@ -378,7 +378,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   });
 
   // Pin Theme Helper
-  const getPinColor = (type, defaultColor) => {
+  const getMarkerColor = (type, defaultColor) => {
     if (pinThemeColor === 'rose') {
       return type === 'museum' ? '#e11d48' : type === 'cafe' ? '#f43f5e' : '#fb7185';
     }
@@ -389,6 +389,20 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
       return type === 'museum' ? '#d97706' : type === 'cafe' ? '#f59e0b' : '#fbbf24';
     }
     return defaultColor || (type === 'museum' ? '#6d28d9' : type === 'cafe' ? '#b45309' : '#059669');
+  };
+  const getPinColor = getMarkerColor;
+
+  const handleZoomStep = (delta) => {
+    setZoomLevel((prev) => {
+      const next = Math.min(3.5, Math.max(1, Number((prev + delta).toFixed(2))));
+      if (next === 1) setPanOffset({ x: 0, y: 0 });
+      showToast(`🔍 Zoom: ${Math.round(next * 100)}%`);
+      return next;
+    });
+  };
+
+  const handleLocateUser = () => {
+    handleLocateMe();
   };
 
   return (
