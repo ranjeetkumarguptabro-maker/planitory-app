@@ -501,21 +501,6 @@ export default function ExplorePage({ onBack, onNavigate }) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                   />
 
-                  {/* Badge */}
-                  {map.badge && (
-                    <div
-                      className={`absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide uppercase shadow-sm ${
-                        map.badgeType === 'bestseller'
-                          ? 'bg-amber-400 text-amber-950 ring-1 ring-amber-500/30'
-                          : map.badgeType === 'new-teal'
-                          ? 'bg-teal-500 text-white ring-1 ring-teal-600/30'
-                          : 'bg-[#544ee5] text-white ring-1 ring-indigo-600/30'
-                      }`}
-                    >
-                      {map.badge}
-                    </div>
-                  )}
-
                   {/* Interactive Heart Toggle Button */}
                   <button
                     type="button"

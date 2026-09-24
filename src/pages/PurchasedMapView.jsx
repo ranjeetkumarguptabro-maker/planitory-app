@@ -300,9 +300,13 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           }}
           className="relative w-full h-full transition-all duration-300"
         >
-          {/* Paris Map Vector Graphic matching c26.png */}
+          {/* Paris Map Vector Graphic - cleanly switches to base map when custom icons/colors are active */}
           <img
-            src="/c26-my-map.png"
+            src={
+              pinIconStyle === 'emoji' || pinColorTheme !== 'original'
+                ? '/c26-map-bg.png'
+                : '/c26-my-map.png'
+            }
             alt="My Map Vector Paris"
             className="w-full h-full object-cover pointer-events-none select-none"
             draggable={false}
@@ -313,7 +317,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
             const isSelected = selectedLocation?.id === pin.id;
             const themeColor = getPinThemeColor(pinColorTheme, pin.color);
             const isEmoji = pinIconStyle === 'emoji';
-            const isCustomColor = pinColorTheme !== 'original';
+            const isCustom = pinIconStyle === 'emoji' || pinColorTheme !== 'original';
 
             return (
               <div
@@ -332,8 +336,8 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 className="absolute z-20 cursor-pointer flex items-center justify-center transition-transform hover:scale-115 active:scale-95"
                 title={pin.name}
               >
-                {/* 3D Emoji Pin View (Concentric disc seamlessly overlaying pin head) */}
-                {isEmoji ? (
+                {/* 3D Emoji or Custom Vector Pin Disc */}
+                {isCustom ? (
                   <div
                     style={{ backgroundColor: themeColor }}
                     className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_14px_rgba(0,0,0,0.28)] flex items-center justify-center transition-all animate-in zoom-in-75 duration-150 ${
@@ -342,27 +346,21 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                         : ''
                     }`}
                   >
-                    <span className="text-[19px] sm:text-[21px] leading-none select-none filter drop-shadow-xs">
-                      {pin.emoji}
-                    </span>
-                  </div>
-                ) : isCustomColor ? (
-                  /* Custom Vector Pin Disc */
-                  <div
-                    style={{ backgroundColor: themeColor }}
-                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_14px_rgba(0,0,0,0.22)] flex items-center justify-center text-white transition-all animate-in zoom-in-75 duration-150 ${
-                      isSelected
-                        ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-110'
-                        : ''
-                    }`}
-                  >
-                    {getVectorIcon(pin.type)}
+                    {isEmoji ? (
+                      <span className="text-[19px] sm:text-[21px] leading-none select-none filter drop-shadow-xs">
+                        {pin.emoji}
+                      </span>
+                    ) : (
+                      <div className="text-white flex items-center justify-center">
+                        {getVectorIcon(pin.type)}
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  /* Original Mode: Transparent Hitbox with selection glow */
-                  <div className="w-11 h-11 rounded-full flex items-center justify-center">
+                  /* Original Mode: Transparent Hitbox with subtle selection border without blue background circle */
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center">
                     {isSelected && (
-                      <div className="w-10 h-10 rounded-full ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white shadow-lg animate-in zoom-in-75 duration-150 bg-indigo-500/15 pointer-events-none" />
+                      <div className="w-10 h-10 rounded-full ring-2 ring-[#544ee5]/80 ring-offset-2 ring-offset-white/80 animate-in zoom-in-75 duration-150 pointer-events-none" />
                     )}
                   </div>
                 )}

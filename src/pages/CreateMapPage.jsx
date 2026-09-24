@@ -28,7 +28,8 @@ import {
   Landmark,
   Building2,
   Upload,
-  Loader2
+  Loader2,
+  Compass
 } from 'lucide-react';
 import { uploadMapCover, saveCreatedMap } from '../services/supabase';
 
