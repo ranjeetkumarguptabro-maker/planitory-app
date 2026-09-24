@@ -495,266 +495,190 @@ export default function CreateMapPage({ onBack, onNavigate }) {
       {/* SCREEN 2: BUILD YOUR MAP (EXACT 1:1 MATCHING c35.png)                      */}
       {/* ========================================================================= */}
       {currentStep === 2 && (
-        <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#e8f1f5] flex flex-col justify-between select-none">
-          {/* 1. MAP CANVAS BACKGROUND WITH INTERACTIVE PINS */}
-          <div
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            className={`absolute inset-0 w-full h-full overflow-hidden ${
-              isDragging ? 'cursor-grabbing' : 'cursor-grab'
-            } touch-none z-0`}
-          >
-            <div
-              style={{
-                transform: `scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`,
-                transformOrigin: 'center center',
-                transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.2, 0, 0, 1)',
-              }}
-              className="relative w-full h-full"
-            >
-              {/* Clean Map Canvas Background Image */}
-              <img
-                src="/c35-map-full.png"
-                alt="Paris Map Canvas"
-                className="w-full h-full object-cover pointer-events-none select-none"
-                draggable={false}
-              />
+        <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#e8f1f5] sm:rounded-[44px] select-none">
+          {/* Exact Mockup Canvas Background matching c35.png */}
+          <div className="absolute inset-0 w-full h-full overflow-hidden z-0">
+            <img
+              src="/c35-map-full.png"
+              alt="Build Your Map - Paris"
+              className="w-full h-full object-cover pointer-events-none select-none"
+              draggable={false}
+            />
 
-              {/* Interactive Hitboxes & Pins matching c35.png coordinates */}
-              {INITIAL_BUILD_PINS.map((pin) => {
-                const IconComponent = pin.icon;
-                return (
-                  <div
-                    key={pin.id}
-                    onClick={() => {
-                      handleAddPlaceToList(pin.name);
-                    }}
-                    style={{
-                      left: `${pin.x}%`,
-                      top: `${pin.y}%`,
-                      transform: 'translate(-50%, -50%)',
-                    }}
-                    className="absolute z-20 w-11 h-11 rounded-full cursor-pointer hover:scale-115 active:scale-95 transition-transform flex items-center justify-center"
-                    title={pin.name}
-                  />
-                );
-              })}
-
-              {/* GPS River Beacon Hitbox */}
+            {/* If user customized the title, display custom title overlay pill seamlessly */}
+            {mapTitle && mapTitle !== 'Paris Café Guide' && (
               <div
-                onClick={handleRecenter}
-                style={{ left: '53.2%', top: '56.4%', transform: 'translate(-50%, -50%)' }}
-                className="absolute z-20 w-16 h-16 rounded-full cursor-pointer"
-                title="Current Location"
-              />
-            </div>
-          </div>
-
-          {/* 2. TOP FLOATING APP BAR & SEARCH (matching c35.png) */}
-          <div className="relative z-30 pt-3 sm:pt-4 px-4 space-y-2.5">
-            {/* iOS Status Bar */}
-            <div className="flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-1 px-2">
-              <span className="text-[14px] tracking-tight font-bold">9:41</span>
-              <div className="flex items-center gap-1.5">
-                <div className="flex items-end gap-[1.5px] h-3">
-                  <div className="w-[3px] h-1 bg-[#0f1738] rounded-[0.5px]" />
-                  <div className="w-[3px] h-1.5 bg-[#0f1738] rounded-[0.5px]" />
-                  <div className="w-[3px] h-2 bg-[#0f1738] rounded-[0.5px]" />
-                  <div className="w-[3px] h-3 bg-[#0f1738] rounded-[0.5px]" />
-                </div>
-                <svg className="w-3.5 h-3.5 fill-[#0f1738]" viewBox="0 0 24 24">
-                  <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z" />
-                </svg>
-                <div className="w-5 h-2.5 border border-[#0f1738] rounded-[3px] p-[1px] flex items-center">
-                  <div className="w-full h-full bg-[#0f1738] rounded-[1px]" />
-                </div>
-              </div>
-            </div>
-
-            {/* Header Row: Back (<) + Build Your Map / Subtitle + Preview */}
-            <div className="flex items-center justify-between px-1">
-              {/* Back Arrow Button */}
-              <button
-                onClick={() => setCurrentStep(1)}
-                className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-sm border border-white flex items-center justify-center text-[#0f1738] hover:bg-white active:scale-95 transition-all cursor-pointer"
-                title="Back to Details"
+                style={{ top: '4.8%', left: '26%', width: '48%' }}
+                className="absolute z-20 text-center pointer-events-none"
               >
-                <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
-              </button>
-
-              {/* Title & Subtitle */}
-              <div className="text-center flex-1 px-2">
-                <h1 className="text-[17px] font-black text-[#0f1738] tracking-tight leading-tight">
-                  Build Your Map
-                </h1>
-                <button
-                  onClick={() => setIsEditingTitle(true)}
-                  className="inline-flex items-center justify-center gap-1 text-[12px] text-[#717ea1] font-semibold hover:text-[#544ee5] cursor-pointer"
-                >
-                  <span className="truncate max-w-[170px]">{mapTitle}</span>
-                  <Pencil className="w-3 h-3 stroke-[2.2]" />
-                </button>
-              </div>
-
-              {/* Preview Button */}
-              <button
-                onClick={() => {
-                  showToast('Previewing your interactive map view');
-                }}
-                className="px-3.5 py-1.5 rounded-full bg-[#f0f3ff] hover:bg-[#e4e9ff] text-[#544ee5] font-bold text-[12.5px] shadow-2xs active:scale-95 transition-all cursor-pointer"
-              >
-                Preview
-              </button>
-            </div>
-
-            {/* Floating Global Search Bar (matching c35.png) */}
-            <div
-              onClick={() => setShowPlacesSearchModal(true)}
-              className="w-full px-4 py-3 bg-white/95 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-white flex items-center gap-2.5 text-[13.5px] cursor-pointer hover:border-slate-300 transition-all"
-            >
-              <Search className="w-4.5 h-4.5 text-[#9aa5c4] shrink-0" />
-              <span className="text-[#9aa5c4] font-medium truncate">
-                Search for a place or landmark...
-              </span>
-            </div>
-          </div>
-
-          {/* 3. RIGHT FLOATING CONTROLS (Layers, Compass, GPS) */}
-          <div className="absolute right-4 top-[28%] z-30 flex flex-col gap-2.5">
-            {/* Layers Button */}
-            <button
-              onClick={() => showToast('Map Layers: Standard View')}
-              className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-white flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
-              title="Layers"
-            >
-              <Layers className="w-5 h-5 stroke-[2]" />
-            </button>
-
-            {/* Compass Button */}
-            <button
-              onClick={() => showToast('Reoriented to North')}
-              className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-white flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
-              title="Compass"
-            >
-              <Navigation className="w-5 h-5 stroke-[2] fill-current rotate-45" />
-            </button>
-
-            {/* GPS Recenter Target */}
-            <button
-              onClick={handleRecenter}
-              className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-white flex items-center justify-center text-[#0f1738] hover:text-[#2563eb] active:scale-90 transition-all cursor-pointer"
-              title="My Location"
-            >
-              <Crosshair className="w-5 h-5 stroke-[2.2]" />
-            </button>
-          </div>
-
-          {/* 4. BOTTOM SHEET PANEL (matching c35.png) */}
-          <div className="relative z-30 bg-white rounded-t-[32px] p-5 sm:p-6 shadow-[0_-8px_32px_rgba(0,0,0,0.12)] border-t border-slate-100 space-y-4 animate-in slide-in-from-bottom duration-250">
-            {/* Drag Handle */}
-            <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto -mt-1" />
-
-            {/* Header: Add places to your map + places counter */}
-            <div>
-              <h2 className="text-[17px] sm:text-[18px] font-black text-[#0f1738] tracking-tight leading-snug">
-                Add places to your map
-              </h2>
-              <p className="text-[12.5px] text-[#717ea1] font-semibold mt-0.5">
-                {addedPlaces.length} places added
-              </p>
-            </div>
-
-            {/* 3 Quick Action Cards (Search & Add / From Saved Lists / Import from Google Maps) */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
-              {/* Card 1: Search & Add */}
-              <button
-                onClick={() => setShowPlacesSearchModal(true)}
-                className="p-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col items-start text-left shadow-2xs active:scale-95 transition-all cursor-pointer"
-              >
-                <div className="w-7 h-7 rounded-full bg-indigo-50 text-[#544ee5] flex items-center justify-center mb-2">
-                  <Search className="w-3.5 h-3.5 stroke-[2.5]" />
+                <div className="text-[12px] font-bold text-[#717ea1] truncate flex items-center justify-center gap-1 bg-white/90 backdrop-blur-xs py-0.5 px-2 rounded-full shadow-2xs">
+                  <span className="truncate">{mapTitle}</span>
+                  <Pencil className="w-2.5 h-2.5 stroke-[2.2]" />
                 </div>
-                <span className="font-extrabold text-[11.5px] text-[#0f1738] leading-tight">
-                  Search &amp; Add
-                </span>
-                <span className="text-[9.5px] text-[#717ea1] font-medium leading-tight mt-1">
-                  Find places manually
-                </span>
-              </button>
-
-              {/* Card 2: From Saved Lists */}
-              <button
-                onClick={() => setShowListsModal(true)}
-                className="p-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col items-start text-left shadow-2xs active:scale-95 transition-all cursor-pointer"
-              >
-                <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
-                  <List className="w-3.5 h-3.5 stroke-[2.5]" />
-                </div>
-                <span className="font-extrabold text-[11.5px] text-[#0f1738] leading-tight">
-                  From Saved Lists
-                </span>
-                <span className="text-[9.5px] text-[#717ea1] font-medium leading-tight mt-1">
-                  Add from your lists
-                </span>
-              </button>
-
-              {/* Card 3: Import from Google Maps (c35-gmaps-icon.png) */}
-              <button
-                onClick={() => setShowGmapsModal(true)}
-                className="p-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col items-start text-left shadow-2xs active:scale-95 transition-all cursor-pointer"
-              >
-                <div className="w-7 h-7 flex items-center justify-center mb-2">
-                  <img
-                    src="/c35-gmaps-icon.png"
-                    alt="Google Maps"
-                    className="w-5 h-6 object-contain"
-                  />
-                </div>
-                <span className="font-extrabold text-[11.5px] text-[#0f1738] leading-tight">
-                  Import from Google Maps
-                </span>
-                <span className="text-[9.5px] text-[#717ea1] font-medium leading-tight mt-1">
-                  Import your places
-                </span>
-              </button>
-            </div>
-
-            {/* Added Places Pill Badges (if any) */}
-            {addedPlaces.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-0.5">
-                {addedPlaces.map((name, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1.5 bg-[#f0f3ff] text-[#544ee5] text-[11px] font-bold px-2.5 py-1 rounded-full border border-indigo-100"
-                  >
-                    <MapPin className="w-3 h-3" />
-                    <span className="truncate max-w-[120px]">{name}</span>
-                    <button
-                      onClick={() => setAddedPlaces(addedPlaces.filter((_, idx) => idx !== i))}
-                      className="text-slate-400 hover:text-rose-500"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
               </div>
             )}
 
-            {/* Primary Action Button: Done (matching c35.png) */}
-            <div className="pt-1">
-              <button
-                onClick={() => setShowDoneModal(true)}
-                className="w-full py-4 rounded-full bg-[#544ee5] hover:bg-[#4338ca] active:scale-[0.99] text-white font-black text-[15px] shadow-lg shadow-indigo-300/40 transition-all cursor-pointer flex items-center justify-center"
+            {/* Added Places Counter Badge overlay if custom places were added */}
+            {addedPlaces.length > 0 && (
+              <div
+                style={{ bottom: '21.5%', left: '5.2%' }}
+                className="absolute z-20 bg-white/95 px-2 py-0.5 rounded-md pointer-events-none"
               >
-                <span>Done</span>
-              </button>
-            </div>
+                <span className="text-[12.5px] font-bold text-[#544ee5]">
+                  {addedPlaces.length} places added
+                </span>
+              </div>
+            )}
           </div>
+
+          {/* ========================================================= */}
+          {/* INVISIBLE INTERACTIVE HITBOXES OVER c35.png ELEMENTS      */}
+          {/* ========================================================= */}
+
+          {/* Top-Left Back Arrow (<) Hitbox -> returns to Step 1 */}
+          <div
+            onClick={() => setCurrentStep(1)}
+            style={{ top: '3.8%', left: '4.2%', width: '13%', height: '5.5%' }}
+            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+            title="Back to Details"
+          />
+
+          {/* Top Center Title Hitbox -> Edit Title */}
+          <div
+            onClick={() => setIsEditingTitle(true)}
+            style={{ top: '3.5%', left: '26%', width: '48%', height: '5.5%' }}
+            className="absolute z-30 rounded-xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
+            title="Edit Map Title"
+          />
+
+          {/* Top-Right Preview Pill Button Hitbox */}
+          <div
+            onClick={() => showToast('✨ Interactive Map Preview Active')}
+            style={{ top: '3.8%', right: '4.2%', width: '24%', height: '4.8%' }}
+            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
+            title="Preview Map"
+          />
+
+          {/* Global Search Bar Hitbox -> Opens Search Modal */}
+          <div
+            onClick={() => setShowPlacesSearchModal(true)}
+            style={{ top: '9.2%', left: '4.2%', width: '91.6%', height: '5.5%' }}
+            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-98 transition-all"
+            title="Search for a place or landmark"
+          />
+
+          {/* Right Floating Stack Button 1: Layers */}
+          <div
+            onClick={() => showToast('Map Layers: Standard View')}
+            style={{ top: '17.2%', right: '4.2%', width: '14%', height: '5.2%' }}
+            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+            title="Layers"
+          />
+
+          {/* Right Floating Stack Button 2: Compass */}
+          <div
+            onClick={() => showToast('🧭 Compass: Reoriented to North')}
+            style={{ top: '23.4%', right: '4.2%', width: '14%', height: '5.2%' }}
+            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+            title="Compass"
+          />
+
+          {/* Right Floating Stack Button 3: GPS Recenter */}
+          <div
+            onClick={handleRecenter}
+            style={{ top: '29.6%', right: '4.2%', width: '14%', height: '5.2%' }}
+            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+            title="My Location"
+          />
+
+          {/* Interactive Map Pins Hitboxes */}
+          {/* 1. Camera Photo Spot Pin */}
+          <div
+            onClick={() => handleAddPlaceToList('Pont des Arts Photo Spot')}
+            style={{ top: '24.5%', left: '34.5%', width: '10%', height: '5.8%' }}
+            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
+            title="Pont des Arts Photo Spot"
+          />
+
+          {/* 2. Coffee Café de Flore Pin */}
+          <div
+            onClick={() => handleAddPlaceToList('Café de Flore')}
+            style={{ top: '28.5%', left: '62.5%', width: '10%', height: '5.8%' }}
+            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
+            title="Café de Flore"
+          />
+
+          {/* 3. Restaurant Food Pin */}
+          <div
+            onClick={() => handleAddPlaceToList('Le Comptoir du Relais')}
+            style={{ top: '37.0%', left: '35.5%', width: '10%', height: '5.8%' }}
+            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
+            title="Le Comptoir du Relais"
+          />
+
+          {/* 4. Museum Musée d’Orsay Pin */}
+          <div
+            onClick={() => handleAddPlaceToList('Musée d’Orsay')}
+            style={{ top: '42.5%', left: '26.5%', width: '10%', height: '5.8%' }}
+            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
+            title="Musée d’Orsay"
+          />
+
+          {/* 5. Tree Jardin du Luxembourg Pin */}
+          <div
+            onClick={() => handleAddPlaceToList('Jardin du Luxembourg')}
+            style={{ top: '40.5%', left: '69.5%', width: '10%', height: '5.8%' }}
+            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
+            title="Jardin du Luxembourg"
+          />
+
+          {/* 6. Hotel Hôtel Lutetia Pin */}
+          <div
+            onClick={() => handleAddPlaceToList('Hôtel Lutetia')}
+            style={{ top: '54.0%', left: '72.5%', width: '10%', height: '5.8%' }}
+            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
+            title="Hôtel Lutetia"
+          />
+
+          {/* 7. River GPS Pulsing Beacon */}
+          <div
+            onClick={handleRecenter}
+            style={{ top: '52.0%', left: '48.0%', width: '16%', height: '8.5%' }}
+            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+            title="Live GPS Beacon"
+          />
+
+          {/* Bottom Sheet Card 1 Hitbox: Search & Add */}
+          <div
+            onClick={() => setShowPlacesSearchModal(true)}
+            style={{ bottom: '11.8%', left: '4.2%', width: '29.5%', height: '10.5%' }}
+            className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
+            title="Search & Add manually"
+          />
+
+          {/* Bottom Sheet Card 2 Hitbox: From Saved Lists */}
+          <div
+            onClick={() => setShowListsModal(true)}
+            style={{ bottom: '11.8%', left: '35.2%', width: '29.5%', height: '10.5%' }}
+            className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
+            title="From Saved Lists"
+          />
+
+          {/* Bottom Sheet Card 3 Hitbox: Import from Google Maps */}
+          <div
+            onClick={() => setShowGmapsModal(true)}
+            style={{ bottom: '11.8%', left: '66.2%', width: '29.5%', height: '10.5%' }}
+            className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
+            title="Import from Google Maps"
+          />
+
+          {/* Bottom Sheet Done Button Hitbox */}
+          <div
+            onClick={() => setShowDoneModal(true)}
+            style={{ bottom: '3.6%', left: '4.2%', width: '91.6%', height: '5.8%' }}
+            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/10 active:scale-98 transition-all"
+            title="Done - Save Map"
+          />
         </div>
       )}
 
