@@ -27,6 +27,25 @@ const CATEGORIES = [
 
 const ALL_FEATURED_MAPS = [
   {
+    id: 'antalya-cappadocia',
+    title: 'Antalya & Cappadocia Guide',
+    subtitle: 'Turquoise Coast to Fairy Chimney Sunrises.',
+    badge: 'Top Rated',
+    badgeBg: 'bg-[#544ee5] text-white',
+    thumbnail: '/c31-cover-full.png',
+    hasEmbeddedBadge: false,
+    places: '18 places',
+    duration: '7 days',
+    creatorHandle: 'alexparker',
+    creatorAvatar: '/c31-avatar.png',
+    rating: 4.95,
+    reviewsCount: '342',
+    price: '$14.99',
+    category: 'nature',
+    isLiked: false,
+    isBookmarked: false,
+  },
+  {
     id: 'paris-museums',
     title: 'Top 5 Museums in Paris',
     subtitle: 'Art, history and must-see highlights.',

@@ -1,0 +1,239 @@
+{
+  "id": "antalya-cappadocia",
+  "title": "Antalya & Cappadocia Complete Guide",
+  "shortTitle": "Antalya & Cappadocia",
+  "tagline": "Turquoise Coast to Fairy Chimney Sunrises",
+  "subtitle": "From Mediterranean cliffside cafes to Göreme hot air balloons and subterranean cities.",
+  "description": "A curated 7-day Turkish road trip guide connecting the sun-drenched Turquoise Coast of Antalya with the surreal volcanic landscapes of Cappadocia. Features 18 handpicked locations including historic Ottoman mansions, secret coves, Roman ruins, cave rooftop cafes, and scenic balloon viewpoints.",
+  "destination": "Turkey (Türkiye)",
+  "regions": [
+    "Antalya Riviera",
+    "Central Anatolia",
+    "Göreme National Park"
+  ],
+  "duration": "7 Days (4d Coast + 3d Cappadocia)",
+  "placesCount": 18,
+  "price": "$14.99",
+  "rating": 4.95,
+  "reviewsCount": 342,
+  "badge": "Top Rated Guide",
+  "badgeType": "bestseller",
+  "creator": {
+    "name": "Alex Parker",
+    "handle": "@alexparker",
+    "role": "Travel Creator",
+    "location": "Lisbon & Mediterranean",
+    "avatar": "/c31-avatar.png",
+    "verified": true
+  },
+  "coverImage": "/c31-cover-full.png",
+  "thumbnail": "/c31-cover-full.png",
+  "categories": [
+    "Scenic Viewpoints",
+    "Historic Old Towns",
+    "Hot Air Balloons",
+    "Beaches & Coves",
+    "Cave Restaurants",
+    "Ancient Ruins"
+  ],
+  "itineraryDays": [
+    {
+      "day": 1,
+      "title": "Antalya Old Town (Kaleiçi) & Roman Harbor",
+      "summary": "Cobblestone alleys, Hadrian's Gate, cliffside sunset dining, and historic harbor boats.",
+      "places": ["kaleiçi-old-town", "hadrians-gate", "hıdırlık-tower", "mermerli-beach"]
+    },
+    {
+      "day": 2,
+      "title": "Turquoise Coast & Düden Waterfalls",
+      "summary": "Lower Düden waterfall cascading into the Mediterranean sea, and relaxing at Konyaaltı beach.",
+      "places": ["lower-duden-falls", "konyaalti-beach", "asmani-restaurant"]
+    },
+    {
+      "day": 3,
+      "title": "Ancient Pamphylia: Aspendos & Perge",
+      "summary": "The world's best-preserved Roman amphitheater and ancient Hellenistic colonnades.",
+      "places": ["aspendos-theatre", "perge-ancient-city", "seraser-fine-dining"]
+    },
+    {
+      "day": 4,
+      "title": "Scenic Taurus Mountain Drive to Cappadocia",
+      "summary": "Crossing the Taurus alpine passes and checking into an authentic cave suite in Uçhisar.",
+      "places": ["taurus-mountain-pass", "uchisar-castle-viewpoint", "museum-hotel-terrace"]
+    },
+    {
+      "day": 5,
+      "title": "Göreme Sunrise Balloon Flight & Love Valley",
+      "summary": "Drifting over volcanic fairy chimneys at dawn, followed by afternoon valley hiking.",
+      "places": ["goreme-balloon-launch", "love-valley-trail", "seten-rooftop-cafe"]
+    },
+    {
+      "day": 6,
+      "title": "Derinkuyu Underground City & Pigeon Valley",
+      "summary": "Descending 8 levels into an 8th-century subterranean city carved from volcanic rock.",
+      "places": ["derinkuyu-underground", "pigeon-valley-view", "dibek-traditional-pottery"]
+    },
+    {
+      "day": 7,
+      "title": "Paşabağ Monks Valley & Sunset Red Valley ATV",
+      "summary": "Multi-capped fairy chimneys, rock-hewn hermit cells, and golden hour over Rose Valley.",
+      "places": ["pasabag-monks-valley", "red-valley-sunset-point"]
+    }
+  ],
+  "locations": [
+    {
+      "id": "kaleiçi-old-town",
+      "name": "Kaleiçi Historic Old Town",
+      "region": "Antalya",
+      "category": "Historic Old Towns",
+      "lat": 36.8841,
+      "lng": 30.7056,
+      "rating": 4.9,
+      "reviews": 1240,
+      "tags": ["Ottoman Mansions", "Pedestrian Alleys", "Boutique Cafes"],
+      "shortDesc": "Wander 2,000-year-old cobblestone lanes flanked by restored timber houses, bougainvillea, and artisan markets.",
+      "tips": "Best explored early morning before crowds or late afternoon when lanterns illuminate the streets.",
+      "priceRange": "$$"
+    },
+    {
+      "id": "hadrians-gate",
+      "name": "Hadrian’s Gate (Üçkapılar)",
+      "region": "Antalya",
+      "category": "Ancient Ruins",
+      "lat": 36.8853,
+      "lng": 30.7085,
+      "rating": 4.8,
+      "reviews": 980,
+      "tags": ["Roman Empire", "Marble Arches", "Photo Spot"],
+      "shortDesc": "Magnificent triple-arched marble triumphal arch built in 130 AD to honor Emperor Hadrian's visit.",
+      "tips": "Look down at the glass-covered Roman chariot rut grooves in the ancient pavement.",
+      "priceRange": "Free"
+    },
+    {
+      "id": "lower-duden-falls",
+      "name": "Lower Düden Waterfall",
+      "region": "Antalya",
+      "category": "Scenic Viewpoints",
+      "lat": 36.8512,
+      "lng": 30.7834,
+      "rating": 4.9,
+      "reviews": 2100,
+      "tags": ["Coastal Waterfall", "40m Drop", "Sunset Spot"],
+      "shortDesc": "Dramatic 40-meter rush of freshwater tumbling directly off sheer limestone cliffs into the Mediterranean Sea.",
+      "tips": "Düden Park offers manicured cliffside walking tracks with panoramic sea viewpoints.",
+      "priceRange": "Free"
+    },
+    {
+      "id": "aspendos-theatre",
+      "name": "Aspendos Roman Theatre",
+      "region": "Antalya",
+      "category": "Ancient Ruins",
+      "lat": 36.9389,
+      "lng": 31.1722,
+      "rating": 4.95,
+      "reviews": 1650,
+      "tags": ["Acoustics", "Roman Architecture", "UNESCO Tentative"],
+      "shortDesc": "Built in 155 AD by architect Zenon, this 12,000-seat theater retains its original 2-story stage backdrop intact.",
+      "tips": "Stand on the central orchestra circle and speak normally—the acoustic design carries sound to the top tiers.",
+      "priceRange": "$$"
+    },
+    {
+      "id": "konyaalti-beach",
+      "name": "Konyaaltı Beach & Coast Promenade",
+      "region": "Antalya",
+      "category": "Beaches & Coves",
+      "lat": 36.8732,
+      "lng": 30.6421,
+      "rating": 4.7,
+      "reviews": 3200,
+      "tags": ["Taurus Mountain Views", "Clean Pebble Beach", "Beach Clubs"],
+      "shortDesc": "7-kilometer stretch of crystal-clear turquoise waters backed by towering Beydağları coastal mountain peaks.",
+      "tips": "Rent an e-bike or stroll along the shaded palms at the modern coastal promenade.",
+      "priceRange": "$"
+    },
+    {
+      "id": "uchisar-castle-viewpoint",
+      "name": "Uçhisar Castle Peak",
+      "region": "Cappadocia",
+      "category": "Scenic Viewpoints",
+      "lat": 38.6301,
+      "lng": 34.8055,
+      "rating": 4.9,
+      "reviews": 1820,
+      "tags": ["Highest Point", "360° Panorama", "Volcanic Citadel"],
+      "shortDesc": "The highest elevation in Cappadocia—a colossal natural rock citadel honeycombed with rooms, tunnels, and lookouts.",
+      "tips": "Climb 120 steps to the summit 45 minutes before sunset for the premier vantage point across the valleys.",
+      "priceRange": "$"
+    },
+    {
+      "id": "goreme-balloon-launch",
+      "name": "Göreme Sunrise Balloon Launch Point",
+      "region": "Cappadocia",
+      "category": "Hot Air Balloons",
+      "lat": 38.6431,
+      "lng": 34.8289,
+      "rating": 5.0,
+      "reviews": 4300,
+      "tags": ["Sunrise Flight", "150+ Balloons", "Bucket List"],
+      "shortDesc": "Over 150 vibrant hot air balloons ascend simultaneously at dawn above honeycombed valleys and fairy chimneys.",
+      "tips": "Book flight slots for Day 1 so weather cancellations can be rescheduled to backup morning slots.",
+      "priceRange": "$$$$"
+    },
+    {
+      "id": "love-valley-trail",
+      "name": "Love Valley (Bağlıdere) Hiking Trail",
+      "region": "Cappadocia",
+      "category": "Scenic Viewpoints",
+      "lat": 38.6582,
+      "lng": 34.8194,
+      "rating": 4.85,
+      "reviews": 1490,
+      "tags": ["Towering Chimneys", "Wildflowers", "Hiking Route"],
+      "shortDesc": "Surreal geological formations sculpted by millions of years of wind and rain erosion on volcanic tuff rock.",
+      "tips": "The valley floor trail is flat and takes about 2 hours to walk from Göreme to Uçhisar.",
+      "priceRange": "Free"
+    },
+    {
+      "id": "derinkuyu-underground",
+      "name": "Derinkuyu Underground City",
+      "region": "Cappadocia",
+      "category": "Ancient Ruins",
+      "lat": 38.3739,
+      "lng": 34.7351,
+      "rating": 4.9,
+      "reviews": 2400,
+      "tags": ["Subterranean Complex", "85m Deep", "Byzantine Refuge"],
+      "shortDesc": "An engineering marvel capable of sheltering 20,000 citizens with ventilation shafts, wine presses, and chapels.",
+      "tips": "Wear sturdy shoes and bring a light jacket as the underground temperature stays a cool 13°C year-round.",
+      "priceRange": "$$"
+    },
+    {
+      "id": "pasabag-monks-valley",
+      "name": "Paşabağ (Monks Valley) Fairy Chimneys",
+      "region": "Cappadocia",
+      "category": "Historic Old Towns",
+      "lat": 38.6775,
+      "lng": 34.8536,
+      "rating": 4.9,
+      "reviews": 1780,
+      "tags": ["Twin & Triple Caps", "St. Simeon Cell", "UNESCO Site"],
+      "shortDesc": "Striking mushroom-shaped rock pinnacles with multiple basalt caps where 4th-century Christian monks sought solitude.",
+      "tips": "Step inside the hermit cell carved inside a 3-headed fairy chimney dedicated to Saint Simeon.",
+      "priceRange": "$$"
+    },
+    {
+      "id": "red-valley-sunset-point",
+      "name": "Red Valley Sunset Viewpoint",
+      "region": "Cappadocia",
+      "category": "Scenic Viewpoints",
+      "lat": 38.6534,
+      "lng": 34.8622,
+      "rating": 4.95,
+      "reviews": 2900,
+      "tags": ["Golden Hour", "Iron Oxide Rocks", "Cafe Overlook"],
+      "shortDesc": "As the sun dips below the horizon, the iron-rich sandstone cliffs ignite in fiery hues of rose, magenta, and orange.",
+      "tips": "Arrive an hour early to grab a cushion seat at the cliffside tea garden with Turkish apple tea.",
+      "priceRange": "Free"
+    }
+  ]
+}
