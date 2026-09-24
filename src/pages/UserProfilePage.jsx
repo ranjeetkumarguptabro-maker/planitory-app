@@ -483,7 +483,7 @@ export default function UserProfilePage({ onNavigate }) {
               onClick={() => {
                 setIsSettingsOpen(false);
                 showToast('Signed out of Planitory');
-                if (onNavigate) onNavigate('welcome');
+                if (onNavigate) onNavigate('explore');
               }}
               className="w-full py-2.5 rounded-xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 transition-colors cursor-pointer"
             >
