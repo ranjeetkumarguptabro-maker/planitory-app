@@ -178,29 +178,63 @@ export default function CreateMapPage({ onBack, onNavigate }) {
 
   // AI Suggestion helper
   const handleAiSuggest = () => {
-    const suggestions = [
-      {
-        title: 'Paris Café & Bakery Guide ☕',
-        desc: 'A curated walking tour of secret courtyards, specialty espresso bars, and flaky croissants in Saint-Germain and Le Marais.'
-      },
-      {
-        title: 'Sunset Cliffs & Coastal Eats of Amalfi 🍋',
-        desc: 'Cliffside vistas, swimming grottos, and authentic family-owned trattorias along the Italian coast.'
-      },
-      {
-        title: 'Antalya & Cappadocia Complete Guide 🎈',
-        desc: 'From Turquoise Coast beaches to Göreme sunrise balloon flights and ancient subterranean cities.'
-      },
-      {
-        title: 'Tokyo Hidden Ramen & Neon Speakeasies 🍜',
-        desc: 'Late-night ramen dens, hidden speakeasies, and vibrant neighborhood street spots in Shibuya.'
-      }
-    ];
-
-    const pick = suggestions[Math.floor(Math.random() * suggestions.length)];
-    setMapTitle(pick.title);
-    setMapDescription(pick.desc);
-    showToast('✨ AI suggested a map title & description!');
+    if (activeMode === 'trip') {
+      const tripSuggestions = [
+        {
+          title: '5 Days in Paris & Versailles 🥐',
+          desc: 'Day-by-day walking routes, Louvre skip-the-line mornings, and sunset Seine picnic spots.',
+          destination: 'Paris, France',
+          duration: '5 Days',
+        },
+        {
+          title: '7-Day Tokyo & Kyoto Golden Route 🚅',
+          desc: 'From Shibuya neon alleys and Tsukiji market to Kyoto bamboo groves and Gion tea houses.',
+          destination: 'Tokyo, Japan',
+          duration: '7 Days',
+        },
+        {
+          title: 'Weekend Amalfi Coast Road Trip 🍋',
+          desc: 'Positano cliffs, Capri boat grottos, and authentic lemon trattorias in Ravello.',
+          destination: 'Amalfi Coast, Italy',
+          duration: '3 Days',
+        },
+        {
+          title: '4 Days in Iceland Ring Road Highlights 🌋',
+          desc: 'Waterfalls, Black Sand Beach, glacier hiking, and Blue Lagoon hot springs.',
+          destination: 'Reykjavik, Iceland',
+          duration: '4 Days',
+        },
+      ];
+      const pick = tripSuggestions[Math.floor(Math.random() * tripSuggestions.length)];
+      setMapTitle(pick.title);
+      setMapDescription(pick.desc);
+      setTripDestination(pick.destination);
+      setTripDuration(pick.duration);
+      showToast('✨ AI suggested a complete Trip Itinerary!');
+    } else {
+      const mapSuggestions = [
+        {
+          title: 'Paris Café & Bakery Guide ☕',
+          desc: 'A curated walking tour of secret courtyards, specialty espresso bars, and flaky croissants in Saint-Germain and Le Marais.',
+        },
+        {
+          title: 'Sunset Cliffs & Coastal Eats of Amalfi 🍋',
+          desc: 'Cliffside vistas, swimming grottos, and authentic family-owned trattorias along the Italian coast.',
+        },
+        {
+          title: 'Antalya & Cappadocia Complete Guide 🎈',
+          desc: 'From Turquoise Coast beaches to Göreme sunrise balloon flights and ancient subterranean cities.',
+        },
+        {
+          title: 'Tokyo Hidden Ramen & Neon Speakeasies 🍜',
+          desc: 'Late-night ramen dens, hidden speakeasies, and vibrant neighborhood street spots in Shibuya.',
+        },
+      ];
+      const pick = mapSuggestions[Math.floor(Math.random() * mapSuggestions.length)];
+      setMapTitle(pick.title);
+      setMapDescription(pick.desc);
+      showToast('✨ AI suggested a map title & description!');
+    }
   };
 
   // Step 1 -> Step 2 transition
@@ -321,7 +355,13 @@ export default function CreateMapPage({ onBack, onNavigate }) {
             <div className="px-5 sm:px-6 pt-3">
               <div className="bg-[#eef1f8] p-1 rounded-2xl flex items-center gap-1">
                 <button
-                  onClick={() => setActiveMode('map')}
+                  onClick={() => {
+                    setActiveMode('map');
+                    setSelectedType('custom');
+                    if (mapTitle.includes('Days in') || mapTitle.includes('Weekend')) {
+                      setMapTitle('Paris Café Guide');
+                    }
+                  }}
                   className={`flex-1 py-2.5 sm:py-3 rounded-xl font-bold text-[13px] sm:text-[13.5px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     activeMode === 'map'
                       ? 'bg-[#544ee5] text-white shadow-sm'
@@ -334,7 +374,10 @@ export default function CreateMapPage({ onBack, onNavigate }) {
                 <button
                   onClick={() => {
                     setActiveMode('trip');
-                    showToast('Switched to Plan a Trip 📅');
+                    setSelectedType('trip');
+                    if (mapTitle === 'Paris Café Guide') {
+                      setMapTitle('5 Days in Paris & Versailles 🥐');
+                    }
                   }}
                   className={`flex-1 py-2.5 sm:py-3 rounded-xl font-bold text-[13px] sm:text-[13.5px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
                     activeMode === 'trip'
@@ -354,74 +397,142 @@ export default function CreateMapPage({ onBack, onNavigate }) {
                 What do you want to create?
               </h2>
 
-              <div className="grid grid-cols-3 gap-2.5">
-                {/* Card 1: Custom Map */}
-                <div
-                  onClick={() => setSelectedType('custom')}
-                  className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
-                    selectedType === 'custom'
-                      ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
-                      : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
-                  }`}
-                >
-                  <div className="w-8 h-8 flex items-center justify-center text-[#544ee5] mb-2">
-                    <MapIcon className="w-7 h-7 stroke-[2.2]" />
+              {/* Mode A: Create a Map options */}
+              {activeMode === 'map' && (
+                <div className="grid grid-cols-3 gap-2.5">
+                  {/* Card 1: Custom Map */}
+                  <div
+                    onClick={() => setSelectedType('custom')}
+                    className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
+                      selectedType === 'custom'
+                        ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                        : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
+                    }`}
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center text-[#544ee5] mb-2">
+                      <MapIcon className="w-7 h-7 stroke-[2.2]" />
+                    </div>
+                    <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                      Custom Map
+                    </span>
+                    <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                      Add places, notes and share
+                    </span>
                   </div>
-                  <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
-                    Custom Map
-                  </span>
-                  <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
-                    Add places, notes and share
-                  </span>
-                </div>
 
-                {/* Card 2: Trip Itinerary */}
-                <div
-                  onClick={() => setSelectedType('trip')}
-                  className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
-                    selectedType === 'trip'
-                      ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
-                      : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
-                  }`}
-                >
-                  <div className="w-8 h-8 flex items-center justify-center text-[#0ea5e9] mb-2">
-                    <Plane className="w-7 h-7 fill-current" />
+                  {/* Card 2: Curated Guide */}
+                  <div
+                    onClick={() => setSelectedType('guide')}
+                    className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
+                      selectedType === 'guide'
+                        ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                        : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
+                    }`}
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center text-[#0ea5e9] mb-2">
+                      <Compass className="w-7 h-7 stroke-[2.2]" />
+                    </div>
+                    <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                      Curated Guide
+                    </span>
+                    <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                      Themed recommendations
+                    </span>
                   </div>
-                  <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
-                    Trip Itinerary
-                  </span>
-                  <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
-                    Plan day by day
-                  </span>
-                </div>
 
-                {/* Card 3: Saved Collection */}
-                <div
-                  onClick={() => setSelectedType('saved')}
-                  className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
-                    selectedType === 'saved'
-                      ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
-                      : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
-                  }`}
-                >
-                  <div className="w-8 h-8 flex items-center justify-center text-[#f43f5e] mb-2">
-                    <Heart className="w-7 h-7 fill-current" />
+                  {/* Card 3: Saved Collection */}
+                  <div
+                    onClick={() => setSelectedType('saved')}
+                    className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
+                      selectedType === 'saved'
+                        ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                        : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
+                    }`}
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center text-[#f43f5e] mb-2">
+                      <Heart className="w-7 h-7 fill-current" />
+                    </div>
+                    <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                      Saved Collection
+                    </span>
+                    <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                      Keep your favorites
+                    </span>
                   </div>
-                  <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
-                    Saved Collection
-                  </span>
-                  <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
-                    Keep your favorites
-                  </span>
                 </div>
-              </div>
+              )}
+
+              {/* Mode B: Plan a Trip options */}
+              {activeMode === 'trip' && (
+                <div className="grid grid-cols-3 gap-2.5">
+                  {/* Card 1: Trip Itinerary */}
+                  <div
+                    onClick={() => setSelectedType('trip')}
+                    className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
+                      selectedType === 'trip'
+                        ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                        : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
+                    }`}
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center text-[#544ee5] mb-2">
+                      <Plane className="w-7 h-7 fill-current" />
+                    </div>
+                    <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                      Trip Itinerary
+                    </span>
+                    <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                      Plan day by day
+                    </span>
+                  </div>
+
+                  {/* Card 2: Multi-City Route */}
+                  <div
+                    onClick={() => setSelectedType('route')}
+                    className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
+                      selectedType === 'route'
+                        ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                        : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
+                    }`}
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center text-[#0ea5e9] mb-2">
+                      <Navigation className="w-7 h-7 stroke-[2.2] -rotate-45" />
+                    </div>
+                    <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                      Multi-City Route
+                    </span>
+                    <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                      Road trip &amp; stops
+                    </span>
+                  </div>
+
+                  {/* Card 3: Weekend Getaway */}
+                  <div
+                    onClick={() => setSelectedType('getaway')}
+                    className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
+                      selectedType === 'getaway'
+                        ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                        : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
+                    }`}
+                  >
+                    <div className="w-8 h-8 flex items-center justify-center text-[#f59e0b] mb-2">
+                      <Sparkles className="w-7 h-7 fill-current" />
+                    </div>
+                    <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                      Weekend Escape
+                    </span>
+                    <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                      Quick 2-3 day trip
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Section 2: Map Details + AI Suggest */}
+            {/* Section 2: Details + AI Suggest */}
             <div className="px-5 sm:px-6 pt-5 space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="text-[16.5px] sm:text-[17.5px] font-black text-[#0f1738] tracking-tight">
-                  Map Details
+                  {activeMode === 'trip' ? 'Trip Details' : 'Map Details'}
                 </h2>
                 <button
                   onClick={handleAiSuggest}
@@ -435,12 +546,20 @@ export default function CreateMapPage({ onBack, onNavigate }) {
               <div className="space-y-2.5">
                 {/* Title Input */}
                 <div className="flex items-center gap-3 px-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-indigo-100/60 shadow-2xs transition-all">
-                  <ImageIcon className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
+                  {activeMode === 'trip' ? (
+                    <Plane className="w-5 h-5 text-[#8e9bb5] shrink-0 fill-current" />
+                  ) : (
+                    <ImageIcon className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
+                  )}
                   <input
                     type="text"
                     value={mapTitle}
                     onChange={(e) => setMapTitle(e.target.value)}
-                    placeholder="Give your map a title..."
+                    placeholder={
+                      activeMode === 'trip'
+                        ? 'Name your trip (e.g. 5 Days in Paris)...'
+                        : 'Give your map a title...'
+                    }
                     className="w-full bg-transparent text-[14px] font-semibold text-[#0f1738] placeholder:text-[#8e9bb5] outline-none"
                   />
                   {mapTitle && (
@@ -453,6 +572,40 @@ export default function CreateMapPage({ onBack, onNavigate }) {
                   )}
                 </div>
 
+                {/* If in Trip Mode: Trip Duration Pills & Destination */}
+                {activeMode === 'trip' && (
+                  <>
+                    <div className="flex items-center gap-2 py-1">
+                      <span className="text-[12px] font-bold text-[#717ea1] shrink-0">Duration:</span>
+                      {['3 Days', '5 Days', '7 Days', '10+ Days'].map((d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setTripDuration(d)}
+                          className={`flex-1 py-1.5 rounded-xl text-[11.5px] font-bold transition-all cursor-pointer ${
+                            tripDuration === d
+                              ? 'bg-[#544ee5] text-white shadow-2xs'
+                              : 'bg-slate-100 text-[#717ea1] hover:bg-slate-200'
+                          }`}
+                        >
+                          {d}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-3 px-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-indigo-100/60 shadow-2xs transition-all">
+                      <MapPin className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
+                      <input
+                        type="text"
+                        value={tripDestination}
+                        onChange={(e) => setTripDestination(e.target.value)}
+                        placeholder="Destination (e.g. Paris, France)..."
+                        className="w-full bg-transparent text-[14px] font-semibold text-[#0f1738] placeholder:text-[#8e9bb5] outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+
                 {/* Description Input */}
                 <div className="flex items-center gap-3 px-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-indigo-100/60 shadow-2xs transition-all">
                   <List className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
@@ -460,7 +613,11 @@ export default function CreateMapPage({ onBack, onNavigate }) {
                     type="text"
                     value={mapDescription}
                     onChange={(e) => setMapDescription(e.target.value)}
-                    placeholder="Tell us about your map (optional)..."
+                    placeholder={
+                      activeMode === 'trip'
+                        ? 'Trip highlights or notes (optional)...'
+                        : 'Tell us about your map (optional)...'
+                    }
                     className="w-full bg-transparent text-[14px] font-semibold text-[#0f1738] placeholder:text-[#8e9bb5] outline-none"
                   />
                   {mapDescription && (
@@ -472,98 +629,6 @@ export default function CreateMapPage({ onBack, onNavigate }) {
                     </button>
                   )}
                 </div>
-
-                {/* Cover Image Upload (Cloudflare / Supabase Storage) */}
-                <div className="pt-2">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-[13px] font-bold text-[#0f1738] flex items-center gap-1.5">
-                      <ImageIcon className="w-4 h-4 text-[#544ee5]" />
-                      <span>Cover Photo</span>
-                    </label>
-                    <span className="text-[10.5px] text-[#717ea1] font-medium">Cloudflare / Supabase Storage</span>
-                  </div>
-
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    accept="image/*"
-                    className="hidden"
-                  />
-
-                  {coverImage ? (
-                    <div className="relative rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs group h-28 bg-slate-100 flex items-center justify-center">
-                      <img
-                        src={coverImage}
-                        alt="Map Cover Preview"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="px-3 py-1.5 bg-white text-[#0f1738] text-[11.5px] font-bold rounded-full shadow-md hover:bg-slate-50 transition-all cursor-pointer"
-                        >
-                          Replace Image
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setCoverImage(null)}
-                          className="p-1.5 bg-rose-600 text-white rounded-full shadow-md hover:bg-rose-700 transition-all cursor-pointer"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-slate-200 hover:border-[#544ee5] rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-50/60 hover:bg-indigo-50/30 transition-all"
-                    >
-                      {isUploadingImage ? (
-                        <div className="flex items-center gap-2 text-[#544ee5] text-xs font-bold py-2">
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>Uploading to Cloudflare/Supabase...</span>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="w-9 h-9 rounded-full bg-indigo-50 text-[#544ee5] flex items-center justify-center mb-1.5">
-                            <Upload className="w-4.5 h-4.5 stroke-[2.2]" />
-                          </div>
-                          <span className="text-[12.5px] font-bold text-[#0f1738]">Upload Cover Image</span>
-                          <span className="text-[10px] text-[#717ea1] mt-0.5">PNG, JPG, WebP supported</span>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Preset quick cover styles */}
-                  <div className="flex items-center gap-2 pt-2 overflow-x-auto pb-1 scrollbar-none">
-                    <span className="text-[10.5px] font-bold text-[#717ea1] shrink-0">Presets:</span>
-                    {[
-                      { name: 'Paris', img: '/c31-map-paris.png' },
-                      { name: 'Tokyo', img: '/c31-map-japan.png' },
-                      { name: 'Rome', img: '/thumb-rome-map.png' },
-                      { name: 'NYC', img: '/c29-map-nyc.png' }
-                    ].map((p) => (
-                      <button
-                        key={p.name}
-                        type="button"
-                        onClick={() => {
-                          setCoverImage(p.img);
-                          showToast(`Selected ${p.name} cover photo 🖼️`);
-                        }}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
-                          coverImage === p.img
-                            ? 'bg-[#544ee5] text-white border-[#544ee5]'
-                            : 'bg-white text-[#717ea1] border-slate-200 hover:border-slate-300'
-                        }`}
-                      >
-                        <span>{p.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -573,7 +638,7 @@ export default function CreateMapPage({ onBack, onNavigate }) {
                 onClick={handleProceedToStep2}
                 className="w-full py-4 rounded-full bg-[#544ee5] hover:bg-[#4338ca] active:scale-[0.99] text-white font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-indigo-300/40 transition-all cursor-pointer"
               >
-                <span>Next</span>
+                <span>{activeMode === 'trip' ? 'Build Itinerary' : 'Next'}</span>
                 <ArrowRight className="w-4.5 h-4.5 stroke-[2.8]" />
               </button>
             </div>
