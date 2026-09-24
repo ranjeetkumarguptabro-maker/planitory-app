@@ -11,7 +11,9 @@ import {
   ArrowRight,
   CheckCircle2,
   Check,
-  X
+  X,
+  Lock,
+  Unlock
 } from 'lucide-react';
 
 export default function MapDetailPage({ onBack, onNavigate }) {
@@ -299,29 +301,129 @@ export default function MapDetailPage({ onBack, onNavigate }) {
           )}
 
           {activeTab === 'inside' && (
-            <div className="p-4 rounded-2xl bg-[#fafbfe] border border-slate-100 space-y-2 text-xs">
-              <h2 className="text-[14px] font-bold text-[#111936] mb-2">5 Included Locations</h2>
+            <div className="p-4 rounded-2xl bg-[#fafbfe] border border-slate-100 space-y-3 text-xs">
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-[14px] font-bold text-[#111936]">5 Included Locations</h2>
+                <span className="text-[11px] font-bold text-[#544ee5] bg-[#eeedff] px-2.5 py-0.5 rounded-full">
+                  1 Free Preview
+                </span>
+              </div>
+
               <div className="space-y-2 text-[#51617e]">
-                <div className="p-2 bg-white rounded-xl flex items-center justify-between border border-slate-100">
-                  <span className="font-bold text-slate-800">1. Café de Flore</span>
-                  <span className="text-[11px] text-slate-400">Saint-Germain</span>
+                {/* 1. Unlocked Free Location */}
+                <div className="p-3 bg-white rounded-xl flex items-center justify-between border border-emerald-100/90 shadow-2xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                      <Unlock className="w-3.5 h-3.5 stroke-[2.4]" />
+                    </div>
+                    <div>
+                      <span className="font-extrabold text-[13px] text-slate-800 block">
+                        1. Café de Flore
+                      </span>
+                      <span className="text-[11px] text-[#717ea1]">
+                        Saint-Germain • Historic Parisian café
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 px-2.5 py-0.5 rounded-full shrink-0 border border-emerald-100">
+                    Unlocked
+                  </span>
                 </div>
-                <div className="p-2 bg-white rounded-xl flex items-center justify-between border border-slate-100">
-                  <span className="font-bold text-slate-800">2. Les Deux Magots</span>
-                  <span className="text-[11px] text-slate-400">Latin Quarter</span>
+
+                {/* 2. Locked Location */}
+                <div className="p-3 bg-slate-50/80 rounded-xl flex items-center justify-between border border-dashed border-slate-200 text-slate-400">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-slate-200/70 text-slate-500 flex items-center justify-center shrink-0">
+                      <Lock className="w-3.5 h-3.5 stroke-[2.4]" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-[12.5px] text-slate-600 blur-[3px] select-none block">
+                        2. Les Deux Magots
+                      </span>
+                      <span className="text-[10.5px] text-slate-400">
+                        Latin Quarter • Unlocks after purchase
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-slate-200/80">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    <span>Locked</span>
+                  </span>
                 </div>
-                <div className="p-2 bg-white rounded-xl flex items-center justify-between border border-slate-100">
-                  <span className="font-bold text-slate-800">3. Carette Place des Vosges</span>
-                  <span className="text-[11px] text-slate-400">Le Marais</span>
+
+                {/* 3. Locked Location */}
+                <div className="p-3 bg-slate-50/80 rounded-xl flex items-center justify-between border border-dashed border-slate-200 text-slate-400">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-slate-200/70 text-slate-500 flex items-center justify-center shrink-0">
+                      <Lock className="w-3.5 h-3.5 stroke-[2.4]" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-[12.5px] text-slate-600 blur-[3px] select-none block">
+                        3. Carette Place des Vosges
+                      </span>
+                      <span className="text-[10.5px] text-slate-400">
+                        Le Marais • Unlocks after purchase
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-slate-200/80">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    <span>Locked</span>
+                  </span>
                 </div>
-                <div className="p-2 bg-white rounded-xl flex items-center justify-between border border-slate-100">
-                  <span className="font-bold text-slate-800">4. Boot Café</span>
-                  <span className="text-[11px] text-slate-400">3rd Arrondissement</span>
+
+                {/* 4. Locked Location */}
+                <div className="p-3 bg-slate-50/80 rounded-xl flex items-center justify-between border border-dashed border-slate-200 text-slate-400">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-slate-200/70 text-slate-500 flex items-center justify-center shrink-0">
+                      <Lock className="w-3.5 h-3.5 stroke-[2.4]" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-[12.5px] text-slate-600 blur-[3px] select-none block">
+                        4. Boot Café
+                      </span>
+                      <span className="text-[10.5px] text-slate-400">
+                        3rd Arrondissement • Unlocks after purchase
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-slate-200/80">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    <span>Locked</span>
+                  </span>
                 </div>
-                <div className="p-2 bg-white rounded-xl flex items-center justify-between border border-slate-100">
-                  <span className="font-bold text-slate-800">5. Café Kitsuné Palais Royal</span>
-                  <span className="text-[11px] text-slate-400">1st Arrondissement</span>
+
+                {/* 5. Locked Location */}
+                <div className="p-3 bg-slate-50/80 rounded-xl flex items-center justify-between border border-dashed border-slate-200 text-slate-400">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-slate-200/70 text-slate-500 flex items-center justify-center shrink-0">
+                      <Lock className="w-3.5 h-3.5 stroke-[2.4]" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-[12.5px] text-slate-600 blur-[3px] select-none block">
+                        5. Café Kitsuné Palais Royal
+                      </span>
+                      <span className="text-[10.5px] text-slate-400">
+                        1st Arrondissement • Unlocks after purchase
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-slate-200/80">
+                    <Lock className="w-3 h-3 text-slate-400" />
+                    <span>Locked</span>
+                  </span>
                 </div>
+              </div>
+
+              {/* Purchase Prompt Button */}
+              <div className="pt-2">
+                <button
+                  onClick={() => onNavigate ? onNavigate('checkout') : setShowPurchaseModal(true)}
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#eeedff] hover:bg-[#e4e2fa] active:scale-95 text-[#544ee5] font-extrabold text-[12px] flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+                >
+                  <Lock className="w-3.5 h-3.5 stroke-[2.5]" />
+                  <span>Unlock all 5 spots for $10</span>
+                </button>
               </div>
             </div>
           )}
