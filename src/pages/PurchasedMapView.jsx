@@ -16,7 +16,11 @@ import {
   Landmark,
   Building2,
   MapPin,
-  Sparkles
+  Sparkles,
+  Plus,
+  Minus,
+  ExternalLink,
+  ChevronRight
 } from 'lucide-react';
 
 // Custom Map Pins matching c26.png coordinates
@@ -204,6 +208,8 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const touchDistanceRef = useRef(null);
+  const initialZoomRef = useRef(1);
   const mapContainerRef = useRef(null);
 
   const showToast = (msg) => {
@@ -215,7 +221,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   const handleLocateUser = () => {
     setZoomLevel(1.35);
     setPanOffset({ x: 0, y: 0 });
-    showToast('📍 Recentered on Live GPS Beacon (Seine River)');
+    showToast('📍 Recentered on Paris (Seine River)');
   };
 
   // Open Google Maps
@@ -231,6 +237,14 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
     showToast(`🚀 Directions: Opening ${target.name} in Google Maps...`);
   };
 
+  const handleZoom = (direction) => {
+    setZoomLevel((prev) => {
+      const next = direction === 'in' ? Math.min(prev + 0.35, 3) : Math.max(prev - 0.35, 1);
+      if (next === 1) setPanOffset({ x: 0, y: 0 });
+      return next;
+    });
+  };
+
   // Drag & Pan handlers
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -239,7 +253,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   const handleMouseMove = (e) => {
     if (!isDragging) return;
-    const maxBound = (zoomLevel - 1) * 220;
+    const maxBound = (zoomLevel - 1) * 260;
     const newX = Math.max(-maxBound, Math.min(maxBound, e.clientX - dragStart.x));
     const newY = Math.max(-maxBound, Math.min(maxBound, e.clientY - dragStart.y));
     setPanOffset({ x: newX, y: newY });
@@ -247,7 +261,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
 
   const handleMouseUp = () => setIsDragging(false);
 
-  // Touch handlers
+  // Robust touch pan + pinch-to-zoom handlers for mobile phones
   const handleTouchStart = (e) => {
     if (e.touches.length === 1) {
       setIsDragging(true);
@@ -255,28 +269,48 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
         x: e.touches[0].clientX - panOffset.x,
         y: e.touches[0].clientY - panOffset.y,
       });
+      touchDistanceRef.current = null;
+    } else if (e.touches.length === 2) {
+      setIsDragging(false);
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchDistanceRef.current = dist;
+      initialZoomRef.current = zoomLevel;
     }
   };
 
   const handleTouchMove = (e) => {
     if (e.touches.length === 1 && isDragging) {
-      const maxBound = (zoomLevel - 1) * 220;
+      const maxBound = (zoomLevel - 1) * 260;
       const newX = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientX - dragStart.x));
       const newY = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientY - dragStart.y));
       setPanOffset({ x: newX, y: newY });
+    } else if (e.touches.length === 2 && touchDistanceRef.current) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / touchDistanceRef.current;
+      const newZoom = Math.min(3, Math.max(1, initialZoomRef.current * factor));
+      setZoomLevel(newZoom);
     }
   };
 
-  const handleTouchEnd = () => setIsDragging(false);
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    touchDistanceRef.current = null;
+  };
 
   // Get active CSS filter for selected map style
   const activeStyleConfig =
     MAP_STYLES.find((s) => s.id === selectedMapStyle) || MAP_STYLES[0];
 
   return (
-    <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#e8f1f5] sm:rounded-[44px] select-none">
+    <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#e8f1f5] sm:rounded-[44px] select-none flex flex-col justify-between">
       {/* ========================================================= */}
-      {/* 1. FULL-SCREEN MAP CANVAS MATCHING c26.png                */}
+      {/* 1. FULL-SCREEN MAP CANVAS                                 */}
       {/* ========================================================= */}
       <div
         ref={mapContainerRef}
@@ -300,24 +334,23 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           }}
           className="relative w-full h-full transition-all duration-300"
         >
-          {/* Paris Map Vector Graphic - cleanly switches to base map when custom icons/colors are active */}
+          {/* Paris Map Vector Graphic */}
           <img
             src={
               pinIconStyle === 'emoji' || pinColorTheme !== 'original'
                 ? '/c26-map-bg.png'
-                : '/c26-my-map.png'
+                : '/c26-map-bg.png'
             }
             alt="My Map Vector Paris"
             className="w-full h-full object-cover pointer-events-none select-none"
             draggable={false}
           />
 
-          {/* Interactive Dynamic Map Pins (Rendering 3D Emojis or Custom Colors) */}
+          {/* Interactive Dynamic Map Pins */}
           {MY_MAP_PINS.map((pin) => {
             const isSelected = selectedLocation?.id === pin.id;
             const themeColor = getPinThemeColor(pinColorTheme, pin.color);
             const isEmoji = pinIconStyle === 'emoji';
-            const isCustom = pinIconStyle === 'emoji' || pinColorTheme !== 'original';
 
             return (
               <div
@@ -336,115 +369,158 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 className="absolute z-20 cursor-pointer flex items-center justify-center transition-transform hover:scale-115 active:scale-95"
                 title={pin.name}
               >
-                {/* 3D Emoji or Custom Vector Pin Disc */}
-                {isCustom ? (
-                  <div
-                    style={{ backgroundColor: themeColor }}
-                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_14px_rgba(0,0,0,0.28)] flex items-center justify-center transition-all animate-in zoom-in-75 duration-150 ${
-                      isSelected
-                        ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-110'
-                        : ''
-                    }`}
-                  >
-                    {isEmoji ? (
-                      <span className="text-[19px] sm:text-[21px] leading-none select-none filter drop-shadow-xs">
-                        {pin.emoji}
-                      </span>
-                    ) : (
-                      <div className="text-white flex items-center justify-center">
-                        {getVectorIcon(pin.type)}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* Original Mode: Clean invisible touch target over c26.png with zero background circles */
-                  <div className="w-12 h-12 rounded-full" />
-                )}
+                <div
+                  style={{ backgroundColor: themeColor }}
+                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_14px_rgba(0,0,0,0.28)] flex items-center justify-center transition-all animate-in zoom-in-75 duration-150 ${
+                    isSelected
+                      ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-115'
+                      : ''
+                  }`}
+                >
+                  {isEmoji ? (
+                    <span className="text-[19px] sm:text-[21px] leading-none select-none filter drop-shadow-xs">
+                      {pin.emoji}
+                    </span>
+                  ) : (
+                    <div className="text-white flex items-center justify-center">
+                      {getVectorIcon(pin.type)}
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
-
-          {/* GPS Beacon Tap Hitbox */}
-          <div
-            onClick={handleLocateUser}
-            style={{
-              left: '44.8%',
-              top: '44.6%',
-              transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
-              transformOrigin: 'center center',
-            }}
-            className="absolute z-20 w-16 h-16 rounded-full cursor-pointer"
-            title="GPS User Location"
-          />
         </div>
       </div>
 
       {/* ========================================================= */}
-      {/* 2. TOP-LEFT BACK BUTTON                                   */}
+      {/* 2. TOP FLOATING HEADER                                    */}
       {/* ========================================================= */}
-      <div className="absolute top-4 left-4 z-40">
+      <div className="relative z-30 p-4 flex items-center justify-between pointer-events-none">
+        {/* Back Button */}
         <button
           onClick={() => onBack && onBack()}
-          className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.14)] border border-white flex items-center justify-center text-[#0f1738] hover:bg-white active:scale-90 transition-all cursor-pointer"
-          title="Back to Home"
+          className="pointer-events-auto w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-white active:scale-90 transition-all cursor-pointer"
+          title="Back"
         >
           <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
         </button>
+
+        {/* Map Title Pill */}
+        <div className="pointer-events-auto px-3.5 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[12px] font-extrabold text-[#0f1738]">Paris Café Guide</span>
+          <span className="text-[10px] text-slate-400 font-bold">• 5 Places</span>
+        </div>
       </div>
 
       {/* ========================================================= */}
-      {/* 3. INVISIBLE INTERACTIVE HITBOXES OVER c26 BUTTONS        */}
+      {/* 3. RIGHT FLOATING ACTION CONTROLS                         */}
       {/* ========================================================= */}
-      {/* Top-Right Button Hitbox 1: Layers */}
-      <div
-        onClick={() => showToast('Toggle map layers')}
-        style={{ top: '7.4%', right: '3.6%' }}
-        className="absolute z-30 w-12 h-12 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
-        title="Map Layers"
-      />
+      <div className="absolute right-3.5 top-20 z-30 flex flex-col gap-2.5 pointer-events-auto">
+        {/* Layers / Map Style */}
+        <button
+          onClick={() => {
+            setCustomizationStep(1);
+            setShowCustomizeModal(true);
+          }}
+          className="w-11 h-11 rounded-full bg-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer"
+          title="Map Style"
+        >
+          <Layers className="w-5 h-5 stroke-[2.2]" />
+        </button>
 
-      {/* Top-Right Button Hitbox 2: GPS Recenter */}
-      <div
-        onClick={handleLocateUser}
-        style={{ top: '14.2%', right: '3.6%' }}
-        className="absolute z-30 w-12 h-12 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
-        title="My Location"
-      />
+        {/* GPS Recenter */}
+        <button
+          onClick={handleLocateUser}
+          className="w-11 h-11 rounded-full bg-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer"
+          title="My Location"
+        >
+          <Crosshair className="w-5 h-5 stroke-[2.2]" />
+        </button>
 
-      {/* Top-Right Button Hitbox 3: Purple Customization Button -> Opens c27 Modal */}
-      <div
-        onClick={() => {
-          setCustomizationStep(1);
-          setShowCustomizeModal(true);
-        }}
-        style={{ top: '21.0%', right: '3.6%' }}
-        className="absolute z-30 w-12 h-12 rounded-full cursor-pointer hover:bg-white/10 active:scale-90 transition-all"
-        title="Customize Map Styles & Colors"
-      />
+        {/* Customize Button (Purple) */}
+        <button
+          onClick={() => {
+            setCustomizationStep(2);
+            setShowCustomizeModal(true);
+          }}
+          className="w-11 h-11 rounded-full bg-[#544ee5] shadow-[0_4px_16px_rgba(84,78,229,0.38)] flex items-center justify-center text-white hover:bg-[#4338ca] active:scale-90 transition-all cursor-pointer"
+          title="Customize Pins & Colors"
+        >
+          <SlidersHorizontal className="w-5 h-5 stroke-[2.4]" />
+        </button>
 
-      {/* Bottom-Right Compass Hitbox */}
-      <div
-        onClick={() => handleDirections(selectedLocation)}
-        style={{ bottom: '18.5%', right: '3.6%' }}
-        className="absolute z-30 w-14 h-14 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
-        title="Compass Navigation"
-      />
+        {/* Zoom In & Zoom Out Buttons */}
+        <div className="flex flex-col bg-white rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.12)] border border-slate-100 overflow-hidden mt-2">
+          <button
+            onClick={() => handleZoom('in')}
+            className="w-11 h-10 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer border-b border-slate-100"
+            title="Zoom In"
+          >
+            <Plus className="w-4.5 h-4.5 stroke-[2.4]" />
+          </button>
+          <button
+            onClick={() => handleZoom('out')}
+            className="w-11 h-10 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer"
+            title="Zoom Out"
+          >
+            <Minus className="w-4.5 h-4.5 stroke-[2.4]" />
+          </button>
+        </div>
+      </div>
 
-      {/* Bottom Location Card Directions Hitbox */}
-      <div
-        onClick={() => handleDirections(selectedLocation)}
-        style={{ bottom: '3.8%', right: '4.8%', width: '33%', height: '5.2%' }}
-        className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/10 active:scale-95 transition-all"
-        title="Get Directions in Google Maps"
-      />
+      {/* ========================================================= */}
+      {/* 4. BOTTOM FLOATING PLACE CARD (Matching c26.png)          */}
+      {/* ========================================================= */}
+      {selectedLocation && (
+        <div className="relative z-30 px-3.5 pb-4 pointer-events-none">
+          <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-[24px] p-3 shadow-[0_8px_30px_rgba(0,0,0,0.14)] border border-white/80 flex items-center gap-3 animate-in slide-in-from-bottom-3 duration-200 max-w-sm mx-auto">
+            {/* Thumbnail Image */}
+            <div
+              onClick={() => onNavigate && onNavigate('map-detail')}
+              className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 shrink-0 cursor-pointer shadow-xs"
+            >
+              <img
+                src={selectedLocation.img}
+                alt={selectedLocation.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
 
-      {/* Bottom Location Card Detail Tap Hitbox */}
-      <div
-        onClick={() => onNavigate && onNavigate('map-detail')}
-        style={{ bottom: '3.2%', left: '4.5%', width: '58%', height: '6.5%' }}
-        className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5"
-        title="View Place Details"
-      />
+            {/* Info Body */}
+            <div
+              onClick={() => onNavigate && onNavigate('map-detail')}
+              className="flex-1 min-w-0 cursor-pointer"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9.5px] font-extrabold uppercase tracking-wide text-[#544ee5] bg-[#eeedff] px-2 py-0.5 rounded-full">
+                  {selectedLocation.category.split('•')[0].trim()}
+                </span>
+                <div className="flex items-center gap-0.5 text-[11px] font-bold text-amber-500">
+                  <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                  <span>{selectedLocation.rating}</span>
+                </div>
+              </div>
+              <h3 className="font-extrabold text-[14.5px] text-[#0f1738] leading-tight mt-1 truncate">
+                {selectedLocation.name}
+              </h3>
+              <p className="text-[11px] text-[#717ea1] font-medium truncate mt-0.5">
+                {selectedLocation.address}
+              </p>
+            </div>
+
+            {/* Action: Directions Button */}
+            <button
+              onClick={() => handleDirections(selectedLocation)}
+              className="w-10 h-10 rounded-2xl bg-[#544ee5] text-white flex items-center justify-center hover:bg-[#4338ca] active:scale-95 shadow-md shadow-indigo-300/40 transition-all cursor-pointer shrink-0"
+              title="Directions in Google Maps"
+            >
+              <Navigation className="w-4.5 h-4.5 stroke-[2.4] -rotate-45" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================= */}
       {/* 4. CUSTOMIZE MAP BOTTOM SHEET MODAL (c27.png)             */}

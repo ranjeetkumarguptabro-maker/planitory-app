@@ -59,10 +59,6 @@ export default function MapDetailPage({ onBack, onNavigate }) {
               e.stopPropagation();
               if (onBack) onBack();
             }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              if (onBack) onBack();
-            }}
             className="absolute left-[5%] top-[12%] w-[16%] aspect-square rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all z-30 flex items-center justify-center"
             title="Back to Explore"
             aria-label="Back to Explore"
@@ -71,12 +67,6 @@ export default function MapDetailPage({ onBack, onNavigate }) {
           {/* Favorite Button Hitbox */}
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              const next = !isLiked;
-              setIsLiked(next);
-              showToast(next ? "Saved to your favorites!" : "Removed from favorites");
-            }}
-            onTouchEnd={(e) => {
               e.stopPropagation();
               const next = !isLiked;
               setIsLiked(next);
@@ -94,10 +84,6 @@ export default function MapDetailPage({ onBack, onNavigate }) {
           {/* Share Button Hitbox */}
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              handleShare();
-            }}
-            onTouchEnd={(e) => {
               e.stopPropagation();
               handleShare();
             }}
