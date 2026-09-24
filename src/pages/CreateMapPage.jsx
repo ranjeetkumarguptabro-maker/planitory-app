@@ -730,16 +730,6 @@ export default function CreateMapPage({ onBack, onNavigate }) {
                 draggable={false}
               />
 
-              {/* Interactive GPS Location Beacon Touch Target in Seine River */}
-              <div
-                className="absolute z-10 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer group"
-                style={{ left: '53.1%', top: '54.7%', width: '48px', height: '48px' }}
-                onClick={handleRecenter}
-                title="Current Location (Seine River)"
-              >
-                <div className="w-12 h-12 rounded-full bg-blue-500/15 animate-ping absolute pointer-events-none" />
-              </div>
-
               {/* Map Interactive Pin Hitboxes & Badges */}
               {INITIAL_BUILD_PINS.map((pin) => {
                 const isAdded = addedPlaces.includes(pin.name);
