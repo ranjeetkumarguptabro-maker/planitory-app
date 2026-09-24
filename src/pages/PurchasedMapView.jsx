@@ -357,12 +357,8 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                     )}
                   </div>
                 ) : (
-                  /* Original Mode: Transparent Hitbox with subtle selection border without blue background circle */
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center">
-                    {isSelected && (
-                      <div className="w-10 h-10 rounded-full ring-2 ring-[#544ee5]/80 ring-offset-2 ring-offset-white/80 animate-in zoom-in-75 duration-150 pointer-events-none" />
-                    )}
-                  </div>
+                  /* Original Mode: Clean invisible touch target over c26.png with zero background circles */
+                  <div className="w-12 h-12 rounded-full" />
                 )}
               </div>
             );
