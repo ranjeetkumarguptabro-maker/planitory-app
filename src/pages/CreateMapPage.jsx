@@ -1,656 +1,313 @@
-import React, { useState, useRef } from 'react';
-import { 
-  Sparkles, 
-  Map as MapIcon, 
-  Plane, 
-  Heart, 
-  Users, 
-  Image as ImageIcon, 
-  List, 
-  Plus, 
-  Search, 
-  MapPin, 
-  Camera, 
-  Star, 
-  Lock, 
-  Globe, 
-  ChevronDown, 
-  Check, 
-  Lightbulb, 
-  Home, 
-  User, 
+import React, { useState } from 'react';
+import {
+  Sparkles,
+  Map as MapIcon,
+  Plane,
+  Heart,
+  Image as ImageIcon,
+  List,
+  Plus,
+  ArrowRight,
+  Lightbulb,
+  Home,
+  Users,
+  User,
   X,
-  Wifi,
-  Battery
+  CheckCircle2
 } from 'lucide-react';
 
 export default function CreateMapPage({ onBack, onNavigate }) {
-  // Mode switcher: 'map' | 'trip'
+  // Mode toggle: 'map' | 'trip'
   const [activeMode, setActiveMode] = useState('map');
 
-  // Creation Type: 'custom' | 'trip' | 'saved' | 'collab'
+  // Type selector: 'custom' | 'trip' | 'saved'
   const [selectedType, setSelectedType] = useState('custom');
 
-  // Form Fields
+  // Input Fields
   const [mapTitle, setMapTitle] = useState('');
   const [mapDescription, setMapDescription] = useState('');
-  const [placeQuery, setPlaceQuery] = useState('');
-  const [selectedPlaces, setSelectedPlaces] = useState([]);
-  const [privacy, setPrivacy] = useState('private'); // 'private' | 'public'
-  const [showPrivacyDropdown, setShowPrivacyDropdown] = useState(false);
 
-  // Cover image handling
-  const [selectedCover, setSelectedCover] = useState('/c18-cover-paris.png');
-  const [customCovers, setCustomCovers] = useState([]);
-  const fileInputRef = useRef(null);
-
-  // Toast / Inspiration Modal
-  const [toastMessage, setToastMessage] = useState('');
+  // Modals & Feedback
+  const [toastMessage, setToastMessage] = useState(null);
   const [showInspireModal, setShowInspireModal] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [step, setStep] = useState(1); // 1 = Details (matching create_page_first_image.png), 2 = Step 2 summary / finish
 
   const showToast = (msg) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 3000);
-  };
-
-  // Handle local image file upload
-  const handleFileUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target.result;
-      setCustomCovers((prev) => [dataUrl, ...prev]);
-      setSelectedCover(dataUrl);
-      showToast('Custom photo uploaded successfully! 📸');
-    };
-    reader.readAsDataURL(file);
+    setTimeout(() => setToastMessage(null), 2500);
   };
 
   // AI Suggestion helper
   const handleAiSuggest = () => {
     const suggestions = [
       {
-        title: 'Hidden Cafes & Bakeries in Paris ☕',
-        desc: 'A curated walking tour of secret courtyards, third-wave espresso bars, and the flakiest croissants in Le Marais.'
+        title: 'Hidden Cafés & Bakeries in Paris ☕',
+        desc: 'A curated walking tour of secret courtyards, third-wave espresso bars, and flaky croissants in Le Marais.'
       },
       {
         title: 'Sunset Cliffs & Coastal Eats of Amalfi 🍋',
-        desc: 'Cliffside views, secluded swimming grottos, and authentic family-owned trattorias along the Italian coast.'
+        desc: 'Cliffside vistas, swimming grottos, and authentic family-owned trattorias along the Italian coast.'
       },
       {
-        title: 'Ancient Wonders & Secret Alleyways of Rome 🏛️',
-        desc: 'Off-the-beaten-path cobblestone streets, local artisan gelato, and illuminated historic monuments at night.'
+        title: 'Antalya & Cappadocia Complete Guide 🎈',
+        desc: 'From Turquoise Coast beaches to Göreme sunrise balloon flights and ancient subterranean cities.'
       },
       {
-        title: 'Alpine Lakes & Fairytale Villages of Switzerland 🏔️',
-        desc: 'Crystal-clear glacial lakes, panoramic cable car vistas, and charming wooden chalet towns.'
+        title: 'Tokyo Ramen & Neon Alleyways 🍜',
+        desc: 'Late-night ramen dens, hidden speakeasies, and vibrant neighborhood street spots in Shibuya.'
       }
     ];
 
-    const randomPick = suggestions[Math.floor(Math.random() * suggestions.length)];
-    setMapTitle(randomPick.title);
-    setMapDescription(randomPick.desc);
-    showToast('✨ AI suggested a map title and description!');
+    const pick = suggestions[Math.floor(Math.random() * suggestions.length)];
+    setMapTitle(pick.title);
+    setMapDescription(pick.desc);
+    showToast('✨ AI suggested a map title & description!');
   };
 
-  // Handle adding place
-  const handleAddPlace = (name) => {
-    if (!selectedPlaces.includes(name)) {
-      setSelectedPlaces([...selectedPlaces, name]);
-      showToast(`Added "${name}" to your map 📍`);
-      setPlaceQuery('');
-    }
-  };
-
-  // Handle Final Create
-  const handleCreateMap = () => {
+  const handleNext = () => {
     if (!mapTitle.trim()) {
-      showToast('Please enter a title for your map!');
+      showToast('Please enter a title for your map');
       return;
     }
-    setShowSuccessModal(true);
+    showToast(`🎉 "${mapTitle}" created! Redirecting to explore...`);
+    setTimeout(() => {
+      if (onNavigate) onNavigate('explore');
+    }, 1200);
   };
 
-  const presetCovers = [
-    { id: 'paris', src: '/c18-cover-paris.png', name: 'Paris Sunset' },
-    { id: 'amalfi', src: '/c18-cover-amalfi.png', name: 'Amalfi Coast' },
-    { id: 'swiss', src: '/c18-cover-swiss.png', name: 'Alpine Village' },
-    { id: 'rome', src: '/c18-cover-rome.png', name: 'Rome Colosseum' },
-  ];
-
-  const quickSearchMatches = [
-    'Eiffel Tower, Paris',
-    'Colosseum, Rome',
-    'Positano Beach, Amalfi',
-    'Hallstatt Lake, Austria',
-    'Louvre Museum, Paris',
-    'Trevi Fountain, Rome'
-  ].filter(p => placeQuery && p.toLowerCase().includes(placeQuery.toLowerCase()));
-
   return (
-    <div className="w-full h-full bg-white sm:rounded-[44px] flex flex-col justify-between overflow-hidden relative font-sans text-gray-900">
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 bg-[#1e2337] text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-xl border border-white/10 flex items-center gap-2 animate-fade-in">
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
-      {/* Hidden File Input for "+ Add Photo" */}
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        accept="image/*" 
-        className="hidden" 
-        onChange={handleFileUpload} 
-      />
-
-      {/* Scrollable Main Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y scrollbar-none pb-28">
-        {/* Status Bar */}
-        <div className="pt-3 px-7 flex justify-between items-center text-xs font-semibold text-gray-900">
-          <span>9:41</span>
-          <div className="flex items-center gap-1.5 text-gray-800">
-            {/* Cellular Signal */}
-            <div className="flex items-end gap-0.5 h-3 mr-0.5">
-              <span className="w-0.5 h-1 bg-gray-800 rounded-xs"></span>
-              <span className="w-0.5 h-1.5 bg-gray-800 rounded-xs"></span>
-              <span className="w-0.5 h-2 bg-gray-800 rounded-xs"></span>
-              <span className="w-0.5 h-2.5 bg-gray-800 rounded-xs"></span>
+    <div className="relative w-full h-full bg-white sm:rounded-[44px] flex flex-col justify-between overflow-hidden select-none">
+      {/* Scrollable Content Container */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28 scrollbar-none">
+        {/* iOS Status Bar */}
+        <div className="pt-3 sm:pt-4 px-6 shrink-0 bg-white">
+          <div className="flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-2 px-0.5">
+            <span className="text-[14px] tracking-tight font-bold">9:41</span>
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-end gap-[1.5px] h-3">
+                <div className="w-[3px] h-1 bg-[#0f1738] rounded-[0.5px]" />
+                <div className="w-[3px] h-1.5 bg-[#0f1738] rounded-[0.5px]" />
+                <div className="w-[3px] h-2 bg-[#0f1738] rounded-[0.5px]" />
+                <div className="w-[3px] h-3 bg-[#0f1738] rounded-[0.5px]" />
+              </div>
+              <svg className="w-3.5 h-3.5 fill-[#0f1738]" viewBox="0 0 24 24">
+                <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z" />
+              </svg>
+              <div className="w-5 h-2.5 border border-[#0f1738] rounded-[3px] p-[1px] flex items-center">
+                <div className="w-full h-full bg-[#0f1738] rounded-[1px]" />
+              </div>
             </div>
-            <Wifi className="w-3.5 h-3.5" />
-            <div className="w-5 h-2.5 border border-gray-800 rounded-xs p-0.5 flex items-center">
-              <div className="w-full h-full bg-gray-800 rounded-2xs"></div>
+          </div>
+
+          {/* Header Row: Create + Get Inspired Pill Button */}
+          <div className="flex items-start justify-between pt-1 pb-1">
+            <div>
+              <h1 className="text-[32px] sm:text-[34px] font-black text-[#0f1738] tracking-tight leading-none">
+                Create
+              </h1>
+              <p className="text-[13.5px] text-[#717ea1] font-medium mt-1.5">
+                Turn your ideas into amazing maps.
+              </p>
             </div>
+
+            {/* Get Inspired Button */}
+            <button
+              onClick={() => setShowInspireModal(true)}
+              className="px-3.5 py-1.5 bg-white border border-slate-200/90 rounded-full shadow-2xs text-[12px] font-bold text-[#0f1738] hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer mt-0.5"
+            >
+              <span className="text-[14px]">💡</span>
+              <span>Get Inspired</span>
+            </button>
           </div>
         </div>
 
-        {/* Top Header */}
-        <div className="px-6 pt-3 pb-2 flex items-start justify-between">
-          <div>
-            <h1 className="text-[28px] font-extrabold text-gray-950 tracking-tight leading-tight">
-              Create
-            </h1>
-            <p className="text-[13px] text-gray-500 font-medium mt-0.5">
-              Turn your ideas into amazing maps.
-            </p>
-          </div>
-          <button
-            onClick={() => setShowInspireModal(true)}
-            className="mt-1 flex items-center gap-1.5 px-3.5 py-1.5 bg-white border border-gray-200 rounded-full shadow-xs text-xs font-semibold text-gray-800 hover:bg-gray-50 active:scale-95 transition-all cursor-pointer shrink-0"
-          >
-            <Lightbulb className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
-            <span>Get Inspired</span>
-          </button>
-        </div>
-
-        {/* Mode Switcher Capsule */}
-        <div className="px-6 mt-3">
-          <div className="bg-[#f0f2f8] p-1 rounded-2xl flex items-center">
+        {/* Top 2-Segment Switcher (Create a Map / Plan a Trip) */}
+        <div className="px-5 sm:px-6 pt-3">
+          <div className="bg-[#eef1f8] p-1 rounded-2xl flex items-center gap-1">
             <button
               onClick={() => setActiveMode('map')}
-              className={`flex-1 py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all ${
+              className={`flex-1 py-2.5 sm:py-3 rounded-xl font-bold text-[13px] sm:text-[13.5px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 activeMode === 'map'
-                  ? 'bg-[#544ee5] text-white shadow-md shadow-indigo-200'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-[#544ee5] text-white shadow-sm'
+                  : 'text-[#0f1738] hover:text-[#544ee5]'
               }`}
             >
-              <MapIcon className="w-4 h-4" />
+              <MapIcon className="w-4 h-4 stroke-[2.2]" />
               <span>Create a Map</span>
             </button>
             <button
               onClick={() => {
                 setActiveMode('trip');
-                showToast("Switched to Plan a Trip mode 📅");
+                showToast('Switched to Plan a Trip 📅');
               }}
-              className={`flex-1 py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all ${
+              className={`flex-1 py-2.5 sm:py-3 rounded-xl font-bold text-[13px] sm:text-[13.5px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 activeMode === 'trip'
-                  ? 'bg-[#544ee5] text-white shadow-md shadow-indigo-200'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-[#544ee5] text-white shadow-sm'
+                  : 'text-[#0f1738] hover:text-[#544ee5]'
               }`}
             >
-              <span>📅 Plan a Trip</span>
+              <span>📅</span>
+              <span>Plan a Trip</span>
             </button>
           </div>
         </div>
 
-        {/* What do you want to create? */}
-        <div className="px-6 mt-6">
-          <h2 className="text-[15px] font-bold text-gray-950 mb-3">
+        {/* Section 1: What do you want to create? */}
+        <div className="px-5 sm:px-6 pt-5">
+          <h2 className="text-[16.5px] sm:text-[17.5px] font-black text-[#0f1738] tracking-tight mb-3">
             What do you want to create?
           </h2>
-          <div className="flex gap-2.5 overflow-x-auto no-scrollbar pb-1">
-            {/* Custom Map */}
+
+          <div className="grid grid-cols-3 gap-2.5">
+            {/* Card 1: Custom Map */}
             <div
               onClick={() => setSelectedType('custom')}
-              className={`min-w-[124px] p-3 rounded-2xl border transition-all cursor-pointer flex flex-col items-center text-center shrink-0 ${
+              className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
                 selectedType === 'custom'
-                  ? 'border-2 border-[#544ee5] bg-[#F5F4FF] shadow-xs'
-                  : 'border border-gray-150 bg-white hover:border-gray-300'
+                  ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                  : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
               }`}
             >
               <div className="w-8 h-8 flex items-center justify-center text-[#544ee5] mb-2">
-                <MapIcon className="w-6 h-6 stroke-[2.2]" />
+                <MapIcon className="w-7 h-7 stroke-[2.2]" />
               </div>
-              <span className="font-bold text-[13px] text-gray-950">Custom Map</span>
-              <span className="text-[10px] text-gray-500 font-medium leading-tight mt-1">
+              <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                Custom Map
+              </span>
+              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
                 Add places, notes and share
               </span>
             </div>
 
-            {/* Trip Itinerary */}
+            {/* Card 2: Trip Itinerary */}
             <div
               onClick={() => setSelectedType('trip')}
-              className={`min-w-[124px] p-3 rounded-2xl border transition-all cursor-pointer flex flex-col items-center text-center shrink-0 ${
+              className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
                 selectedType === 'trip'
-                  ? 'border-2 border-[#544ee5] bg-[#F5F4FF] shadow-xs'
-                  : 'border border-gray-150 bg-white hover:border-gray-300'
+                  ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                  : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
               }`}
             >
-              <div className="w-8 h-8 flex items-center justify-center text-sky-500 mb-2">
-                <Plane className="w-6 h-6 fill-current" />
+              <div className="w-8 h-8 flex items-center justify-center text-[#0ea5e9] mb-2">
+                <Plane className="w-7 h-7 fill-current" />
               </div>
-              <span className="font-bold text-[13px] text-gray-950">Trip Itinerary</span>
-              <span className="text-[10px] text-gray-500 font-medium leading-tight mt-1">
+              <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                Trip Itinerary
+              </span>
+              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
                 Plan day by day
               </span>
             </div>
 
-            {/* Saved Collection */}
+            {/* Card 3: Saved Collection */}
             <div
               onClick={() => setSelectedType('saved')}
-              className={`min-w-[124px] p-3 rounded-2xl border transition-all cursor-pointer flex flex-col items-center text-center shrink-0 ${
+              className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
                 selectedType === 'saved'
-                  ? 'border-2 border-[#544ee5] bg-[#F5F4FF] shadow-xs'
-                  : 'border border-gray-150 bg-white hover:border-gray-300'
+                  ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                  : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
               }`}
             >
-              <div className="w-8 h-8 flex items-center justify-center text-pink-500 mb-2">
-                <Heart className="w-6 h-6 fill-current" />
+              <div className="w-8 h-8 flex items-center justify-center text-[#f43f5e] mb-2">
+                <Heart className="w-7 h-7 fill-current" />
               </div>
-              <span className="font-bold text-[13px] text-gray-950">Saved Collection</span>
-              <span className="text-[10px] text-gray-500 font-medium leading-tight mt-1">
-                Keep your favorite places
+              <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                Saved Collection
               </span>
-            </div>
-
-            {/* Collaborate */}
-            <div
-              onClick={() => setSelectedType('collab')}
-              className={`min-w-[124px] p-3 rounded-2xl border transition-all cursor-pointer flex flex-col items-center text-center shrink-0 ${
-                selectedType === 'collab'
-                  ? 'border-2 border-[#544ee5] bg-[#F5F4FF] shadow-xs'
-                  : 'border border-gray-150 bg-white hover:border-gray-300'
-              }`}
-            >
-              <div className="w-8 h-8 flex items-center justify-center text-emerald-500 mb-2">
-                <Users className="w-6 h-6 stroke-[2.2]" />
-              </div>
-              <span className="font-bold text-[13px] text-gray-950">Collaborate</span>
-              <span className="text-[10px] text-gray-500 font-medium leading-tight mt-1">
-                Build a map together
+              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                Keep your favorites
               </span>
             </div>
           </div>
         </div>
 
-        {/* Map Details */}
-        <div className="px-6 mt-6">
-          <div className="flex items-center justify-between mb-2.5">
-            <h2 className="text-[15px] font-bold text-gray-950">Map Details</h2>
+        {/* Section 2: Map Details + AI Suggest */}
+        <div className="px-5 sm:px-6 pt-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-[16.5px] sm:text-[17.5px] font-black text-[#0f1738] tracking-tight">
+              Map Details
+            </h2>
             <button
               onClick={handleAiSuggest}
-              className="text-[#544ee5] hover:text-[#433cc7] text-xs font-semibold flex items-center gap-1 cursor-pointer transition active:scale-95"
+              className="text-[#544ee5] hover:text-[#4338ca] text-[13px] font-black flex items-center gap-1 cursor-pointer active:scale-95 transition-all"
             >
-              <Sparkles className="w-3.5 h-3.5 fill-current" />
+              <Sparkles className="w-4 h-4 fill-[#544ee5]" />
               <span>AI Suggest</span>
             </button>
           </div>
 
           <div className="space-y-2.5">
             {/* Title Input */}
-            <div className="flex items-center gap-3 px-4 py-3 bg-[#fafbfe] border border-gray-200/80 rounded-2xl focus-within:border-[#544ee5] focus-within:bg-white transition-all shadow-2xs">
-              <ImageIcon className="w-4 h-4 text-gray-400 shrink-0" />
+            <div className="flex items-center gap-3 px-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-indigo-100/60 shadow-2xs transition-all">
+              <ImageIcon className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
               <input
                 type="text"
                 value={mapTitle}
                 onChange={(e) => setMapTitle(e.target.value)}
                 placeholder="Give your map a title..."
-                className="w-full bg-transparent text-[13.5px] font-medium text-gray-900 placeholder-gray-400 outline-none"
+                className="w-full bg-transparent text-[14px] font-semibold text-[#0f1738] placeholder:text-[#8e9bb5] outline-none"
               />
               {mapTitle && (
-                <button onClick={() => setMapTitle('')} className="text-gray-400 hover:text-gray-600">
-                  <X className="w-3.5 h-3.5" />
+                <button
+                  onClick={() => setMapTitle('')}
+                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
 
             {/* Description Input */}
-            <div className="flex items-center gap-3 px-4 py-3 bg-[#fafbfe] border border-gray-200/80 rounded-2xl focus-within:border-[#544ee5] focus-within:bg-white transition-all shadow-2xs">
-              <List className="w-4 h-4 text-gray-400 shrink-0" />
+            <div className="flex items-center gap-3 px-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-indigo-100/60 shadow-2xs transition-all">
+              <List className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
               <input
                 type="text"
                 value={mapDescription}
                 onChange={(e) => setMapDescription(e.target.value)}
                 placeholder="Tell us about your map (optional)..."
-                className="w-full bg-transparent text-[13.5px] font-medium text-gray-900 placeholder-gray-400 outline-none"
+                className="w-full bg-transparent text-[14px] font-semibold text-[#0f1738] placeholder:text-[#8e9bb5] outline-none"
               />
               {mapDescription && (
-                <button onClick={() => setMapDescription('')} className="text-gray-400 hover:text-gray-600">
-                  <X className="w-3.5 h-3.5" />
+                <button
+                  onClick={() => setMapDescription('')}
+                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        {/* Choose a Cover Image */}
-        <div className="px-6 mt-6">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-[15px] font-bold text-gray-950">Choose a Cover Image</h2>
-            <button
-              onClick={() => showToast('Browsing 50+ scenic destination covers 🖼️')}
-              className="text-[#544ee5] hover:text-[#433cc7] text-xs font-semibold cursor-pointer"
-            >
-              See All
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar pb-1">
-            {/* + Add Photo Card */}
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="w-[84px] h-[106px] rounded-2xl border-2 border-dashed border-[#544ee5] bg-[#F5F4FF] hover:bg-indigo-50/70 flex flex-col items-center justify-center p-2 shrink-0 cursor-pointer active:scale-95 transition-all group"
-              title="Upload your own photo"
-            >
-              <div className="w-7 h-7 rounded-full bg-[#544ee5] text-white flex items-center justify-center mb-1.5 shadow-sm group-hover:scale-105 transition-transform">
-                <Plus className="w-4 h-4 stroke-[3]" />
-              </div>
-              <span className="text-[11px] font-bold text-[#544ee5]">Add Photo</span>
-            </div>
-
-            {/* Custom Uploaded Covers (if any) */}
-            {customCovers.map((src, index) => {
-              const isSelected = selectedCover === src;
-              return (
-                <div
-                  key={`custom-${index}`}
-                  onClick={() => setSelectedCover(src)}
-                  className={`w-[84px] h-[106px] rounded-2xl overflow-hidden shrink-0 relative cursor-pointer shadow-xs transition-all ${
-                    isSelected ? 'ring-2 ring-[#544ee5] ring-offset-2 scale-102' : 'hover:opacity-90'
-                  }`}
-                >
-                  <img src={src} alt="Uploaded cover" className="w-full h-full object-cover" />
-                  {isSelected && (
-                    <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#544ee5] text-white flex items-center justify-center shadow-md">
-                      <Check className="w-3 h-3 stroke-[3]" />
-                    </div>
-                  )}
-                  <span className="absolute bottom-1 left-1.5 bg-black/60 backdrop-blur-xs text-[9px] text-white font-semibold px-1.5 py-0.5 rounded-md">
-                    Custom
-                  </span>
-                </div>
-              );
-            })}
-
-            {/* Preset Covers */}
-            {presetCovers.map((cover) => {
-              const isSelected = selectedCover === cover.src;
-              return (
-                <div
-                  key={cover.id}
-                  onClick={() => setSelectedCover(cover.src)}
-                  className={`w-[84px] h-[106px] rounded-2xl overflow-hidden shrink-0 relative cursor-pointer shadow-xs transition-all ${
-                    isSelected ? 'ring-2 ring-[#544ee5] ring-offset-2 scale-102' : 'hover:opacity-90'
-                  }`}
-                >
-                  <img src={cover.src} alt={cover.name} className="w-full h-full object-cover" />
-                  {isSelected && (
-                    <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#544ee5] text-white flex items-center justify-center shadow-md">
-                      <Check className="w-3 h-3 stroke-[3]" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Add Places */}
-        <div className="px-6 mt-6">
-          <div className="flex items-center justify-between mb-2.5">
-            <h2 className="text-[15px] font-bold text-gray-950">Add Places</h2>
-            {selectedPlaces.length > 0 && (
-              <span className="text-xs font-semibold text-[#544ee5] bg-indigo-50 px-2 py-0.5 rounded-full">
-                {selectedPlaces.length} places added
-              </span>
-            )}
-          </div>
-
-          {/* Place Search Input */}
-          <div className="relative">
-            <div className="flex items-center gap-3 px-4 py-3 bg-[#fafbfe] border border-gray-200/80 rounded-2xl focus-within:border-[#544ee5] focus-within:bg-white transition-all shadow-2xs">
-              <Search className="w-4 h-4 text-gray-400 shrink-0" />
-              <input
-                type="text"
-                value={placeQuery}
-                onChange={(e) => setPlaceQuery(e.target.value)}
-                placeholder="Search for a city, place or landmark..."
-                className="w-full bg-transparent text-[13.5px] font-medium text-gray-900 placeholder-gray-400 outline-none"
-              />
-              {placeQuery && (
-                <button onClick={() => setPlaceQuery('')} className="text-gray-400 hover:text-gray-600">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Quick Autocomplete Dropdown */}
-            {quickSearchMatches.length > 0 && (
-              <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-gray-150 rounded-2xl shadow-xl z-20 overflow-hidden py-1">
-                {quickSearchMatches.map((place, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleAddPlace(place)}
-                    className="w-full px-4 py-2.5 text-left text-xs font-semibold text-gray-800 hover:bg-indigo-50 flex items-center justify-between transition cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-[#544ee5]" />
-                      <span>{place}</span>
-                    </div>
-                    <span className="text-[10px] text-[#544ee5] font-bold">+ Add</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Added Places Badges */}
-          {selectedPlaces.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {selectedPlaces.map((place, idx) => (
-                <span
-                  key={idx}
-                  className="inline-flex items-center gap-1.5 bg-[#F5F4FF] text-[#544ee5] text-xs font-semibold px-2.5 py-1 rounded-full border border-indigo-100"
-                >
-                  <MapPin className="w-3 h-3" />
-                  <span>{place}</span>
-                  <button
-                    onClick={() => setSelectedPlaces(selectedPlaces.filter((_, i) => i !== idx))}
-                    className="hover:text-red-500"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* 4 Place Options Buttons */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar mt-3 pb-1">
-            {/* Current Location */}
-            <button
-              onClick={() => handleAddPlace('Current Location (Paris, 8th Arr.)')}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#f4f5f9] hover:bg-gray-200/70 active:scale-95 rounded-xl text-[11.5px] font-semibold text-gray-800 shrink-0 transition cursor-pointer"
-            >
-              <div className="w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center text-[#544ee5]">
-                <MapPin className="w-2.5 h-2.5 fill-current" />
-              </div>
-              <span>Current Location</span>
-            </button>
-
-            {/* From My Lists */}
-            <button
-              onClick={() => handleAddPlace('From My Favorites: Le Marais')}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#f4f5f9] hover:bg-gray-200/70 active:scale-95 rounded-xl text-[11.5px] font-semibold text-gray-800 shrink-0 transition cursor-pointer"
-            >
-              <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                <List className="w-2.5 h-2.5" />
-              </div>
-              <span>From My Lists</span>
-            </button>
-
-            {/* Add Manually */}
-            <button
-              onClick={() => {
-                const manual = prompt('Enter custom place or address:');
-                if (manual) handleAddPlace(manual);
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#f4f5f9] hover:bg-gray-200/70 active:scale-95 rounded-xl text-[11.5px] font-semibold text-gray-800 shrink-0 transition cursor-pointer"
-            >
-              <div className="w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                <Camera className="w-2.5 h-2.5" />
-              </div>
-              <span>Add Manually</span>
-            </button>
-
-            {/* Use AI Suggestions */}
-            <button
-              onClick={() => {
-                handleAddPlace('Louvre Museum, Paris');
-                handleAddPlace('Café de Flore');
-                showToast('✨ AI added 2 popular nearby spots!');
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#f4f5f9] hover:bg-gray-200/70 active:scale-95 rounded-xl text-[11.5px] font-semibold text-gray-800 shrink-0 transition cursor-pointer"
-            >
-              <div className="w-4 h-4 rounded-full bg-amber-100 flex items-center justify-center text-amber-500">
-                <Star className="w-2.5 h-2.5 fill-current" />
-              </div>
-              <span>Use AI Suggestions</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Privacy Section */}
-        <div className="px-6 mt-6">
-          <h2 className="text-[15px] font-bold text-gray-950 mb-2.5">Privacy</h2>
-          <div className="relative">
-            <div
-              onClick={() => setShowPrivacyDropdown(!showPrivacyDropdown)}
-              className="flex items-center justify-between p-3.5 bg-white border border-gray-200/80 rounded-2xl cursor-pointer hover:border-gray-300 transition-all shadow-2xs"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-700">
-                  {privacy === 'private' ? (
-                    <Lock className="w-4 h-4" />
-                  ) : (
-                    <Globe className="w-4 h-4 text-emerald-600" />
-                  )}
-                </div>
-                <div>
-                  <div className="font-bold text-[13.5px] text-gray-950">
-                    {privacy === 'private' ? 'Keep private' : 'Public map'}
-                  </div>
-                  <div className="text-[11px] text-gray-500 font-medium">
-                    {privacy === 'private'
-                      ? 'Only you can see this map'
-                      : 'Anyone on Planitory can discover this map'}
-                  </div>
-                </div>
-              </div>
-              <ChevronDown
-                className={`w-4 h-4 text-gray-400 transition-transform ${
-                  showPrivacyDropdown ? 'rotate-180' : ''
-                }`}
-              />
-            </div>
-
-            {/* Privacy Options Dropdown */}
-            {showPrivacyDropdown && (
-              <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-gray-150 rounded-2xl shadow-xl z-20 overflow-hidden py-1">
-                <div
-                  onClick={() => {
-                    setPrivacy('private');
-                    setShowPrivacyDropdown(false);
-                  }}
-                  className={`p-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer ${
-                    privacy === 'private' ? 'bg-indigo-50/50' : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Lock className="w-4 h-4 text-gray-700" />
-                    <div>
-                      <div className="font-bold text-xs text-gray-900">Keep private</div>
-                      <div className="text-[10.5px] text-gray-500">Only you can see this map</div>
-                    </div>
-                  </div>
-                  {privacy === 'private' && <Check className="w-4 h-4 text-[#544ee5]" />}
-                </div>
-
-                <div
-                  onClick={() => {
-                    setPrivacy('public');
-                    setShowPrivacyDropdown(false);
-                  }}
-                  className={`p-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer ${
-                    privacy === 'public' ? 'bg-indigo-50/50' : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Globe className="w-4 h-4 text-emerald-600" />
-                    <div>
-                      <div className="font-bold text-xs text-gray-900">Public map</div>
-                      <div className="text-[10.5px] text-gray-500">Anyone on Planitory can discover this map</div>
-                    </div>
-                  </div>
-                  {privacy === 'public' && <Check className="w-4 h-4 text-[#544ee5]" />}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Primary Action Button */}
-        <div className="px-6 mt-7 mb-4">
+        {/* Primary Action Button: Next → */}
+        <div className="px-5 sm:px-6 pt-7">
           <button
-            onClick={handleCreateMap}
-            className="w-full py-3.5 rounded-2xl bg-[#544ee5] hover:bg-[#4842db] active:scale-[0.99] text-white font-bold text-[14px] shadow-lg shadow-indigo-200/90 flex items-center justify-center gap-2 transition cursor-pointer"
+            onClick={handleNext}
+            className="w-full py-4 rounded-full bg-[#544ee5] hover:bg-[#4338ca] active:scale-[0.99] text-white font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-indigo-300/40 transition-all cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 fill-white" />
-            <span>Create Map</span>
+            <span>Next</span>
+            <ArrowRight className="w-4.5 h-4.5 stroke-[2.8]" />
           </button>
         </div>
       </div>
 
-      {/* Bottom Fixed Navigation Bar */}
-      <div className="absolute bottom-0 left-0 right-0 pt-2 pb-3 sm:pb-2.5 bg-white/95 backdrop-blur-md border-t border-gray-150/80 px-6 flex items-center justify-between z-30">
-        {/* Explore */}
+      {/* Floating Bottom Navigation Bar matching create_page_first_image.png */}
+      <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-100 px-6 pt-2 pb-3 sm:pb-2.5 shadow-[0_-4px_20px_rgba(50,70,140,0.04)] flex items-center justify-between">
+        {/* Explore Tab */}
         <button
-          onClick={() => onNavigate?.('explore')}
+          onClick={() => {
+            if (onNavigate) onNavigate('explore');
+          }}
           className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
         >
           <Home className="w-5 h-5" />
           <span className="text-[10.5px] font-semibold">Explore</span>
         </button>
 
-        {/* My Maps */}
+        {/* My Maps Tab */}
         <button
           onClick={() => {
             if (onNavigate) onNavigate('purchased-map');
-            else showToast("Opening My Maps 🗺️");
           }}
           className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
         >
@@ -661,8 +318,8 @@ export default function CreateMapPage({ onBack, onNavigate }) {
         {/* Center Floating Action Button (+ Create - ACTIVE) */}
         <div className="-mt-6 flex flex-col items-center">
           <button
-            onClick={() => showToast("You are on the Create page!")}
-            className="w-13 h-13 rounded-full bg-[#544ee5] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-indigo-300 transition-all cursor-pointer ring-4 ring-white"
+            onClick={() => showToast('You are on the Create page')}
+            className="w-13 h-13 rounded-full bg-[#544ee5] hover:bg-[#4842db] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-indigo-300 transition-all cursor-pointer"
             title="Create"
           >
             <Plus className="w-7 h-7 stroke-[2.8]" />
@@ -670,18 +327,22 @@ export default function CreateMapPage({ onBack, onNavigate }) {
           <span className="text-[10.5px] font-bold text-[#544ee5] mt-0.5">Create</span>
         </div>
 
-        {/* Creators */}
+        {/* Creators Tab */}
         <button
-          onClick={() => onNavigate?.('creators')}
+          onClick={() => {
+            if (onNavigate) onNavigate('creators');
+          }}
           className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
         >
           <Users className="w-5 h-5" />
           <span className="text-[10.5px] font-semibold">Creators</span>
         </button>
 
-        {/* Profile */}
+        {/* Profile Tab */}
         <button
-          onClick={() => onNavigate?.('user-profile')}
+          onClick={() => {
+            if (onNavigate) onNavigate('user-profile');
+          }}
           className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
         >
           <User className="w-5 h-5" />
@@ -691,27 +352,27 @@ export default function CreateMapPage({ onBack, onNavigate }) {
 
       {/* Inspiration Modal */}
       {showInspireModal && (
-        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-6 animate-fade-in">
-          <div className="bg-white w-full rounded-3xl p-5 shadow-2xl border border-gray-100 max-h-[80%] flex flex-col">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-6 animate-in fade-in duration-150">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Lightbulb className="w-5 h-5 text-amber-500 fill-amber-400" />
-                <h3 className="text-base font-bold text-gray-900">Map Ideas & Inspo</h3>
+                <span className="text-[18px]">💡</span>
+                <h3 className="text-base font-extrabold text-[#0f1738]">Map Ideas &amp; Inspo</h3>
               </div>
               <button
                 onClick={() => setShowInspireModal(false)}
-                className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200"
+                className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="mt-4 space-y-2.5 overflow-y-auto pr-1">
+            <div className="mt-3.5 space-y-2.5 overflow-y-auto max-h-[60vh] pr-0.5">
               {[
-                { title: 'Top 7 Gelaterias in Florence', tag: 'Foodie', desc: 'Taste tests and flavor recommendations across the Arno river.' },
-                { title: 'Secret Rooftops of Tokyo', tag: 'Views', desc: 'Cocktail bars and observation decks off the beaten tourist path.' },
-                { title: 'Weekend Hiking in Chamonix', tag: 'Outdoors', desc: 'Beginner-to-intermediate ridge walks with Mont Blanc views.' },
-                { title: 'Best Thrift & Vintage in Brooklyn', tag: 'Shopping', desc: 'Curated clothing racks, record bins, and flea markets.' }
+                { title: 'Top 7 Gelaterias in Florence 🍨', tag: 'Foodie', desc: 'Taste tests and flavor recommendations across the Arno river.' },
+                { title: 'Secret Rooftops of Tokyo 🌆', tag: 'Views', desc: 'Cocktail bars and observation decks off the beaten tourist path.' },
+                { title: 'Weekend Hiking in Chamonix 🏔️', tag: 'Outdoors', desc: 'Beginner-to-intermediate ridge walks with Mont Blanc views.' },
+                { title: 'Antalya Turquoise Coast Road Trip 🌊', tag: 'Road Trip', desc: 'Mediterranean cliffside cafes, secluded coves and Roman ruins.' }
               ].map((idea, idx) => (
                 <div
                   key={idx}
@@ -719,17 +380,17 @@ export default function CreateMapPage({ onBack, onNavigate }) {
                     setMapTitle(idea.title);
                     setMapDescription(idea.desc);
                     setShowInspireModal(false);
-                    showToast(`Loaded idea: "${idea.title}"`);
+                    showToast(`Loaded: "${idea.title}"`);
                   }}
-                  className="p-3 bg-gray-50 hover:bg-indigo-50/70 border border-gray-150 rounded-2xl cursor-pointer transition"
+                  className="p-3 bg-slate-50 hover:bg-indigo-50/70 border border-slate-200/80 rounded-2xl cursor-pointer transition-all"
                 >
                   <div className="flex items-center justify-between">
-                    <h4 className="font-bold text-xs text-gray-900">{idea.title}</h4>
+                    <h4 className="font-bold text-xs text-[#0f1738]">{idea.title}</h4>
                     <span className="text-[10px] font-bold text-[#544ee5] bg-indigo-100/60 px-2 py-0.5 rounded-full">
                       {idea.tag}
                     </span>
                   </div>
-                  <p className="text-[11px] text-gray-500 mt-1">{idea.desc}</p>
+                  <p className="text-[11px] text-[#717ea1] mt-1 font-medium">{idea.desc}</p>
                 </div>
               ))}
             </div>
@@ -737,50 +398,11 @@ export default function CreateMapPage({ onBack, onNavigate }) {
         </div>
       )}
 
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-6 animate-fade-in">
-          <div className="bg-white w-full rounded-3xl p-6 shadow-2xl border border-gray-100 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
-              <Check className="w-8 h-8 stroke-[3]" />
-            </div>
-            <h3 className="text-lg font-extrabold text-gray-950">Map Created!</h3>
-            <p className="text-xs text-gray-500 mt-1 font-medium">
-              "{mapTitle}" is now live in your personal collection.
-            </p>
-
-            <div className="mt-4 p-3 bg-gray-50 rounded-2xl flex items-center gap-3 text-left">
-              <img src={selectedCover} alt="Cover" className="w-12 h-14 rounded-xl object-cover shrink-0" />
-              <div className="overflow-hidden">
-                <div className="text-xs font-bold text-gray-900 truncate">{mapTitle}</div>
-                <div className="text-[11px] text-gray-500 mt-0.5 capitalize">{selectedType} Map &bull; {privacy}</div>
-                <div className="text-[10.5px] text-[#544ee5] font-semibold mt-0.5">
-                  {selectedPlaces.length > 0 ? `${selectedPlaces.length} places pinned` : 'Ready to pin spots'}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5 space-y-2">
-              <button
-                onClick={() => {
-                  setShowSuccessModal(false);
-                  onNavigate?.('user-profile');
-                }}
-                className="w-full py-3 bg-[#544ee5] hover:bg-[#4842db] text-white font-bold text-xs rounded-xl shadow-md transition"
-              >
-                View on My Profile
-              </button>
-              <button
-                onClick={() => {
-                  setShowSuccessModal(false);
-                  onNavigate?.('explore');
-                }}
-                className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs rounded-xl transition"
-              >
-                Back to Explore Feed
-              </button>
-            </div>
-          </div>
+      {/* Live Toast Notification */}
+      {toastMessage && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-[#0f1738]/95 backdrop-blur-md text-white px-4 py-2 rounded-full text-[12px] font-bold shadow-xl flex items-center gap-2 border border-white/10 animate-in fade-in zoom-in-95 duration-150">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>
