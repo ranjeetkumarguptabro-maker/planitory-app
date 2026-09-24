@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Sparkles,
   Map as MapIcon,
@@ -8,29 +8,119 @@ import {
   List,
   Plus,
   ArrowRight,
-  Lightbulb,
+  ArrowLeft,
+  Search,
+  MapPin,
+  Pencil,
+  Layers,
+  Navigation,
+  Crosshair,
+  X,
+  Check,
+  CheckCircle2,
   Home,
   Users,
   User,
-  X,
-  CheckCircle2
+  Coffee,
+  Utensils,
+  Camera,
+  Trees,
+  Landmark,
+  Building2
 } from 'lucide-react';
 
+const INITIAL_BUILD_PINS = [
+  {
+    id: 'camera',
+    name: 'Pont des Arts Photo Spot',
+    category: 'Photo Spot',
+    type: 'camera',
+    x: 37.5,
+    y: 27.2,
+    color: '#7c3aed',
+    icon: Camera,
+  },
+  {
+    id: 'cafe',
+    name: 'Café de Flore',
+    category: 'Café',
+    type: 'cafe',
+    x: 65.2,
+    y: 32.1,
+    color: '#78350f',
+    icon: Coffee,
+  },
+  {
+    id: 'food',
+    name: 'Le Comptoir du Relais',
+    category: 'Restaurant',
+    type: 'food',
+    x: 38.2,
+    y: 41.2,
+    color: '#e11d48',
+    icon: Utensils,
+  },
+  {
+    id: 'museum',
+    name: 'Musée d’Orsay',
+    category: 'Museum',
+    type: 'museum',
+    x: 29.4,
+    y: 46.5,
+    color: '#4f46e5',
+    icon: Landmark,
+  },
+  {
+    id: 'park',
+    name: 'Jardin du Luxembourg',
+    category: 'Park',
+    type: 'park',
+    x: 72.5,
+    y: 44.2,
+    color: '#15803d',
+    icon: Trees,
+  },
+  {
+    id: 'hotel',
+    name: 'Hôtel Lutetia',
+    category: 'Hotel',
+    type: 'hotel',
+    x: 75.4,
+    y: 58.6,
+    color: '#2563eb',
+    icon: Building2,
+  },
+];
+
 export default function CreateMapPage({ onBack, onNavigate }) {
-  // Mode toggle: 'map' | 'trip'
-  const [activeMode, setActiveMode] = useState('map');
+  // Step: 1 = Create Details (create_page_first_image.png), 2 = Build Your Map (c35.png)
+  const [currentStep, setCurrentStep] = useState(1);
 
-  // Type selector: 'custom' | 'trip' | 'saved'
-  const [selectedType, setSelectedType] = useState('custom');
-
-  // Input Fields
-  const [mapTitle, setMapTitle] = useState('');
+  // Step 1 State
+  const [activeMode, setActiveMode] = useState('map'); // 'map' | 'trip'
+  const [selectedType, setSelectedType] = useState('custom'); // 'custom' | 'trip' | 'saved'
+  const [mapTitle, setMapTitle] = useState('Paris Café Guide');
   const [mapDescription, setMapDescription] = useState('');
+
+  // Step 2 State (c35.png)
+  const [searchPlaceQuery, setSearchPlaceQuery] = useState('');
+  const [addedPlaces, setAddedPlaces] = useState([]);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [activeLayer, setActiveLayer] = useState('standard');
+
+  // Map Pan / Zoom
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Modals & Feedback
   const [toastMessage, setToastMessage] = useState(null);
   const [showInspireModal, setShowInspireModal] = useState(false);
-  const [step, setStep] = useState(1); // 1 = Details (matching create_page_first_image.png), 2 = Step 2 summary / finish
+  const [showPlacesSearchModal, setShowPlacesSearchModal] = useState(false);
+  const [showListsModal, setShowListsModal] = useState(false);
+  const [showGmapsModal, setShowGmapsModal] = useState(false);
+  const [showDoneModal, setShowDoneModal] = useState(false);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -41,8 +131,8 @@ export default function CreateMapPage({ onBack, onNavigate }) {
   const handleAiSuggest = () => {
     const suggestions = [
       {
-        title: 'Hidden Cafés & Bakeries in Paris ☕',
-        desc: 'A curated walking tour of secret courtyards, third-wave espresso bars, and flaky croissants in Le Marais.'
+        title: 'Paris Café & Bakery Guide ☕',
+        desc: 'A curated walking tour of secret courtyards, specialty espresso bars, and flaky croissants in Saint-Germain and Le Marais.'
       },
       {
         title: 'Sunset Cliffs & Coastal Eats of Amalfi 🍋',
@@ -53,7 +143,7 @@ export default function CreateMapPage({ onBack, onNavigate }) {
         desc: 'From Turquoise Coast beaches to Göreme sunrise balloon flights and ancient subterranean cities.'
       },
       {
-        title: 'Tokyo Ramen & Neon Alleyways 🍜',
+        title: 'Tokyo Hidden Ramen & Neon Speakeasies 🍜',
         desc: 'Late-night ramen dens, hidden speakeasies, and vibrant neighborhood street spots in Shibuya.'
       }
     ];
@@ -64,293 +154,771 @@ export default function CreateMapPage({ onBack, onNavigate }) {
     showToast('✨ AI suggested a map title & description!');
   };
 
-  const handleNext = () => {
+  // Step 1 -> Step 2 transition
+  const handleProceedToStep2 = () => {
     if (!mapTitle.trim()) {
       showToast('Please enter a title for your map');
       return;
     }
-    showToast(`🎉 "${mapTitle}" created! Redirecting to explore...`);
-    setTimeout(() => {
-      if (onNavigate) onNavigate('explore');
-    }, 1200);
+    setCurrentStep(2);
+    showToast('📍 Step 2: Add places and build your map');
+  };
+
+  // Drag & Pan handlers for Map Canvas
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    const maxBound = (zoomLevel - 1) * 200;
+    const newX = Math.max(-maxBound, Math.min(maxBound, e.clientX - dragStart.x));
+    const newY = Math.max(-maxBound, Math.min(maxBound, e.clientY - dragStart.y));
+    setPanOffset({ x: newX, y: newY });
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.touches[0].clientX - panOffset.x,
+        y: e.touches[0].clientY - panOffset.y,
+      });
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 1 && isDragging) {
+      const maxBound = (zoomLevel - 1) * 200;
+      const newX = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientX - dragStart.x));
+      const newY = Math.max(-maxBound, Math.min(maxBound, e.touches[0].clientY - dragStart.y));
+      setPanOffset({ x: newX, y: newY });
+    }
+  };
+
+  const handleTouchEnd = () => setIsDragging(false);
+
+  const handleRecenter = () => {
+    setZoomLevel(1.2);
+    setPanOffset({ x: 0, y: 0 });
+    showToast('📍 Recentered on current location (Seine River)');
+  };
+
+  const handleAddPlaceToList = (placeName) => {
+    if (!addedPlaces.includes(placeName)) {
+      setAddedPlaces([...addedPlaces, placeName]);
+      showToast(`Added "${placeName}" to your map 📍`);
+    }
+    setShowPlacesSearchModal(false);
+    setShowListsModal(false);
+    setShowGmapsModal(false);
   };
 
   return (
     <div className="relative w-full h-full bg-white sm:rounded-[44px] flex flex-col justify-between overflow-hidden select-none">
-      {/* Scrollable Content Container */}
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28 scrollbar-none">
-        {/* iOS Status Bar */}
-        <div className="pt-3 sm:pt-4 px-6 shrink-0 bg-white">
-          <div className="flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-2 px-0.5">
-            <span className="text-[14px] tracking-tight font-bold">9:41</span>
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-end gap-[1.5px] h-3">
-                <div className="w-[3px] h-1 bg-[#0f1738] rounded-[0.5px]" />
-                <div className="w-[3px] h-1.5 bg-[#0f1738] rounded-[0.5px]" />
-                <div className="w-[3px] h-2 bg-[#0f1738] rounded-[0.5px]" />
-                <div className="w-[3px] h-3 bg-[#0f1738] rounded-[0.5px]" />
+      {/* ========================================================================= */}
+      {/* SCREEN 1: CREATE MAP DETAILS (matching create_page_first_image (1).png)   */}
+      {/* ========================================================================= */}
+      {currentStep === 1 && (
+        <>
+          {/* Scrollable Content Container */}
+          <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y pb-28 scrollbar-none">
+            {/* iOS Status Bar */}
+            <div className="pt-3 sm:pt-4 px-6 shrink-0 bg-white">
+              <div className="flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-2 px-0.5">
+                <span className="text-[14px] tracking-tight font-bold">9:41</span>
+                <div className="flex items-center gap-1.5">
+                  <div className="flex items-end gap-[1.5px] h-3">
+                    <div className="w-[3px] h-1 bg-[#0f1738] rounded-[0.5px]" />
+                    <div className="w-[3px] h-1.5 bg-[#0f1738] rounded-[0.5px]" />
+                    <div className="w-[3px] h-2 bg-[#0f1738] rounded-[0.5px]" />
+                    <div className="w-[3px] h-3 bg-[#0f1738] rounded-[0.5px]" />
+                  </div>
+                  <svg className="w-3.5 h-3.5 fill-[#0f1738]" viewBox="0 0 24 24">
+                    <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z" />
+                  </svg>
+                  <div className="w-5 h-2.5 border border-[#0f1738] rounded-[3px] p-[1px] flex items-center">
+                    <div className="w-full h-full bg-[#0f1738] rounded-[1px]" />
+                  </div>
+                </div>
               </div>
-              <svg className="w-3.5 h-3.5 fill-[#0f1738]" viewBox="0 0 24 24">
-                <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z" />
-              </svg>
-              <div className="w-5 h-2.5 border border-[#0f1738] rounded-[3px] p-[1px] flex items-center">
-                <div className="w-full h-full bg-[#0f1738] rounded-[1px]" />
+
+              {/* Header Row: Create + Get Inspired Pill Button */}
+              <div className="flex items-start justify-between pt-1 pb-1">
+                <div>
+                  <h1 className="text-[32px] sm:text-[34px] font-black text-[#0f1738] tracking-tight leading-none">
+                    Create
+                  </h1>
+                  <p className="text-[13.5px] text-[#717ea1] font-medium mt-1.5">
+                    Turn your ideas into amazing maps.
+                  </p>
+                </div>
+
+                {/* Get Inspired Button */}
+                <button
+                  onClick={() => setShowInspireModal(true)}
+                  className="px-3.5 py-1.5 bg-white border border-slate-200/90 rounded-full shadow-2xs text-[12px] font-bold text-[#0f1738] hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer mt-0.5"
+                >
+                  <span className="text-[14px]">💡</span>
+                  <span>Get Inspired</span>
+                </button>
               </div>
+            </div>
+
+            {/* Top 2-Segment Switcher (Create a Map / Plan a Trip) */}
+            <div className="px-5 sm:px-6 pt-3">
+              <div className="bg-[#eef1f8] p-1 rounded-2xl flex items-center gap-1">
+                <button
+                  onClick={() => setActiveMode('map')}
+                  className={`flex-1 py-2.5 sm:py-3 rounded-xl font-bold text-[13px] sm:text-[13.5px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    activeMode === 'map'
+                      ? 'bg-[#544ee5] text-white shadow-sm'
+                      : 'text-[#0f1738] hover:text-[#544ee5]'
+                  }`}
+                >
+                  <MapIcon className="w-4 h-4 stroke-[2.2]" />
+                  <span>Create a Map</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveMode('trip');
+                    showToast('Switched to Plan a Trip 📅');
+                  }}
+                  className={`flex-1 py-2.5 sm:py-3 rounded-xl font-bold text-[13px] sm:text-[13.5px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    activeMode === 'trip'
+                      ? 'bg-[#544ee5] text-white shadow-sm'
+                      : 'text-[#0f1738] hover:text-[#544ee5]'
+                  }`}
+                >
+                  <span>📅</span>
+                  <span>Plan a Trip</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Section 1: What do you want to create? */}
+            <div className="px-5 sm:px-6 pt-5">
+              <h2 className="text-[16.5px] sm:text-[17.5px] font-black text-[#0f1738] tracking-tight mb-3">
+                What do you want to create?
+              </h2>
+
+              <div className="grid grid-cols-3 gap-2.5">
+                {/* Card 1: Custom Map */}
+                <div
+                  onClick={() => setSelectedType('custom')}
+                  className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
+                    selectedType === 'custom'
+                      ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                      : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
+                  }`}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center text-[#544ee5] mb-2">
+                    <MapIcon className="w-7 h-7 stroke-[2.2]" />
+                  </div>
+                  <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                    Custom Map
+                  </span>
+                  <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                    Add places, notes and share
+                  </span>
+                </div>
+
+                {/* Card 2: Trip Itinerary */}
+                <div
+                  onClick={() => setSelectedType('trip')}
+                  className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
+                    selectedType === 'trip'
+                      ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                      : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
+                  }`}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center text-[#0ea5e9] mb-2">
+                    <Plane className="w-7 h-7 fill-current" />
+                  </div>
+                  <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                    Trip Itinerary
+                  </span>
+                  <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                    Plan day by day
+                  </span>
+                </div>
+
+                {/* Card 3: Saved Collection */}
+                <div
+                  onClick={() => setSelectedType('saved')}
+                  className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
+                    selectedType === 'saved'
+                      ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
+                      : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
+                  }`}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center text-[#f43f5e] mb-2">
+                    <Heart className="w-7 h-7 fill-current" />
+                  </div>
+                  <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
+                    Saved Collection
+                  </span>
+                  <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
+                    Keep your favorites
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Map Details + AI Suggest */}
+            <div className="px-5 sm:px-6 pt-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[16.5px] sm:text-[17.5px] font-black text-[#0f1738] tracking-tight">
+                  Map Details
+                </h2>
+                <button
+                  onClick={handleAiSuggest}
+                  className="text-[#544ee5] hover:text-[#4338ca] text-[13px] font-black flex items-center gap-1 cursor-pointer active:scale-95 transition-all"
+                >
+                  <Sparkles className="w-4 h-4 fill-[#544ee5]" />
+                  <span>AI Suggest</span>
+                </button>
+              </div>
+
+              <div className="space-y-2.5">
+                {/* Title Input */}
+                <div className="flex items-center gap-3 px-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-indigo-100/60 shadow-2xs transition-all">
+                  <ImageIcon className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
+                  <input
+                    type="text"
+                    value={mapTitle}
+                    onChange={(e) => setMapTitle(e.target.value)}
+                    placeholder="Give your map a title..."
+                    className="w-full bg-transparent text-[14px] font-semibold text-[#0f1738] placeholder:text-[#8e9bb5] outline-none"
+                  />
+                  {mapTitle && (
+                    <button
+                      onClick={() => setMapTitle('')}
+                      className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Description Input */}
+                <div className="flex items-center gap-3 px-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-indigo-100/60 shadow-2xs transition-all">
+                  <List className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
+                  <input
+                    type="text"
+                    value={mapDescription}
+                    onChange={(e) => setMapDescription(e.target.value)}
+                    placeholder="Tell us about your map (optional)..."
+                    className="w-full bg-transparent text-[14px] font-semibold text-[#0f1738] placeholder:text-[#8e9bb5] outline-none"
+                  />
+                  {mapDescription && (
+                    <button
+                      onClick={() => setMapDescription('')}
+                      className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Primary Action Button: Next → (routes to Step 2 / c35.png) */}
+            <div className="px-5 sm:px-6 pt-7">
+              <button
+                onClick={handleProceedToStep2}
+                className="w-full py-4 rounded-full bg-[#544ee5] hover:bg-[#4338ca] active:scale-[0.99] text-white font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-indigo-300/40 transition-all cursor-pointer"
+              >
+                <span>Next</span>
+                <ArrowRight className="w-4.5 h-4.5 stroke-[2.8]" />
+              </button>
             </div>
           </div>
 
-          {/* Header Row: Create + Get Inspired Pill Button */}
-          <div className="flex items-start justify-between pt-1 pb-1">
+          {/* Floating Bottom Navigation Bar matching create_page_first_image.png */}
+          <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-100 px-6 pt-2 pb-3 sm:pb-2.5 shadow-[0_-4px_20px_rgba(50,70,140,0.04)] flex items-center justify-between">
+            {/* Explore Tab */}
+            <button
+              onClick={() => onNavigate?.('explore')}
+              className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
+            >
+              <Home className="w-5 h-5" />
+              <span className="text-[10.5px] font-semibold">Explore</span>
+            </button>
+
+            {/* My Maps Tab */}
+            <button
+              onClick={() => onNavigate?.('purchased-map')}
+              className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
+            >
+              <MapIcon className="w-5 h-5" />
+              <span className="text-[10.5px] font-semibold">My Maps</span>
+            </button>
+
+            {/* Center Floating Action Button (+ Create - ACTIVE) */}
+            <div className="-mt-6 flex flex-col items-center">
+              <button
+                onClick={() => showToast('You are on the Create page')}
+                className="w-13 h-13 rounded-full bg-[#544ee5] hover:bg-[#4842db] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-indigo-300 transition-all cursor-pointer"
+                title="Create"
+              >
+                <Plus className="w-7 h-7 stroke-[2.8]" />
+              </button>
+              <span className="text-[10.5px] font-bold text-[#544ee5] mt-0.5">Create</span>
+            </div>
+
+            {/* Creators Tab */}
+            <button
+              onClick={() => onNavigate?.('creators')}
+              className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
+            >
+              <Users className="w-5 h-5" />
+              <span className="text-[10.5px] font-semibold">Creators</span>
+            </button>
+
+            {/* Profile Tab */}
+            <button
+              onClick={() => onNavigate?.('user-profile')}
+              className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
+            >
+              <User className="w-5 h-5" />
+              <span className="text-[10.5px] font-semibold">Profile</span>
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ========================================================================= */}
+      {/* SCREEN 2: BUILD YOUR MAP (EXACT 1:1 MATCHING c35.png)                      */}
+      {/* ========================================================================= */}
+      {currentStep === 2 && (
+        <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#e8f1f5] flex flex-col justify-between select-none">
+          {/* 1. MAP CANVAS BACKGROUND WITH INTERACTIVE PINS */}
+          <div
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className={`absolute inset-0 w-full h-full overflow-hidden ${
+              isDragging ? 'cursor-grabbing' : 'cursor-grab'
+            } touch-none z-0`}
+          >
+            <div
+              style={{
+                transform: `scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`,
+                transformOrigin: 'center center',
+                transition: isDragging ? 'none' : 'transform 0.25s cubic-bezier(0.2, 0, 0, 1)',
+              }}
+              className="relative w-full h-full"
+            >
+              {/* Clean Map Canvas Background Image */}
+              <img
+                src="/c35-map-full.png"
+                alt="Paris Map Canvas"
+                className="w-full h-full object-cover pointer-events-none select-none"
+                draggable={false}
+              />
+
+              {/* Interactive Hitboxes & Pins matching c35.png coordinates */}
+              {INITIAL_BUILD_PINS.map((pin) => {
+                const IconComponent = pin.icon;
+                return (
+                  <div
+                    key={pin.id}
+                    onClick={() => {
+                      handleAddPlaceToList(pin.name);
+                    }}
+                    style={{
+                      left: `${pin.x}%`,
+                      top: `${pin.y}%`,
+                      transform: 'translate(-50%, -50%)',
+                    }}
+                    className="absolute z-20 w-11 h-11 rounded-full cursor-pointer hover:scale-115 active:scale-95 transition-transform flex items-center justify-center"
+                    title={pin.name}
+                  />
+                );
+              })}
+
+              {/* GPS River Beacon Hitbox */}
+              <div
+                onClick={handleRecenter}
+                style={{ left: '53.2%', top: '56.4%', transform: 'translate(-50%, -50%)' }}
+                className="absolute z-20 w-16 h-16 rounded-full cursor-pointer"
+                title="Current Location"
+              />
+            </div>
+          </div>
+
+          {/* 2. TOP FLOATING APP BAR & SEARCH (matching c35.png) */}
+          <div className="relative z-30 pt-3 sm:pt-4 px-4 space-y-2.5">
+            {/* iOS Status Bar */}
+            <div className="flex items-center justify-between text-xs font-semibold text-[#0f1738] mb-1 px-2">
+              <span className="text-[14px] tracking-tight font-bold">9:41</span>
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-end gap-[1.5px] h-3">
+                  <div className="w-[3px] h-1 bg-[#0f1738] rounded-[0.5px]" />
+                  <div className="w-[3px] h-1.5 bg-[#0f1738] rounded-[0.5px]" />
+                  <div className="w-[3px] h-2 bg-[#0f1738] rounded-[0.5px]" />
+                  <div className="w-[3px] h-3 bg-[#0f1738] rounded-[0.5px]" />
+                </div>
+                <svg className="w-3.5 h-3.5 fill-[#0f1738]" viewBox="0 0 24 24">
+                  <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z" />
+                </svg>
+                <div className="w-5 h-2.5 border border-[#0f1738] rounded-[3px] p-[1px] flex items-center">
+                  <div className="w-full h-full bg-[#0f1738] rounded-[1px]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Header Row: Back (<) + Build Your Map / Subtitle + Preview */}
+            <div className="flex items-center justify-between px-1">
+              {/* Back Arrow Button */}
+              <button
+                onClick={() => setCurrentStep(1)}
+                className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-sm border border-white flex items-center justify-center text-[#0f1738] hover:bg-white active:scale-95 transition-all cursor-pointer"
+                title="Back to Details"
+              >
+                <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+              </button>
+
+              {/* Title & Subtitle */}
+              <div className="text-center flex-1 px-2">
+                <h1 className="text-[17px] font-black text-[#0f1738] tracking-tight leading-tight">
+                  Build Your Map
+                </h1>
+                <button
+                  onClick={() => setIsEditingTitle(true)}
+                  className="inline-flex items-center justify-center gap-1 text-[12px] text-[#717ea1] font-semibold hover:text-[#544ee5] cursor-pointer"
+                >
+                  <span className="truncate max-w-[170px]">{mapTitle}</span>
+                  <Pencil className="w-3 h-3 stroke-[2.2]" />
+                </button>
+              </div>
+
+              {/* Preview Button */}
+              <button
+                onClick={() => {
+                  showToast('Previewing your interactive map view');
+                }}
+                className="px-3.5 py-1.5 rounded-full bg-[#f0f3ff] hover:bg-[#e4e9ff] text-[#544ee5] font-bold text-[12.5px] shadow-2xs active:scale-95 transition-all cursor-pointer"
+              >
+                Preview
+              </button>
+            </div>
+
+            {/* Floating Global Search Bar (matching c35.png) */}
+            <div
+              onClick={() => setShowPlacesSearchModal(true)}
+              className="w-full px-4 py-3 bg-white/95 backdrop-blur-md rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-white flex items-center gap-2.5 text-[13.5px] cursor-pointer hover:border-slate-300 transition-all"
+            >
+              <Search className="w-4.5 h-4.5 text-[#9aa5c4] shrink-0" />
+              <span className="text-[#9aa5c4] font-medium truncate">
+                Search for a place or landmark...
+              </span>
+            </div>
+          </div>
+
+          {/* 3. RIGHT FLOATING CONTROLS (Layers, Compass, GPS) */}
+          <div className="absolute right-4 top-[28%] z-30 flex flex-col gap-2.5">
+            {/* Layers Button */}
+            <button
+              onClick={() => showToast('Map Layers: Standard View')}
+              className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-white flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
+              title="Layers"
+            >
+              <Layers className="w-5 h-5 stroke-[2]" />
+            </button>
+
+            {/* Compass Button */}
+            <button
+              onClick={() => showToast('Reoriented to North')}
+              className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-white flex items-center justify-center text-[#0f1738] hover:text-[#544ee5] active:scale-90 transition-all cursor-pointer"
+              title="Compass"
+            >
+              <Navigation className="w-5 h-5 stroke-[2] fill-current rotate-45" />
+            </button>
+
+            {/* GPS Recenter Target */}
+            <button
+              onClick={handleRecenter}
+              className="w-11 h-11 rounded-full bg-white/95 backdrop-blur-md shadow-md border border-white flex items-center justify-center text-[#0f1738] hover:text-[#2563eb] active:scale-90 transition-all cursor-pointer"
+              title="My Location"
+            >
+              <Crosshair className="w-5 h-5 stroke-[2.2]" />
+            </button>
+          </div>
+
+          {/* 4. BOTTOM SHEET PANEL (matching c35.png) */}
+          <div className="relative z-30 bg-white rounded-t-[32px] p-5 sm:p-6 shadow-[0_-8px_32px_rgba(0,0,0,0.12)] border-t border-slate-100 space-y-4 animate-in slide-in-from-bottom duration-250">
+            {/* Drag Handle */}
+            <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto -mt-1" />
+
+            {/* Header: Add places to your map + places counter */}
             <div>
-              <h1 className="text-[32px] sm:text-[34px] font-black text-[#0f1738] tracking-tight leading-none">
-                Create
-              </h1>
-              <p className="text-[13.5px] text-[#717ea1] font-medium mt-1.5">
-                Turn your ideas into amazing maps.
+              <h2 className="text-[17px] sm:text-[18px] font-black text-[#0f1738] tracking-tight leading-snug">
+                Add places to your map
+              </h2>
+              <p className="text-[12.5px] text-[#717ea1] font-semibold mt-0.5">
+                {addedPlaces.length} places added
               </p>
             </div>
 
-            {/* Get Inspired Button */}
-            <button
-              onClick={() => setShowInspireModal(true)}
-              className="px-3.5 py-1.5 bg-white border border-slate-200/90 rounded-full shadow-2xs text-[12px] font-bold text-[#0f1738] hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer mt-0.5"
-            >
-              <span className="text-[14px]">💡</span>
-              <span>Get Inspired</span>
-            </button>
+            {/* 3 Quick Action Cards (Search & Add / From Saved Lists / Import from Google Maps) */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+              {/* Card 1: Search & Add */}
+              <button
+                onClick={() => setShowPlacesSearchModal(true)}
+                className="p-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col items-start text-left shadow-2xs active:scale-95 transition-all cursor-pointer"
+              >
+                <div className="w-7 h-7 rounded-full bg-indigo-50 text-[#544ee5] flex items-center justify-center mb-2">
+                  <Search className="w-3.5 h-3.5 stroke-[2.5]" />
+                </div>
+                <span className="font-extrabold text-[11.5px] text-[#0f1738] leading-tight">
+                  Search &amp; Add
+                </span>
+                <span className="text-[9.5px] text-[#717ea1] font-medium leading-tight mt-1">
+                  Find places manually
+                </span>
+              </button>
+
+              {/* Card 2: From Saved Lists */}
+              <button
+                onClick={() => setShowListsModal(true)}
+                className="p-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col items-start text-left shadow-2xs active:scale-95 transition-all cursor-pointer"
+              >
+                <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
+                  <List className="w-3.5 h-3.5 stroke-[2.5]" />
+                </div>
+                <span className="font-extrabold text-[11.5px] text-[#0f1738] leading-tight">
+                  From Saved Lists
+                </span>
+                <span className="text-[9.5px] text-[#717ea1] font-medium leading-tight mt-1">
+                  Add from your lists
+                </span>
+              </button>
+
+              {/* Card 3: Import from Google Maps (c35-gmaps-icon.png) */}
+              <button
+                onClick={() => setShowGmapsModal(true)}
+                className="p-3 bg-white hover:bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col items-start text-left shadow-2xs active:scale-95 transition-all cursor-pointer"
+              >
+                <div className="w-7 h-7 flex items-center justify-center mb-2">
+                  <img
+                    src="/c35-gmaps-icon.png"
+                    alt="Google Maps"
+                    className="w-5 h-6 object-contain"
+                  />
+                </div>
+                <span className="font-extrabold text-[11.5px] text-[#0f1738] leading-tight">
+                  Import from Google Maps
+                </span>
+                <span className="text-[9.5px] text-[#717ea1] font-medium leading-tight mt-1">
+                  Import your places
+                </span>
+              </button>
+            </div>
+
+            {/* Added Places Pill Badges (if any) */}
+            {addedPlaces.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                {addedPlaces.map((name, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1.5 bg-[#f0f3ff] text-[#544ee5] text-[11px] font-bold px-2.5 py-1 rounded-full border border-indigo-100"
+                  >
+                    <MapPin className="w-3 h-3" />
+                    <span className="truncate max-w-[120px]">{name}</span>
+                    <button
+                      onClick={() => setAddedPlaces(addedPlaces.filter((_, idx) => idx !== i))}
+                      className="text-slate-400 hover:text-rose-500"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Primary Action Button: Done (matching c35.png) */}
+            <div className="pt-1">
+              <button
+                onClick={() => setShowDoneModal(true)}
+                className="w-full py-4 rounded-full bg-[#544ee5] hover:bg-[#4338ca] active:scale-[0.99] text-white font-black text-[15px] shadow-lg shadow-indigo-300/40 transition-all cursor-pointer flex items-center justify-center"
+              >
+                <span>Done</span>
+              </button>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Top 2-Segment Switcher (Create a Map / Plan a Trip) */}
-        <div className="px-5 sm:px-6 pt-3">
-          <div className="bg-[#eef1f8] p-1 rounded-2xl flex items-center gap-1">
-            <button
-              onClick={() => setActiveMode('map')}
-              className={`flex-1 py-2.5 sm:py-3 rounded-xl font-bold text-[13px] sm:text-[13.5px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                activeMode === 'map'
-                  ? 'bg-[#544ee5] text-white shadow-sm'
-                  : 'text-[#0f1738] hover:text-[#544ee5]'
-              }`}
-            >
-              <MapIcon className="w-4 h-4 stroke-[2.2]" />
-              <span>Create a Map</span>
-            </button>
+      {/* ========================================================================= */}
+      {/* MODALS & OVERLAYS                                                         */}
+      {/* ========================================================================= */}
+      {/* Quick Search & Add Modal */}
+      {showPlacesSearchModal && (
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-extrabold text-[#0f1738]">Search &amp; Add Place</h3>
+              <button
+                onClick={() => setShowPlacesSearchModal(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="relative">
+              <input
+                type="text"
+                value={searchPlaceQuery}
+                onChange={(e) => setSearchPlaceQuery(e.target.value)}
+                placeholder="Type place name or address..."
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 outline-none focus:border-[#544ee5] focus:bg-white"
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-1.5 max-h-48 overflow-y-auto">
+              {[
+                'Café de Flore, Saint-Germain',
+                'Le Comptoir du Relais, Odéon',
+                'Pont des Arts Viewpoint',
+                'Jardin du Luxembourg',
+                'Musée d’Orsay',
+                'Hôtel Lutetia, Raspail'
+              ]
+                .filter((p) => !searchPlaceQuery || p.toLowerCase().includes(searchPlaceQuery.toLowerCase()))
+                .map((place, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAddPlaceToList(place)}
+                    className="w-full p-2.5 rounded-xl bg-slate-50 hover:bg-indigo-50/80 text-left text-xs font-bold text-[#0f1738] flex items-center justify-between cursor-pointer"
+                  >
+                    <span>{place}</span>
+                    <span className="text-[#544ee5] text-[11px]">+ Add</span>
+                  </button>
+                ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* From Saved Lists Modal */}
+      {showListsModal && (
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-slate-100 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-extrabold text-[#0f1738]">From Saved Lists</h3>
+              <button
+                onClick={() => setShowListsModal(false)}
+                className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-[#717ea1]">Choose from your saved collections to add instantly:</p>
+            <div className="space-y-2">
+              {['Favorite Bakeries (5 spots)', 'Top Scenic Bridges (3 spots)', 'Historic Cafés (6 spots)'].map((l, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleAddPlaceToList(l.split(' (')[0])}
+                  className="w-full p-3 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-100 text-left text-xs font-bold text-[#0f1738] flex items-center justify-between cursor-pointer"
+                >
+                  <span>{l}</span>
+                  <span className="text-[#544ee5] text-[11px] font-extrabold">Import</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Google Maps Import Modal */}
+      {showGmapsModal && (
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-slate-100 space-y-3 text-center">
+            <img src="/c35-gmaps-icon.png" alt="Google Maps" className="w-10 h-12 mx-auto" />
+            <h3 className="text-base font-extrabold text-[#0f1738]">Import from Google Maps</h3>
+            <p className="text-xs text-[#717ea1]">Connect Google Maps saved places or paste a list link to import all pins.</p>
             <button
               onClick={() => {
-                setActiveMode('trip');
-                showToast('Switched to Plan a Trip 📅');
+                handleAddPlaceToList('Imported 6 Google Maps Saved Spots');
               }}
-              className={`flex-1 py-2.5 sm:py-3 rounded-xl font-bold text-[13px] sm:text-[13.5px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                activeMode === 'trip'
-                  ? 'bg-[#544ee5] text-white shadow-sm'
-                  : 'text-[#0f1738] hover:text-[#544ee5]'
-              }`}
+              className="w-full py-3 rounded-xl bg-[#544ee5] text-white font-bold text-xs shadow-md cursor-pointer"
             >
-              <span>📅</span>
-              <span>Plan a Trip</span>
+              Sync Saved Places
             </button>
           </div>
         </div>
+      )}
 
-        {/* Section 1: What do you want to create? */}
-        <div className="px-5 sm:px-6 pt-5">
-          <h2 className="text-[16.5px] sm:text-[17.5px] font-black text-[#0f1738] tracking-tight mb-3">
-            What do you want to create?
-          </h2>
-
-          <div className="grid grid-cols-3 gap-2.5">
-            {/* Card 1: Custom Map */}
-            <div
-              onClick={() => setSelectedType('custom')}
-              className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
-                selectedType === 'custom'
-                  ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
-                  : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
-              }`}
-            >
-              <div className="w-8 h-8 flex items-center justify-center text-[#544ee5] mb-2">
-                <MapIcon className="w-7 h-7 stroke-[2.2]" />
-              </div>
-              <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
-                Custom Map
-              </span>
-              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
-                Add places, notes and share
-              </span>
+      {/* Done / Published Success Modal */}
+      {showDoneModal && (
+        <div className="absolute inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-6 animate-in fade-in duration-150">
+          <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-slate-100 text-center space-y-3">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
+              <Check className="w-8 h-8 stroke-[3]" />
             </div>
+            <h3 className="text-[19px] font-black text-[#0f1738]">Map Created!</h3>
+            <p className="text-xs text-[#717ea1] font-medium">
+              "{mapTitle}" has been saved with {addedPlaces.length > 0 ? addedPlaces.length : 'all curated'} places.
+            </p>
 
-            {/* Card 2: Trip Itinerary */}
-            <div
-              onClick={() => setSelectedType('trip')}
-              className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
-                selectedType === 'trip'
-                  ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
-                  : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
-              }`}
-            >
-              <div className="w-8 h-8 flex items-center justify-center text-[#0ea5e9] mb-2">
-                <Plane className="w-7 h-7 fill-current" />
-              </div>
-              <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
-                Trip Itinerary
-              </span>
-              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
-                Plan day by day
-              </span>
-            </div>
-
-            {/* Card 3: Saved Collection */}
-            <div
-              onClick={() => setSelectedType('saved')}
-              className={`p-3 sm:p-3.5 rounded-2xl flex flex-col items-center text-center cursor-pointer transition-all ${
-                selectedType === 'saved'
-                  ? 'border-2 border-[#544ee5] bg-[#f7f8ff] shadow-xs ring-2 ring-[#544ee5]/10'
-                  : 'border border-slate-200/90 bg-white hover:border-slate-300 shadow-2xs'
-              }`}
-            >
-              <div className="w-8 h-8 flex items-center justify-center text-[#f43f5e] mb-2">
-                <Heart className="w-7 h-7 fill-current" />
-              </div>
-              <span className="font-extrabold text-[13px] text-[#0f1738] leading-snug">
-                Saved Collection
-              </span>
-              <span className="text-[9.5px] sm:text-[10px] text-[#717ea1] font-medium leading-tight mt-1">
-                Keep your favorites
-              </span>
+            <div className="pt-2 space-y-2">
+              <button
+                onClick={() => {
+                  setShowDoneModal(false);
+                  onNavigate?.('purchased-map');
+                }}
+                className="w-full py-3.5 bg-[#544ee5] hover:bg-[#4338ca] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+              >
+                Open Map View
+              </button>
+              <button
+                onClick={() => {
+                  setShowDoneModal(false);
+                  onNavigate?.('explore');
+                }}
+                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer"
+              >
+                Back to Explore
+              </button>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Section 2: Map Details + AI Suggest */}
-        <div className="px-5 sm:px-6 pt-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[16.5px] sm:text-[17.5px] font-black text-[#0f1738] tracking-tight">
-              Map Details
-            </h2>
+      {/* Edit Title Inline Modal */}
+      {isEditingTitle && (
+        <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl border border-slate-100 space-y-3">
+            <h3 className="text-sm font-black text-[#0f1738]">Edit Map Title</h3>
+            <input
+              type="text"
+              value={mapTitle}
+              onChange={(e) => setMapTitle(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:border-[#544ee5] outline-none"
+              autoFocus
+            />
             <button
-              onClick={handleAiSuggest}
-              className="text-[#544ee5] hover:text-[#4338ca] text-[13px] font-black flex items-center gap-1 cursor-pointer active:scale-95 transition-all"
+              onClick={() => setIsEditingTitle(false)}
+              className="w-full py-2 bg-[#544ee5] text-white font-bold text-xs rounded-xl cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 fill-[#544ee5]" />
-              <span>AI Suggest</span>
+              Save Title
             </button>
           </div>
-
-          <div className="space-y-2.5">
-            {/* Title Input */}
-            <div className="flex items-center gap-3 px-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-indigo-100/60 shadow-2xs transition-all">
-              <ImageIcon className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
-              <input
-                type="text"
-                value={mapTitle}
-                onChange={(e) => setMapTitle(e.target.value)}
-                placeholder="Give your map a title..."
-                className="w-full bg-transparent text-[14px] font-semibold text-[#0f1738] placeholder:text-[#8e9bb5] outline-none"
-              />
-              {mapTitle && (
-                <button
-                  onClick={() => setMapTitle('')}
-                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {/* Description Input */}
-            <div className="flex items-center gap-3 px-4 py-3.5 bg-white border border-slate-200/90 rounded-2xl focus-within:border-[#544ee5] focus-within:ring-2 focus-within:ring-indigo-100/60 shadow-2xs transition-all">
-              <List className="w-5 h-5 text-[#8e9bb5] shrink-0 stroke-[2]" />
-              <input
-                type="text"
-                value={mapDescription}
-                onChange={(e) => setMapDescription(e.target.value)}
-                placeholder="Tell us about your map (optional)..."
-                className="w-full bg-transparent text-[14px] font-semibold text-[#0f1738] placeholder:text-[#8e9bb5] outline-none"
-              />
-              {mapDescription && (
-                <button
-                  onClick={() => setMapDescription('')}
-                  className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          </div>
         </div>
+      )}
 
-        {/* Primary Action Button: Next → */}
-        <div className="px-5 sm:px-6 pt-7">
-          <button
-            onClick={handleNext}
-            className="w-full py-4 rounded-full bg-[#544ee5] hover:bg-[#4338ca] active:scale-[0.99] text-white font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-indigo-300/40 transition-all cursor-pointer"
-          >
-            <span>Next</span>
-            <ArrowRight className="w-4.5 h-4.5 stroke-[2.8]" />
-          </button>
-        </div>
-      </div>
-
-      {/* Floating Bottom Navigation Bar matching create_page_first_image.png */}
-      <div className="absolute bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-100 px-6 pt-2 pb-3 sm:pb-2.5 shadow-[0_-4px_20px_rgba(50,70,140,0.04)] flex items-center justify-between">
-        {/* Explore Tab */}
-        <button
-          onClick={() => {
-            if (onNavigate) onNavigate('explore');
-          }}
-          className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
-        >
-          <Home className="w-5 h-5" />
-          <span className="text-[10.5px] font-semibold">Explore</span>
-        </button>
-
-        {/* My Maps Tab */}
-        <button
-          onClick={() => {
-            if (onNavigate) onNavigate('purchased-map');
-          }}
-          className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
-        >
-          <MapIcon className="w-5 h-5" />
-          <span className="text-[10.5px] font-semibold">My Maps</span>
-        </button>
-
-        {/* Center Floating Action Button (+ Create - ACTIVE) */}
-        <div className="-mt-6 flex flex-col items-center">
-          <button
-            onClick={() => showToast('You are on the Create page')}
-            className="w-13 h-13 rounded-full bg-[#544ee5] hover:bg-[#4842db] active:scale-95 text-white flex items-center justify-center shadow-lg shadow-indigo-300 transition-all cursor-pointer"
-            title="Create"
-          >
-            <Plus className="w-7 h-7 stroke-[2.8]" />
-          </button>
-          <span className="text-[10.5px] font-bold text-[#544ee5] mt-0.5">Create</span>
-        </div>
-
-        {/* Creators Tab */}
-        <button
-          onClick={() => {
-            if (onNavigate) onNavigate('creators');
-          }}
-          className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
-        >
-          <Users className="w-5 h-5" />
-          <span className="text-[10.5px] font-semibold">Creators</span>
-        </button>
-
-        {/* Profile Tab */}
-        <button
-          onClick={() => {
-            if (onNavigate) onNavigate('user-profile');
-          }}
-          className="flex flex-col items-center gap-1 text-[#717ea1] hover:text-[#111936] transition-all cursor-pointer"
-        >
-          <User className="w-5 h-5" />
-          <span className="text-[10.5px] font-semibold">Profile</span>
-        </button>
-      </div>
-
-      {/* Inspiration Modal */}
+      {/* Inspiration Ideas Modal */}
       {showInspireModal && (
         <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-6 animate-in fade-in duration-150">
           <div className="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl border border-slate-100 flex flex-col">
