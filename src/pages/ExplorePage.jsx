@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Search,
   Bell,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Heart,
   Bookmark,
   MapPin,
@@ -33,7 +35,7 @@ const CATEGORIES = [
   { id: 'gems', name: 'Hidden Gems', icon: Gem },
 ];
 
-// Featured Maps matching c29.png exactly
+// Featured Maps matching c29.png exactly + expanded curated destinations
 const INITIAL_FEATURED_MAPS = [
   {
     id: 'nyc-food',
@@ -86,6 +88,57 @@ const INITIAL_FEATURED_MAPS = [
     isLiked: false,
     isBookmarked: false,
   },
+  {
+    id: 'tokyo-gems',
+    title: 'Tokyo Hidden Gems & Alleyways',
+    places: '68 places',
+    creatorHandle: 'alex.wanders',
+    creatorAvatar: '/c12-avatar-alex.png',
+    rating: 4.9,
+    reviews: '142',
+    price: '$14.99',
+    originalPrice: null,
+    badge: 'Trending',
+    badgeType: 'new-purple',
+    thumbnail: '/c31-map-japan.png',
+    category: 'gems',
+    isLiked: false,
+    isBookmarked: false,
+  },
+  {
+    id: 'paris-cafes',
+    title: 'Paris Aesthetic Cafés & Bakeries',
+    places: '38 places',
+    creatorHandle: 'emma.in.paris',
+    creatorAvatar: '/c12-avatar-emma.png',
+    rating: 4.9,
+    reviews: '95',
+    price: '$11.99',
+    originalPrice: '$16.00',
+    badge: 'Curated',
+    badgeType: 'new-teal',
+    thumbnail: '/c31-map-paris.png',
+    category: 'food',
+    isLiked: false,
+    isBookmarked: false,
+  },
+  {
+    id: 'rome-history',
+    title: 'Rome Secret Passages & Piazzas',
+    places: '45 places',
+    creatorHandle: 'sophie.explores',
+    creatorAvatar: '/c12-avatar-sophie.png',
+    rating: 4.8,
+    reviews: '110',
+    price: '$9.99',
+    originalPrice: null,
+    badge: 'Bestseller',
+    badgeType: 'bestseller',
+    thumbnail: '/thumb-rome-map.png',
+    category: 'culture',
+    isLiked: false,
+    isBookmarked: false,
+  },
 ];
 
 export default function ExplorePage({ onBack, onNavigate }) {
@@ -93,6 +146,88 @@ export default function ExplorePage({ onBack, onNavigate }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [maps, setMaps] = useState(INITIAL_FEATURED_MAPS);
   const [toastMessage, setToastMessage] = useState(null);
+
+  // References for horizontal scroll containers
+  const categoriesRef = useRef(null);
+  const mapsCarouselRef = useRef(null);
+
+  // Drag state for maps carousel
+  const [isDraggingMaps, setIsDraggingMaps] = useState(false);
+  const mapsDragState = useRef({ startX: 0, scrollLeft: 0, hasMoved: false });
+
+  // Drag state for categories
+  const [isDraggingCats, setIsDraggingCats] = useState(false);
+  const catsDragState = useRef({ startX: 0, scrollLeft: 0, hasMoved: false });
+
+  const handleMapsMouseDown = (e) => {
+    if (!mapsCarouselRef.current) return;
+    setIsDraggingMaps(true);
+    mapsDragState.current = {
+      startX: e.pageX - mapsCarouselRef.current.offsetLeft,
+      scrollLeft: mapsCarouselRef.current.scrollLeft,
+      hasMoved: false,
+    };
+  };
+
+  const handleMapsMouseMove = (e) => {
+    if (!isDraggingMaps || !mapsCarouselRef.current) return;
+    const x = e.pageX - mapsCarouselRef.current.offsetLeft;
+    const walk = (x - mapsDragState.current.startX) * 1.5;
+    if (Math.abs(walk) > 4) {
+      mapsDragState.current.hasMoved = true;
+    }
+    mapsCarouselRef.current.scrollLeft = mapsDragState.current.scrollLeft - walk;
+  };
+
+  const handleMapsMouseUp = () => {
+    setIsDraggingMaps(false);
+  };
+
+  const handleMapsWheel = (e) => {
+    if (!mapsCarouselRef.current) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 2) {
+      mapsCarouselRef.current.scrollLeft += e.deltaY;
+    }
+  };
+
+  const scrollMaps = (direction) => {
+    if (mapsCarouselRef.current) {
+      const scrollAmount = direction === 'left' ? -260 : 260;
+      mapsCarouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  // Category drag handlers
+  const handleCatsMouseDown = (e) => {
+    if (!categoriesRef.current) return;
+    setIsDraggingCats(true);
+    catsDragState.current = {
+      startX: e.pageX - categoriesRef.current.offsetLeft,
+      scrollLeft: categoriesRef.current.scrollLeft,
+      hasMoved: false,
+    };
+  };
+
+  const handleCatsMouseMove = (e) => {
+    if (!isDraggingCats || !categoriesRef.current) return;
+    const x = e.pageX - categoriesRef.current.offsetLeft;
+    const walk = (x - catsDragState.current.startX) * 1.5;
+    if (Math.abs(walk) > 4) {
+      catsDragState.current.hasMoved = true;
+    }
+    categoriesRef.current.scrollLeft = catsDragState.current.scrollLeft - walk;
+  };
+
+  const handleCatsMouseUp = () => {
+    setIsDraggingCats(false);
+  };
+
+  const handleCatsWheel = (e) => {
+    if (!categoriesRef.current) return;
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && Math.abs(e.deltaY) > 2) {
+      categoriesRef.current.scrollLeft += e.deltaY;
+    }
+  };
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -253,7 +388,17 @@ export default function ExplorePage({ onBack, onNavigate }) {
 
         {/* Categories Pills Row (matching c29.png) */}
         <div className="px-5 pt-1 pb-4">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+          <div
+            ref={categoriesRef}
+            onMouseDown={handleCatsMouseDown}
+            onMouseMove={handleCatsMouseMove}
+            onMouseUp={handleCatsMouseUp}
+            onMouseLeave={handleCatsMouseUp}
+            onWheel={handleCatsWheel}
+            className={`flex items-center gap-2 overflow-x-auto scrollbar-none pb-1 select-none cursor-grab ${
+              isDraggingCats ? 'cursor-grabbing active:cursor-grabbing' : ''
+            }`}
+          >
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               const isSelected = selectedCategory === cat.id;
@@ -262,6 +407,7 @@ export default function ExplorePage({ onBack, onNavigate }) {
                 <button
                   key={cat.id}
                   onClick={() => {
+                    if (catsDragState.current.hasMoved) return;
                     const next = isSelected ? null : cat.id;
                     setSelectedCategory(next);
                     showToast(next ? `Filtered by ${cat.name}` : 'Showing all categories');
@@ -282,7 +428,7 @@ export default function ExplorePage({ onBack, onNavigate }) {
 
         {/* Section: Featured Travel Maps (matching c29.png) */}
         <div className="px-5 pt-1 space-y-3">
-          {/* Section Header */}
+          {/* Section Header with Left/Right Scroll Arrows */}
           <div className="flex items-end justify-between">
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#717ea1] block">
@@ -293,17 +439,49 @@ export default function ExplorePage({ onBack, onNavigate }) {
               </h3>
             </div>
 
-            <button
-              onClick={() => onNavigate && onNavigate('featured-maps')}
-              className="text-[13px] font-bold text-[#544ee5] hover:text-[#4338ca] flex items-center gap-1 active:translate-x-0.5 transition-all cursor-pointer pb-0.5"
-            >
-              <span>View all maps</span>
-              <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
-            </button>
+            <div className="flex items-center gap-2 pb-0.5">
+              {/* Quick Left / Right Arrow buttons */}
+              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-full border border-slate-200/80">
+                <button
+                  type="button"
+                  onClick={() => scrollMaps('left')}
+                  className="w-6 h-6 rounded-full bg-white hover:bg-indigo-50 text-[#0f1738] hover:text-[#544ee5] shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-90"
+                  title="Scroll left"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5]" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollMaps('right')}
+                  className="w-6 h-6 rounded-full bg-white hover:bg-indigo-50 text-[#0f1738] hover:text-[#544ee5] shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-90"
+                  title="Scroll right"
+                >
+                  <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                </button>
+              </div>
+
+              <button
+                onClick={() => onNavigate && onNavigate('featured-maps')}
+                className="text-[13px] font-bold text-[#544ee5] hover:text-[#4338ca] flex items-center gap-1 active:translate-x-0.5 transition-all cursor-pointer ml-1"
+              >
+                <span>View all</span>
+                <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+              </button>
+            </div>
           </div>
 
-          {/* Horizontal 3-Card Carousel matching c29.png */}
-          <div className="flex gap-3.5 overflow-x-auto scrollbar-none pb-4 pt-1 snap-x snap-mandatory">
+          {/* Horizontal Multi-Card Carousel with Smooth Drag & Wheel Scroll */}
+          <div
+            ref={mapsCarouselRef}
+            onMouseDown={handleMapsMouseDown}
+            onMouseMove={handleMapsMouseMove}
+            onMouseUp={handleMapsMouseUp}
+            onMouseLeave={handleMapsMouseUp}
+            onWheel={handleMapsWheel}
+            className={`flex gap-3.5 overflow-x-auto scrollbar-none pb-4 pt-1 snap-x snap-mandatory select-none cursor-grab ${
+              isDraggingMaps ? 'cursor-grabbing active:cursor-grabbing' : ''
+            }`}
+          >
             {filteredMaps.map((map) => (
               <div
                 key={map.id}
@@ -311,7 +489,10 @@ export default function ExplorePage({ onBack, onNavigate }) {
               >
                 {/* Map Thumbnail with Full Bestseller / New badge and Heart */}
                 <div
-                  onClick={() => onNavigate && onNavigate('map-detail')}
+                  onClick={() => {
+                    if (mapsDragState.current.hasMoved) return;
+                    onNavigate && onNavigate('map-detail');
+                  }}
                   className="relative w-full aspect-[4/3] overflow-hidden cursor-pointer bg-[#e8f1f5]"
                 >
                   <img
@@ -319,6 +500,21 @@ export default function ExplorePage({ onBack, onNavigate }) {
                     alt={map.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                   />
+
+                  {/* Badge */}
+                  {map.badge && (
+                    <div
+                      className={`absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide uppercase shadow-sm ${
+                        map.badgeType === 'bestseller'
+                          ? 'bg-amber-400 text-amber-950 ring-1 ring-amber-500/30'
+                          : map.badgeType === 'new-teal'
+                          ? 'bg-teal-500 text-white ring-1 ring-teal-600/30'
+                          : 'bg-[#544ee5] text-white ring-1 ring-indigo-600/30'
+                      }`}
+                    >
+                      {map.badge}
+                    </div>
+                  )}
 
                   {/* Interactive Heart Toggle Button */}
                   <button
@@ -340,7 +536,10 @@ export default function ExplorePage({ onBack, onNavigate }) {
                 <div className="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
                   {/* Title */}
                   <h4
-                    onClick={() => onNavigate && onNavigate('map-detail')}
+                    onClick={() => {
+                      if (mapsDragState.current.hasMoved) return;
+                      onNavigate && onNavigate('map-detail');
+                    }}
                     className="font-extrabold text-[14.5px] sm:text-[15px] text-[#0f1738] leading-tight tracking-tight cursor-pointer hover:text-[#544ee5] transition-colors truncate"
                   >
                     {map.title}
@@ -354,7 +553,10 @@ export default function ExplorePage({ onBack, onNavigate }) {
 
                   {/* Creator Info with Exact Round Avatar */}
                   <div
-                    onClick={() => onNavigate && onNavigate('creator-profile')}
+                    onClick={() => {
+                      if (mapsDragState.current.hasMoved) return;
+                      onNavigate && onNavigate('creator-profile');
+                    }}
                     className="flex items-center gap-2 pt-0.5 cursor-pointer hover:opacity-80 transition-opacity"
                   >
                     <img
@@ -392,7 +594,10 @@ export default function ExplorePage({ onBack, onNavigate }) {
                   {/* Action Buttons: View Map + Bookmark (100% Fully Visible) */}
                   <div className="flex items-center gap-2 pt-1">
                     <button
-                      onClick={() => onNavigate && onNavigate('map-detail')}
+                      onClick={() => {
+                        if (mapsDragState.current.hasMoved) return;
+                        onNavigate && onNavigate('map-detail');
+                      }}
                       className="flex-1 py-2 rounded-xl bg-[#eeedff] hover:bg-[#e4e2fa] active:scale-95 text-[#544ee5] font-extrabold text-[12.5px] tracking-tight transition-all cursor-pointer text-center shadow-2xs"
                     >
                       View Map
