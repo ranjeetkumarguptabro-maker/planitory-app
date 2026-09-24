@@ -449,21 +449,57 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
         title="Compass Navigation"
       />
 
-      {/* Bottom Location Card Directions Hitbox */}
-      <div
-        onClick={() => handleDirections(selectedLocation)}
-        style={{ bottom: '3.8%', right: '4.8%', width: '33%', height: '5.2%' }}
-        className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/10 active:scale-95 transition-all"
-        title="Get Directions in Google Maps"
-      />
+      {/* Bottom Location Card: 100% Crisp, Pixel-Perfect & Fully Visible on Every Phone */}
+      {selectedLocation && (
+        <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 z-30 pointer-events-auto">
+          <div className="bg-white/98 backdrop-blur-md rounded-[24px] p-3 sm:p-3.5 shadow-[0_8px_30px_rgba(0,0,0,0.16)] border border-slate-100 flex items-center justify-between gap-3 max-w-sm mx-auto animate-in slide-in-from-bottom-2 duration-200">
+            {/* Left: Thumbnail Image */}
+            <div
+              onClick={() => onNavigate && onNavigate('map-detail')}
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-slate-100 shrink-0 cursor-pointer shadow-2xs hover:opacity-90 active:scale-95 transition-all"
+            >
+              <img
+                src={selectedLocation.img}
+                alt={selectedLocation.name}
+                className="w-full h-full object-cover pointer-events-none"
+              />
+            </div>
 
-      {/* Bottom Location Card Detail Tap Hitbox */}
-      <div
-        onClick={() => onNavigate && onNavigate('map-detail')}
-        style={{ bottom: '3.2%', left: '4.5%', width: '58%', height: '6.5%' }}
-        className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
-        title="View Place Details"
-      />
+            {/* Middle: Place Information */}
+            <div
+              onClick={() => onNavigate && onNavigate('map-detail')}
+              className="flex-1 min-w-0 cursor-pointer"
+            >
+              <div className="flex items-center gap-1.5">
+                <span className="text-[9.5px] font-extrabold uppercase tracking-wide text-[#544ee5] bg-[#eeedff] px-2 py-0.5 rounded-full">
+                  {selectedLocation.category.split('•')[0].trim()}
+                </span>
+                <div className="flex items-center gap-0.5 text-[11px] font-bold text-amber-500">
+                  <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                  <span>{selectedLocation.rating}</span>
+                  <span className="text-slate-400 text-[10px]">({selectedLocation.reviews})</span>
+                </div>
+              </div>
+              <h3 className="font-extrabold text-[14.5px] sm:text-[15px] text-[#0f1738] leading-tight mt-1 truncate hover:text-[#544ee5] transition-colors">
+                {selectedLocation.name}
+              </h3>
+              <p className="text-[11px] text-[#717ea1] font-medium truncate mt-0.5">
+                {selectedLocation.address}
+              </p>
+            </div>
+
+            {/* Right: Directions Action Button */}
+            <button
+              onClick={() => handleDirections(selectedLocation)}
+              className="px-3 py-2.5 sm:px-3.5 sm:py-2.5 rounded-xl bg-[#544ee5] hover:bg-[#4338ca] active:scale-95 text-white font-bold text-[11.5px] sm:text-[12px] flex items-center gap-1.5 shadow-md shadow-indigo-300/40 transition-all cursor-pointer shrink-0"
+              title="Get Directions"
+            >
+              <Navigation className="w-3.5 h-3.5 stroke-[2.4] -rotate-45" />
+              <span>Directions</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================= */}
       {/* 4. CUSTOMIZE MAP BOTTOM SHEET MODAL (c27.png)             */}
