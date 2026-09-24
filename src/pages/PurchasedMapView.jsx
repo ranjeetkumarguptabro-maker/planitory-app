@@ -8,7 +8,15 @@ import {
   X,
   Check,
   Star,
-  CheckCircle2
+  CheckCircle2,
+  Coffee,
+  Utensils,
+  Camera,
+  Trees,
+  Landmark,
+  Building2,
+  MapPin,
+  Sparkles
 } from 'lucide-react';
 
 // Custom Map Pins matching c26.png coordinates
@@ -17,6 +25,7 @@ export const MY_MAP_PINS = [
     id: 'flore',
     name: 'Café de Flore',
     type: 'cafe',
+    emoji: '☕',
     category: 'Café • Saint-Germain',
     address: '172 Boulevard Saint-Germain, 75006 Paris',
     rating: '4.8',
@@ -31,6 +40,7 @@ export const MY_MAP_PINS = [
     id: 'food-bistro',
     name: 'Le Comptoir du Relais',
     type: 'food',
+    emoji: '🍝',
     category: 'Restaurant • Odéon',
     address: '9 Carrefour de l’Odéon, 75006 Paris',
     rating: '4.9',
@@ -45,6 +55,7 @@ export const MY_MAP_PINS = [
     id: 'camera-seine',
     name: 'Pont des Arts Viewpoint',
     type: 'camera',
+    emoji: '📸',
     category: 'Photo Spot • Seine',
     address: 'Pont des Arts, 75006 Paris',
     rating: '4.9',
@@ -59,6 +70,7 @@ export const MY_MAP_PINS = [
     id: 'park-tree',
     name: 'Jardin du Luxembourg',
     type: 'park',
+    emoji: '🌳',
     category: 'Park • 6th Arr.',
     address: '75006 Paris, France',
     rating: '4.9',
@@ -73,6 +85,7 @@ export const MY_MAP_PINS = [
     id: 'museum-monument',
     name: 'Musée d’Orsay',
     type: 'museum',
+    emoji: '🏛️',
     category: 'Museum • 7th Arr.',
     address: '1 Rue de la Légion d’Honneur, Paris',
     rating: '4.9',
@@ -87,6 +100,7 @@ export const MY_MAP_PINS = [
     id: 'hotel-stay',
     name: 'Hôtel Lutetia',
     type: 'hotel',
+    emoji: '🏨',
     category: 'Luxury Hotel • Rive Gauche',
     address: '45 Boulevard Raspail, 75006 Paris',
     rating: '4.8',
@@ -139,6 +153,39 @@ export const MAP_STYLES = [
   },
 ];
 
+const THEME_COLORS = {
+  original: null,
+  rose: '#f43f5e',
+  emerald: '#10b981',
+  sunset: '#f59e0b',
+  purple: '#6366f1',
+  slate: '#334155',
+};
+
+function getPinThemeColor(themeId, defaultColor) {
+  if (!themeId || themeId === 'original') return defaultColor || '#544ee5';
+  return THEME_COLORS[themeId] || defaultColor || '#544ee5';
+}
+
+function getVectorIcon(type) {
+  switch (type) {
+    case 'cafe':
+      return <Coffee className="w-4 h-4 stroke-[2.4]" />;
+    case 'food':
+      return <Utensils className="w-4 h-4 stroke-[2.4]" />;
+    case 'camera':
+      return <Camera className="w-4 h-4 stroke-[2.4]" />;
+    case 'park':
+      return <Trees className="w-4 h-4 stroke-[2.4]" />;
+    case 'museum':
+      return <Landmark className="w-4 h-4 stroke-[2.4]" />;
+    case 'hotel':
+      return <Building2 className="w-4 h-4 stroke-[2.4]" />;
+    default:
+      return <MapPin className="w-4 h-4 stroke-[2.4]" />;
+  }
+}
+
 export default function PurchasedMapView({ onBack, onNavigate }) {
   // Selected location (Default is Café de Flore matching c26.png)
   const [selectedLocation, setSelectedLocation] = useState(() => MY_MAP_PINS[0]);
@@ -148,7 +195,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
   const [customizationStep, setCustomizationStep] = useState(1); // 1 = Map Style, 2 = Pin Colors & Icons
   const [selectedMapStyle, setSelectedMapStyle] = useState('default');
   const [pinColorTheme, setPinColorTheme] = useState('original');
-  const [pinIconStyle, setPinIconStyle] = useState('classic');
+  const [pinIconStyle, setPinIconStyle] = useState('classic'); // 'classic' | 'emoji'
 
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -261,9 +308,12 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
             draggable={false}
           />
 
-          {/* Interactive Tap Hitboxes over the 6 Map Pins in c26 */}
+          {/* Interactive Dynamic Map Pins (Rendering 3D Emojis or Custom Colors) */}
           {MY_MAP_PINS.map((pin) => {
             const isSelected = selectedLocation?.id === pin.id;
+            const themeColor = getPinThemeColor(pinColorTheme, pin.color);
+            const isEmoji = pinIconStyle === 'emoji';
+            const isCustomColor = pinColorTheme !== 'original';
 
             return (
               <div
@@ -276,15 +326,73 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 style={{
                   left: `${pin.x}%`,
                   top: `${pin.y}%`,
-                  transform: `translate(-50%, -50%) scale(${1 / Math.max(1, zoomLevel)})`,
-                  transformOrigin: 'center center',
+                  transform: `translate(-50%, ${isEmoji || isCustomColor ? '-85%' : '-50%'}) scale(${1 / Math.max(0.9, zoomLevel)})`,
+                  transformOrigin: 'center bottom',
                 }}
-                className="absolute z-20 w-12 h-12 -ml-0.5 -mt-0.5 rounded-full cursor-pointer flex items-center justify-center"
+                className="absolute z-20 cursor-pointer flex flex-col items-center group transition-transform hover:scale-110 active:scale-95"
                 title={pin.name}
               >
-                {/* Subtle Active Highlight Glow */}
-                {isSelected && (
-                  <div className="w-12 h-12 rounded-full ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white shadow-xl animate-in zoom-in-75 duration-150 flex items-center justify-center bg-indigo-500/10 pointer-events-none" />
+                {/* 3D Emoji Pin View */}
+                {isEmoji ? (
+                  <div className="relative flex flex-col items-center animate-in zoom-in-50 duration-200">
+                    {/* Emoji Pin Bubble */}
+                    <div
+                      style={{ backgroundColor: themeColor }}
+                      className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2.5 border-white shadow-[0_6px_20px_rgba(0,0,0,0.3)] flex items-center justify-center transition-all ${
+                        isSelected
+                          ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-110'
+                          : ''
+                      }`}
+                    >
+                      <span className="text-[22px] sm:text-[24px] leading-none filter drop-shadow-sm select-none transform group-hover:scale-120 transition-transform">
+                        {pin.emoji}
+                      </span>
+                    </div>
+                    {/* Pin Tip Pointer */}
+                    <div
+                      style={{ borderTopColor: themeColor }}
+                      className="w-0 h-0 border-x-[6px] border-x-transparent border-t-[8px] -mt-[1px] drop-shadow-xs"
+                    />
+
+                    {/* Selected Tooltip */}
+                    {isSelected && (
+                      <div className="absolute -top-7 px-2.5 py-0.5 rounded-full bg-[#0f1738]/95 text-white text-[10.5px] font-extrabold whitespace-nowrap shadow-md border border-white/20 flex items-center gap-1 animate-in fade-in slide-in-from-bottom-1">
+                        <span>{pin.name}</span>
+                        <span className="text-amber-400">★ {pin.rating}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : isCustomColor ? (
+                  /* Custom Vector Pin */
+                  <div className="relative flex flex-col items-center animate-in zoom-in-50 duration-200">
+                    <div
+                      style={{ backgroundColor: themeColor }}
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_16px_rgba(0,0,0,0.25)] flex items-center justify-center text-white transition-all ${
+                        isSelected
+                          ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-110'
+                          : ''
+                      }`}
+                    >
+                      {getVectorIcon(pin.type)}
+                    </div>
+                    <div
+                      style={{ borderTopColor: themeColor }}
+                      className="w-0 h-0 border-x-[5px] border-x-transparent border-t-[7px] -mt-[1px]"
+                    />
+                    {isSelected && (
+                      <div className="absolute -top-7 px-2.5 py-0.5 rounded-full bg-[#0f1738]/95 text-white text-[10.5px] font-extrabold whitespace-nowrap shadow-md border border-white/20 flex items-center gap-1 animate-in fade-in slide-in-from-bottom-1">
+                        <span>{pin.name}</span>
+                        <span className="text-amber-400">★ {pin.rating}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Original Mode: Transparent Hitbox with selection glow */
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                    {isSelected && (
+                      <div className="w-11 h-11 rounded-full ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white shadow-xl animate-in zoom-in-75 duration-150 bg-indigo-500/10 pointer-events-none" />
+                    )}
+                  </div>
                 )}
               </div>
             );
@@ -306,7 +414,7 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
       </div>
 
       {/* ========================================================= */}
-      {/* 2. TOP-LEFT BACK BUTTON (ONLY BACK BUTTON, NO DUPLICATES) */}
+      {/* 2. TOP-LEFT BACK BUTTON                                   */}
       {/* ========================================================= */}
       <div className="absolute top-4 left-4 z-40">
         <button
@@ -492,10 +600,13 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                     ].map((theme) => (
                       <button
                         key={theme.id}
-                        onClick={() => setPinColorTheme(theme.id)}
+                        onClick={() => {
+                          setPinColorTheme(theme.id);
+                          showToast(`Applied ${theme.name} Pin Color`);
+                        }}
                         className={`p-2 rounded-xl flex items-center gap-2 border transition-all cursor-pointer ${
                           pinColorTheme === theme.id
-                            ? 'border-[#544ee5] bg-indigo-50/60 ring-2 ring-[#544ee5]/20'
+                            ? 'border-[#544ee5] bg-indigo-50/60 ring-2 ring-[#544ee5]/20 shadow-xs'
                             : 'border-slate-100 hover:bg-slate-50'
                         }`}
                       >
@@ -508,38 +619,115 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   </div>
                 </div>
 
-                {/* Icon Style Selector */}
+                {/* Icon Style Selector with Live Emojis & Vectors Preview */}
                 <div>
                   <span className="text-[12px] font-bold text-[#0f1738] block mb-2">
                     Icon Glyphs
                   </span>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {[
-                      { id: 'classic', name: 'Classic Vectors', desc: 'Crisp white outlines' },
-                      { id: 'emoji', name: '3D Emojis', desc: 'Illustrated colorful icons' },
+                      {
+                        id: 'classic',
+                        name: 'Classic Vectors',
+                        desc: 'Crisp white outlines',
+                      },
+                      {
+                        id: 'emoji',
+                        name: '3D Emojis',
+                        desc: 'Illustrated colorful icons',
+                      },
                     ].map((style) => (
                       <button
                         key={style.id}
-                        onClick={() => setPinIconStyle(style.id)}
-                        className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer ${
+                        onClick={() => {
+                          setPinIconStyle(style.id);
+                          showToast(
+                            style.id === 'emoji'
+                              ? '✨ 3D Emojis active!'
+                              : 'Classic Vectors active'
+                          );
+                        }}
+                        className={`p-3 rounded-2xl text-left border transition-all cursor-pointer ${
                           pinIconStyle === style.id
-                            ? 'border-[#544ee5] bg-indigo-50/60 ring-2 ring-[#544ee5]/20'
-                            : 'border-slate-100 hover:bg-slate-50'
+                            ? 'border-[#544ee5] bg-indigo-50/70 ring-2 ring-[#544ee5]/30 shadow-xs'
+                            : 'border-slate-200/80 hover:bg-slate-50'
                         }`}
                       >
-                        <span className="text-[12px] font-extrabold text-[#0f1738] block">
-                          {style.name}
-                        </span>
-                        <span className="text-[10px] text-[#717ea1]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[13px] font-extrabold text-[#0f1738] block">
+                            {style.name}
+                          </span>
+                          {pinIconStyle === style.id && (
+                            <div className="w-4 h-4 rounded-full bg-[#544ee5] text-white flex items-center justify-center text-[10px]">
+                              ✓
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-[#717ea1] block mt-0.5">
                           {style.desc}
                         </span>
+
+                        {/* Visible Emojis / Glyphs Icons Preview */}
+                        <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5">
+                          {style.id === 'emoji' ? (
+                            <div className="flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-slate-100 shadow-2xs text-[15px]">
+                              <span title="Café">☕</span>
+                              <span title="Restaurant">🍝</span>
+                              <span title="Photo Spot">📸</span>
+                              <span title="Park">🌳</span>
+                              <span title="Museum">🏛️</span>
+                              <span title="Hotel">🏨</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 text-slate-700 bg-white px-2 py-1 rounded-lg border border-slate-100 shadow-2xs text-[11px]">
+                              <Coffee className="w-3.5 h-3.5 text-[#544ee5]" />
+                              <Utensils className="w-3.5 h-3.5 text-rose-500" />
+                              <Camera className="w-3.5 h-3.5 text-amber-500" />
+                              <Trees className="w-3.5 h-3.5 text-emerald-500" />
+                              <Landmark className="w-3.5 h-3.5 text-purple-500" />
+                            </div>
+                          )}
+                        </div>
                       </button>
                     ))}
                   </div>
                 </div>
 
+                {/* Live Marker Preview Strip */}
+                <div className="bg-[#f8fafd] rounded-2xl p-3 border border-slate-200/70">
+                  <div className="flex items-center justify-between text-[11.5px] font-bold text-[#0f1738] mb-1.5">
+                    <span>Live Pin Preview:</span>
+                    <span className="text-[#544ee5] text-[11px]">
+                      {pinIconStyle === 'emoji' ? '3D Emojis' : 'Classic Vectors'} &bull;{' '}
+                      {pinColorTheme}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-around py-1">
+                    {MY_MAP_PINS.slice(0, 5).map((p) => {
+                      const col = getPinThemeColor(pinColorTheme, p.color);
+                      return (
+                        <div key={p.id} className="flex flex-col items-center">
+                          <div
+                            style={{ backgroundColor: col }}
+                            className="w-8 h-8 rounded-full border border-white shadow-sm flex items-center justify-center text-white"
+                          >
+                            {pinIconStyle === 'emoji' ? (
+                              <span className="text-[16px] leading-none">{p.emoji}</span>
+                            ) : (
+                              getVectorIcon(p.type)
+                            )}
+                          </div>
+                          <span className="text-[9.5px] font-bold text-slate-600 mt-0.5 truncate max-w-[50px]">
+                            {p.name.split(' ')[0]}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-1">
                   <button
                     onClick={() => setCustomizationStep(1)}
                     className="py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-[13px] cursor-pointer"
@@ -549,7 +737,11 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   <button
                     onClick={() => {
                       setShowCustomizeModal(false);
-                      showToast('✨ Map & Pin custom style saved!');
+                      showToast(
+                        pinIconStyle === 'emoji'
+                          ? '🎉 3D Emojis applied to your map pins!'
+                          : '✨ Custom vector pins applied to map!'
+                      );
                     }}
                     className="flex-1 py-3.5 bg-[#544ee5] hover:bg-[#4338ca] active:scale-[0.99] text-white font-bold rounded-2xl text-[14px] shadow-lg shadow-indigo-300/40 transition-all cursor-pointer"
                   >
