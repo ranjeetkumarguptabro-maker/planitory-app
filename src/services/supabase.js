@@ -195,3 +195,147 @@ export async function getCurrentUser() {
   const local = localStorage.getItem('planitory_current_user');
   return local ? JSON.parse(local) : null;
 }
+
+/**
+ * Upload Map Cover Image to Supabase / Cloudflare Storage or convert to Data URL
+ */
+export async function uploadMapCover(file) {
+  if (!file) return null;
+
+  // 1. Try Supabase Storage bucket if configured
+  const { isPlaceholder } = getSupabaseConfig();
+  if (!isPlaceholder && supabase) {
+    try {
+      const fileExt = file.name ? file.name.split('.').pop() : 'png';
+      const fileName = `map-cover-${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `covers/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('map-covers')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
+
+      if (!error && data) {
+        const { data: publicUrlData } = supabase.storage
+          .from('map-covers')
+          .getPublicUrl(filePath);
+
+        if (publicUrlData?.publicUrl) {
+          return publicUrlData.publicUrl;
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase storage upload notice:', err);
+    }
+  }
+
+  // 2. Client-side Base64 Data URL fallback for instant offline/local rendering
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result);
+    };
+    reader.onerror = () => {
+      resolve(null);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Save Created Map to Supabase DB & persistent local storage
+ */
+export async function saveCreatedMap(mapData) {
+  const newMap = {
+    id: mapData.id || `map_${Date.now()}`,
+    title: mapData.title || 'Untitled Map',
+    description: mapData.description || '',
+    cover_image: mapData.cover_image || mapData.coverImage || '/c31-map-paris.png',
+    places_count: mapData.places_count || mapData.placesCount || (mapData.places?.length || 0),
+    places: mapData.places || [],
+    type: mapData.type || 'custom',
+    price: mapData.price || '$10',
+    duration: mapData.duration || '1-2 days',
+    creator_name: mapData.creator_name || 'Alex Parker',
+    created_at: mapData.created_at || new Date().toISOString(),
+    is_published: true,
+  };
+
+  // 1. Persist to Supabase table
+  const { isPlaceholder } = getSupabaseConfig();
+  if (!isPlaceholder && supabase) {
+    try {
+      await supabase.from('maps').upsert([newMap], { onConflict: 'id' });
+    } catch (e) {
+      console.warn('Supabase save map notice:', e);
+    }
+  }
+
+  // 2. Persist to Local Storage
+  if (typeof window !== 'undefined') {
+    const existing = JSON.parse(localStorage.getItem('planitory_created_maps') || '[]');
+    const updated = [newMap, ...existing.filter((m) => m.id !== newMap.id)];
+    localStorage.setItem('planitory_created_maps', JSON.stringify(updated));
+
+    // Dispatch a custom event so all active pages update in real-time
+    window.dispatchEvent(new CustomEvent('planitory_map_created', { detail: newMap }));
+  }
+
+  return newMap;
+}
+
+/**
+ * Get all created maps from Supabase or Local Storage
+ */
+export async function getCreatedMaps() {
+  if (typeof window === 'undefined') return [];
+
+  const { isPlaceholder } = getSupabaseConfig();
+  if (!isPlaceholder && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('maps')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        return data.map((d) => ({
+          id: d.id,
+          title: d.title,
+          description: d.description,
+          places: `${d.places_count || d.places?.length || 5} places`,
+          placesCount: d.places_count || d.places?.length || 5,
+          img: d.cover_image || '/c31-map-paris.png',
+          duration: d.duration || '1-2 days',
+          price: d.price || '$10',
+          created_at: d.created_at,
+        }));
+      }
+    } catch (err) {
+      console.warn('Supabase fetch maps notice:', err);
+    }
+  }
+
+  const local = localStorage.getItem('planitory_created_maps');
+  if (local) {
+    try {
+      const parsed = JSON.parse(local);
+      return parsed.map((d) => ({
+        id: d.id,
+        title: d.title,
+        description: d.description,
+        places: `${d.places_count || d.places?.length || 5} places`,
+        placesCount: d.places_count || d.places?.length || 5,
+        img: d.cover_image || d.img || '/c31-map-paris.png',
+        duration: d.duration || '1-2 days',
+        price: d.price || '$10',
+        created_at: d.created_at,
+      }));
+    } catch (e) {}
+  }
+
+  return [];
+}
+

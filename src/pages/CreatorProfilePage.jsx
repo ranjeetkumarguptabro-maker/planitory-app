@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   Share2,
@@ -8,6 +8,7 @@ import {
   Check,
   CheckCircle2
 } from 'lucide-react';
+import { getCreatedMaps } from '../services/supabase';
 
 const CREATOR_MAPS = [
   {
@@ -53,6 +54,42 @@ export default function CreatorProfilePage({ onBack, onNavigate }) {
   const [activeTab, setActiveTab] = useState('maps');
   const [maps, setMaps] = useState(CREATOR_MAPS);
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Load created maps from Supabase / localStorage
+  useEffect(() => {
+    const loadMaps = async () => {
+      try {
+        const created = await getCreatedMaps();
+        if (created && created.length > 0) {
+          const mapList = [
+            ...created,
+            ...CREATOR_MAPS.filter((cm) => !created.some((crm) => crm.id === cm.id)),
+          ];
+          setMaps(mapList);
+        }
+      } catch (e) {}
+    };
+
+    loadMaps();
+
+    const handleCreated = (e) => {
+      if (e.detail) {
+        const newMap = {
+          id: e.detail.id,
+          title: e.detail.title,
+          places: `${e.detail.places_count || 6} places`,
+          duration: e.detail.duration || '1-2 days',
+          price: e.detail.price || '$10',
+          img: e.detail.cover_image || '/c13-clean-cafes.png',
+          isLiked: false,
+        };
+        setMaps((prev) => [newMap, ...prev.filter((m) => m.id !== newMap.id)]);
+      }
+    };
+
+    window.addEventListener('planitory_map_created', handleCreated);
+    return () => window.removeEventListener('planitory_map_created', handleCreated);
+  }, []);
 
   const showToast = (msg) => {
     setToastMessage(msg);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Settings,
   Camera,
@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   X
 } from 'lucide-react';
+import { getCreatedMaps } from '../services/supabase';
 
 const INITIAL_MAPS = [
   {
@@ -45,11 +46,53 @@ export default function UserProfilePage({ onNavigate }) {
     headline: 'Travel Creator',
     location: 'Lisbon, Portugal',
     bio: 'Exploring the world one map at a time 🌍',
-    mapsCount: 5,
+    mapsCount: 2,
     likesCount: 342,
   });
 
   const [editForm, setEditForm] = useState(profileData);
+
+  // Load created maps from Supabase / localStorage
+  useEffect(() => {
+    const loadMaps = async () => {
+      try {
+        const created = await getCreatedMaps();
+        if (created && created.length > 0) {
+          const mapList = [
+            ...created,
+            ...INITIAL_MAPS.filter((im) => !created.some((cm) => cm.id === im.id)),
+          ];
+          setMaps(mapList);
+          setProfileData((prev) => ({
+            ...prev,
+            mapsCount: mapList.length,
+          }));
+        }
+      } catch (e) {}
+    };
+
+    loadMaps();
+
+    const handleCreated = (e) => {
+      if (e.detail) {
+        const newMap = {
+          id: e.detail.id,
+          title: e.detail.title,
+          description: e.detail.description || 'Custom curated map',
+          places: `${e.detail.places_count || e.detail.places?.length || 6} places`,
+          img: e.detail.cover_image || '/c31-map-paris.png',
+        };
+        setMaps((prev) => [newMap, ...prev.filter((m) => m.id !== newMap.id)]);
+        setProfileData((prev) => ({
+          ...prev,
+          mapsCount: prev.mapsCount + 1,
+        }));
+      }
+    };
+
+    window.addEventListener('planitory_map_created', handleCreated);
+    return () => window.removeEventListener('planitory_map_created', handleCreated);
+  }, []);
 
   const showToast = (msg) => {
     setToastMessage(msg);

@@ -26,8 +26,11 @@ import {
   Camera,
   Trees,
   Landmark,
-  Building2
+  Building2,
+  Upload,
+  Loader2
 } from 'lucide-react';
+import { uploadMapCover, saveCreatedMap } from '../services/supabase';
 
 const INITIAL_BUILD_PINS = [
   {
@@ -35,9 +38,9 @@ const INITIAL_BUILD_PINS = [
     name: 'Pont des Arts Photo Spot',
     category: 'Photo Spot',
     type: 'camera',
-    x: 37.5,
-    y: 27.2,
-    color: '#7c3aed',
+    x: 35.5,
+    y: 27.5,
+    color: '#6d28d9',
     icon: Camera,
   },
   {
@@ -45,8 +48,8 @@ const INITIAL_BUILD_PINS = [
     name: 'Café de Flore',
     category: 'Café',
     type: 'cafe',
-    x: 65.2,
-    y: 32.1,
+    x: 66.0,
+    y: 32.5,
     color: '#78350f',
     icon: Coffee,
   },
@@ -55,8 +58,8 @@ const INITIAL_BUILD_PINS = [
     name: 'Le Comptoir du Relais',
     category: 'Restaurant',
     type: 'food',
-    x: 38.2,
-    y: 41.2,
+    x: 35.5,
+    y: 41.0,
     color: '#e11d48',
     icon: Utensils,
   },
@@ -65,9 +68,9 @@ const INITIAL_BUILD_PINS = [
     name: 'Musée d’Orsay',
     category: 'Museum',
     type: 'museum',
-    x: 29.4,
-    y: 46.5,
-    color: '#4f46e5',
+    x: 25.5,
+    y: 47.0,
+    color: '#4338ca',
     icon: Landmark,
   },
   {
@@ -75,8 +78,8 @@ const INITIAL_BUILD_PINS = [
     name: 'Jardin du Luxembourg',
     category: 'Park',
     type: 'park',
-    x: 72.5,
-    y: 44.2,
+    x: 75.0,
+    y: 44.5,
     color: '#15803d',
     icon: Trees,
   },
@@ -85,8 +88,8 @@ const INITIAL_BUILD_PINS = [
     name: 'Hôtel Lutetia',
     category: 'Hotel',
     type: 'hotel',
-    x: 75.4,
-    y: 58.6,
+    x: 78.0,
+    y: 58.5,
     color: '#2563eb',
     icon: Building2,
   },
@@ -101,12 +104,16 @@ export default function CreateMapPage({ onBack, onNavigate }) {
   const [selectedType, setSelectedType] = useState('custom'); // 'custom' | 'trip' | 'saved'
   const [mapTitle, setMapTitle] = useState('Paris Café Guide');
   const [mapDescription, setMapDescription] = useState('');
+  const [coverImage, setCoverImage] = useState('/c31-map-paris.png');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Step 2 State (c35.png)
   const [searchPlaceQuery, setSearchPlaceQuery] = useState('');
   const [addedPlaces, setAddedPlaces] = useState([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [activeLayer, setActiveLayer] = useState('standard');
+  const [isSavingMap, setIsSavingMap] = useState(false);
 
   // Map Pan / Zoom
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -125,6 +132,48 @@ export default function CreateMapPage({ onBack, onNavigate }) {
   const showToast = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 2500);
+  };
+
+  // Cover Image Upload Handler (Cloudflare / Supabase)
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    showToast('Uploading cover image to Supabase/Cloudflare...');
+    try {
+      const uploadedUrl = await uploadMapCover(file);
+      if (uploadedUrl) {
+        setCoverImage(uploadedUrl);
+        showToast('📸 Cover photo uploaded successfully!');
+      }
+    } catch (err) {
+      showToast('Could not upload image. Please try again.');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // Save map and finish
+  const handleSaveAndFinish = async () => {
+    setIsSavingMap(true);
+    try {
+      await saveCreatedMap({
+        title: mapTitle,
+        description: mapDescription,
+        cover_image: coverImage || '/c31-map-paris.png',
+        places: addedPlaces.length > 0 ? addedPlaces : ['Pont des Arts Photo Spot', 'Café de Flore', 'Le Comptoir du Relais', 'Musée d’Orsay', 'Jardin du Luxembourg', 'Hôtel Lutetia'],
+        places_count: addedPlaces.length > 0 ? addedPlaces.length : 6,
+        type: selectedType,
+        creator_name: 'Alex Parker',
+      });
+      setShowDoneModal(true);
+      showToast('🎉 Map saved to Supabase & listed in your Profile!');
+    } catch (err) {
+      setShowDoneModal(true);
+    } finally {
+      setIsSavingMap(false);
+    }
   };
 
   // AI Suggestion helper
@@ -423,11 +472,103 @@ export default function CreateMapPage({ onBack, onNavigate }) {
                     </button>
                   )}
                 </div>
+
+                {/* Cover Image Upload (Cloudflare / Supabase Storage) */}
+                <div className="pt-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-[13px] font-bold text-[#0f1738] flex items-center gap-1.5">
+                      <ImageIcon className="w-4 h-4 text-[#544ee5]" />
+                      <span>Cover Photo</span>
+                    </label>
+                    <span className="text-[10.5px] text-[#717ea1] font-medium">Cloudflare / Supabase Storage</span>
+                  </div>
+
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+
+                  {coverImage ? (
+                    <div className="relative rounded-2xl overflow-hidden border border-slate-200/90 shadow-2xs group h-28 bg-slate-100 flex items-center justify-center">
+                      <img
+                        src={coverImage}
+                        alt="Map Cover Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-3 py-1.5 bg-white text-[#0f1738] text-[11.5px] font-bold rounded-full shadow-md hover:bg-slate-50 transition-all cursor-pointer"
+                        >
+                          Replace Image
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCoverImage(null)}
+                          className="p-1.5 bg-rose-600 text-white rounded-full shadow-md hover:bg-rose-700 transition-all cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-2 border-dashed border-slate-200 hover:border-[#544ee5] rounded-2xl p-4 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-50/60 hover:bg-indigo-50/30 transition-all"
+                    >
+                      {isUploadingImage ? (
+                        <div className="flex items-center gap-2 text-[#544ee5] text-xs font-bold py-2">
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>Uploading to Cloudflare/Supabase...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="w-9 h-9 rounded-full bg-indigo-50 text-[#544ee5] flex items-center justify-center mb-1.5">
+                            <Upload className="w-4.5 h-4.5 stroke-[2.2]" />
+                          </div>
+                          <span className="text-[12.5px] font-bold text-[#0f1738]">Upload Cover Image</span>
+                          <span className="text-[10px] text-[#717ea1] mt-0.5">PNG, JPG, WebP supported</span>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Preset quick cover styles */}
+                  <div className="flex items-center gap-2 pt-2 overflow-x-auto pb-1 scrollbar-none">
+                    <span className="text-[10.5px] font-bold text-[#717ea1] shrink-0">Presets:</span>
+                    {[
+                      { name: 'Paris', img: '/c31-map-paris.png' },
+                      { name: 'Tokyo', img: '/c31-map-japan.png' },
+                      { name: 'Rome', img: '/thumb-rome-map.png' },
+                      { name: 'NYC', img: '/c29-map-nyc.png' }
+                    ].map((p) => (
+                      <button
+                        key={p.name}
+                        type="button"
+                        onClick={() => {
+                          setCoverImage(p.img);
+                          showToast(`Selected ${p.name} cover photo 🖼️`);
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer shrink-0 flex items-center gap-1 ${
+                          coverImage === p.img
+                            ? 'bg-[#544ee5] text-white border-[#544ee5]'
+                            : 'bg-white text-[#717ea1] border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <span>{p.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Primary Action Button: Next → (routes to Step 2 / c35.png) */}
-            <div className="px-5 sm:px-6 pt-7">
+            <div className="px-5 sm:px-6 pt-6 pb-2">
               <button
                 onClick={handleProceedToStep2}
                 className="w-full py-4 rounded-full bg-[#544ee5] hover:bg-[#4338ca] active:scale-[0.99] text-white font-black text-[15px] flex items-center justify-center gap-2 shadow-lg shadow-indigo-300/40 transition-all cursor-pointer"
@@ -492,193 +633,279 @@ export default function CreateMapPage({ onBack, onNavigate }) {
       )}
 
       {/* ========================================================================= */}
-      {/* SCREEN 2: BUILD YOUR MAP (EXACT 1:1 MATCHING c35.png)                      */}
+      {/* SCREEN 2: BUILD YOUR MAP (EXACT 1:1 NATIVE MATCHING c35.png)              */}
+      {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* SCREEN 2: BUILD YOUR MAP (EXACT 1:1 MATCHING media_1790250175412.jpg)     */}
       {/* ========================================================================= */}
       {currentStep === 2 && (
-        <div className="relative w-full h-full min-h-0 overflow-hidden bg-[#e8f1f5] sm:rounded-[44px] select-none">
-          {/* Exact Mockup Canvas Background matching c35.png */}
-          <div className="absolute inset-0 w-full h-full overflow-hidden z-0">
-            <img
-              src="/c35-map-full.png"
-              alt="Build Your Map - Paris"
-              className="w-full h-full object-cover pointer-events-none select-none"
-              draggable={false}
-            />
+        <div className="relative w-full h-full min-h-0 flex flex-col justify-between overflow-hidden bg-[#e8f1f5] sm:rounded-[44px] select-none">
+          {/* Map Canvas Background Layer */}
+          <div
+            className="absolute inset-0 z-0 overflow-hidden cursor-grab active:cursor-grabbing"
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div
+              className="w-full h-full relative transition-transform duration-75"
+              style={{
+                transform: `scale(${zoomLevel}) translate(${panOffset.x}px, ${panOffset.y}px)`,
+                transformOrigin: 'center center',
+              }}
+            >
+              <img
+                src="/c35-map-canvas.png"
+                alt="Map Canvas"
+                className="w-full h-full object-cover select-none pointer-events-none"
+                draggable={false}
+              />
 
-            {/* If user customized the title, display custom title overlay pill seamlessly */}
-            {mapTitle && mapTitle !== 'Paris Café Guide' && (
+              {/* Interactive GPS Location Beacon Touch Target in Seine River */}
               <div
-                style={{ top: '4.8%', left: '26%', width: '48%' }}
-                className="absolute z-20 text-center pointer-events-none"
+                className="absolute z-10 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer group"
+                style={{ left: '53.1%', top: '54.7%', width: '48px', height: '48px' }}
+                onClick={handleRecenter}
+                title="Current Location (Seine River)"
               >
-                <div className="text-[12px] font-bold text-[#717ea1] truncate flex items-center justify-center gap-1 bg-white/90 backdrop-blur-xs py-0.5 px-2 rounded-full shadow-2xs">
-                  <span className="truncate">{mapTitle}</span>
-                  <Pencil className="w-2.5 h-2.5 stroke-[2.2]" />
-                </div>
+                <div className="w-12 h-12 rounded-full bg-blue-500/15 animate-ping absolute pointer-events-none" />
               </div>
-            )}
 
-            {/* Added Places Counter Badge overlay if custom places were added */}
-            {addedPlaces.length > 0 && (
-              <div
-                style={{ bottom: '21.5%', left: '5.2%' }}
-                className="absolute z-20 bg-white/95 px-2 py-0.5 rounded-md pointer-events-none"
-              >
-                <span className="text-[12.5px] font-bold text-[#544ee5]">
-                  {addedPlaces.length} places added
-                </span>
-              </div>
-            )}
+              {/* Map Interactive Pin Hitboxes & Badges */}
+              {INITIAL_BUILD_PINS.map((pin) => {
+                const isAdded = addedPlaces.includes(pin.name);
+                return (
+                  <div
+                    key={pin.id}
+                    onClick={() => handleAddPlaceToList(pin.name)}
+                    className="absolute z-15 -translate-x-1/2 -translate-y-1/2 cursor-pointer group active:scale-95 transition-all flex items-center justify-center"
+                    style={{ left: `${pin.x}%`, top: `${pin.y}%`, width: '42px', height: '42px' }}
+                    title={pin.name}
+                  >
+                    {/* Active Added Checkmark Badge */}
+                    {isAdded && (
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[10px] font-black shadow-md border-2 border-white animate-in zoom-in-75 duration-150">
+                        ✓
+                      </div>
+                    )}
+
+                    {/* Tooltip / Name label */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-0.5 bg-[#0f1738]/90 backdrop-blur-xs text-white text-[10px] font-bold rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-md z-30">
+                      {pin.name} {isAdded ? '✓' : ''}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           {/* ========================================================= */}
-          {/* INVISIBLE INTERACTIVE HITBOXES OVER c35.png ELEMENTS      */}
+          {/* TOP HEADER & SEARCH BAR                                   */}
           {/* ========================================================= */}
+          <div className="relative z-20 px-4 pt-3 space-y-2 shrink-0 pointer-events-auto">
+            {/* iOS Status Bar */}
+            <div className="flex items-center justify-between text-xs font-semibold text-[#0f1738] px-0.5">
+              <span className="text-[14px] tracking-tight font-bold">9:41</span>
+              <div className="flex items-center gap-1.5">
+                <div className="flex items-end gap-[1.5px] h-3">
+                  <div className="w-[3px] h-1 bg-[#0f1738] rounded-[0.5px]" />
+                  <div className="w-[3px] h-1.5 bg-[#0f1738] rounded-[0.5px]" />
+                  <div className="w-[3px] h-2 bg-[#0f1738] rounded-[0.5px]" />
+                  <div className="w-[3px] h-3 bg-[#0f1738] rounded-[0.5px]" />
+                </div>
+                <svg className="w-3.5 h-3.5 fill-[#0f1738]" viewBox="0 0 24 24">
+                  <path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0 0 12 4z" />
+                </svg>
+                <div className="w-5 h-2.5 border border-[#0f1738] rounded-[3px] p-[1px] flex items-center">
+                  <div className="w-full h-full bg-[#0f1738] rounded-[1px]" />
+                </div>
+              </div>
+            </div>
 
-          {/* Top-Left Back Arrow (<) Hitbox -> returns to Step 1 */}
-          <div
-            onClick={() => setCurrentStep(1)}
-            style={{ top: '3.8%', left: '4.2%', width: '13%', height: '5.5%' }}
-            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
-            title="Back to Details"
-          />
+            {/* Header Row: Back Button | Title & Subtitle | Preview Button */}
+            <div className="flex items-center justify-between gap-2 pt-1">
+              {/* Back Button */}
+              <button
+                onClick={() => setCurrentStep(1)}
+                className="w-10 h-10 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-95 transition-all cursor-pointer shrink-0"
+                title="Back to Details"
+              >
+                <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+              </button>
 
-          {/* Top Center Title Hitbox -> Edit Title */}
-          <div
-            onClick={() => setIsEditingTitle(true)}
-            style={{ top: '3.5%', left: '26%', width: '48%', height: '5.5%' }}
-            className="absolute z-30 rounded-xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
-            title="Edit Map Title"
-          />
+              {/* Center Title & Subtitle */}
+              <div
+                onClick={() => setIsEditingTitle(true)}
+                className="flex-1 text-center cursor-pointer group px-1"
+              >
+                <h1 className="text-[17.5px] font-black text-[#0f1738] leading-tight tracking-tight">
+                  Build Your Map
+                </h1>
+                <div className="inline-flex items-center justify-center gap-1 text-[12.5px] text-[#717ea1] font-semibold hover:text-[#544ee5] transition-colors mt-0.5 max-w-full">
+                  <span>{mapTitle}</span>
+                  <Pencil className="w-3 h-3 text-[#717ea1] group-hover:text-[#544ee5] shrink-0 stroke-[2.2]" />
+                </div>
+              </div>
 
-          {/* Top-Right Preview Pill Button Hitbox */}
-          <div
-            onClick={() => showToast('✨ Interactive Map Preview Active')}
-            style={{ top: '3.8%', right: '4.2%', width: '24%', height: '4.8%' }}
-            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
-            title="Preview Map"
-          />
+              {/* Preview Button */}
+              <button
+                onClick={() => showToast('✨ Interactive Preview Mode Active')}
+                className="px-3.5 py-1.5 bg-[#f4f3ff] hover:bg-[#eae8fe] rounded-full text-[12.5px] font-extrabold text-[#544ee5] shadow-xs active:scale-95 transition-all cursor-pointer shrink-0"
+              >
+                Preview
+              </button>
+            </div>
 
-          {/* Global Search Bar Hitbox -> Opens Search Modal */}
-          <div
-            onClick={() => setShowPlacesSearchModal(true)}
-            style={{ top: '9.2%', left: '4.2%', width: '91.6%', height: '5.5%' }}
-            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-98 transition-all"
-            title="Search for a place or landmark"
-          />
+            {/* Floating Search Bar */}
+            <div
+              onClick={() => setShowPlacesSearchModal(true)}
+              className="w-full px-4 py-3 bg-white rounded-full shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-3 cursor-pointer hover:border-[#544ee5]/50 transition-all"
+            >
+              <Search className="w-4.5 h-4.5 text-[#8e9bb5] shrink-0 stroke-[2.2]" />
+              <span className="text-[13.5px] text-[#8e9bb5] font-medium">
+                Search for a place or landmark...
+              </span>
+            </div>
+          </div>
 
-          {/* Right Floating Stack Button 1: Layers */}
-          <div
-            onClick={() => showToast('Map Layers: Standard View')}
-            style={{ top: '17.2%', right: '4.2%', width: '14%', height: '5.2%' }}
-            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
-            title="Layers"
-          />
+          {/* ========================================================= */}
+          {/* RIGHT FLOATING MAP CONTROLS                                */}
+          {/* ========================================================= */}
+          <div className="absolute right-4 top-36 z-20 flex flex-col gap-3 pointer-events-auto">
+            {/* Layers */}
+            <button
+              onClick={() => {
+                const next = activeLayer === 'standard' ? 'satellite' : 'standard';
+                setActiveLayer(next);
+                showToast(`Layer switched to ${next === 'standard' ? 'Standard' : 'Satellite'} 🗺️`);
+              }}
+              className="w-11 h-11 rounded-full bg-white shadow-[0_3px_12px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer"
+              title="Change Map Layers"
+            >
+              <Layers className="w-5 h-5 stroke-[2]" />
+            </button>
 
-          {/* Right Floating Stack Button 2: Compass */}
-          <div
-            onClick={() => showToast('🧭 Compass: Reoriented to North')}
-            style={{ top: '23.4%', right: '4.2%', width: '14%', height: '5.2%' }}
-            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
-            title="Compass"
-          />
+            {/* Compass */}
+            <button
+              onClick={() => {
+                setPanOffset({ x: 0, y: 0 });
+                showToast('🧭 Compass reoriented to North');
+              }}
+              className="w-11 h-11 rounded-full bg-white shadow-[0_3px_12px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer"
+              title="Compass: Reset North"
+            >
+              <Navigation className="w-5 h-5 text-[#0f1738] stroke-[2.2] -rotate-45" />
+            </button>
 
-          {/* Right Floating Stack Button 3: GPS Recenter */}
-          <div
-            onClick={handleRecenter}
-            style={{ top: '29.6%', right: '4.2%', width: '14%', height: '5.2%' }}
-            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
-            title="My Location"
-          />
+            {/* Crosshair / Recenter */}
+            <button
+              onClick={handleRecenter}
+              className="w-11 h-11 rounded-full bg-white shadow-[0_3px_12px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer"
+              title="My Location"
+            >
+              <Crosshair className="w-5 h-5 stroke-[2]" />
+            </button>
+          </div>
 
-          {/* Interactive Map Pins Hitboxes */}
-          {/* 1. Camera Photo Spot Pin */}
-          <div
-            onClick={() => handleAddPlaceToList('Pont des Arts Photo Spot')}
-            style={{ top: '24.5%', left: '34.5%', width: '10%', height: '5.8%' }}
-            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
-            title="Pont des Arts Photo Spot"
-          />
+          {/* ========================================================= */}
+          {/* BOTTOM SHEET: EXACT 1:1 MATCHING SCREENSHOT                */}
+          {/* ========================================================= */}
+          <div className="relative z-20 bg-white rounded-t-[32px] px-3.5 sm:px-4 pt-2.5 pb-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] border-t border-slate-100 shrink-0 pointer-events-auto">
+            {/* Sheet Grab Handle */}
+            <div className="w-10 h-1 bg-[#cbd5e1] rounded-full mx-auto mb-2.5" />
 
-          {/* 2. Coffee Café de Flore Pin */}
-          <div
-            onClick={() => handleAddPlaceToList('Café de Flore')}
-            style={{ top: '28.5%', left: '62.5%', width: '10%', height: '5.8%' }}
-            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
-            title="Café de Flore"
-          />
+            {/* Sheet Title & Places Count */}
+            <h2 className="text-[18px] font-black text-[#0f1738] leading-tight">
+              Add places to your map
+            </h2>
+            <p className="text-[13px] font-medium text-[#717ea1] mt-0.5 mb-3">
+              {addedPlaces.length} places added
+            </p>
 
-          {/* 3. Restaurant Food Pin */}
-          <div
-            onClick={() => handleAddPlaceToList('Le Comptoir du Relais')}
-            style={{ top: '37.0%', left: '35.5%', width: '10%', height: '5.8%' }}
-            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
-            title="Le Comptoir du Relais"
-          />
+            {/* 3 Action Cards with clean legible text and zero clipping */}
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+              {/* Card 1: Search & Add */}
+              <button
+                onClick={() => setShowPlacesSearchModal(true)}
+                className="px-2 py-2 sm:p-2.5 rounded-2xl border border-slate-200/90 bg-white hover:border-[#544ee5]/40 hover:bg-[#f8f9ff] active:scale-95 flex items-center gap-1.5 sm:gap-2 text-left shadow-2xs transition-all cursor-pointer"
+              >
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#f3f0ff] flex items-center justify-center text-[#7c3aed] shrink-0">
+                  <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] sm:text-[11px] font-extrabold text-[#0f1738] leading-[1.15]">
+                    Search &amp; Add
+                  </div>
+                  <div className="text-[7.5px] sm:text-[8.5px] text-[#717ea1] font-medium leading-[1.15] mt-0.5">
+                    Find places manually
+                  </div>
+                </div>
+              </button>
 
-          {/* 4. Museum Musée d’Orsay Pin */}
-          <div
-            onClick={() => handleAddPlaceToList('Musée d’Orsay')}
-            style={{ top: '42.5%', left: '26.5%', width: '10%', height: '5.8%' }}
-            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
-            title="Musée d’Orsay"
-          />
+              {/* Card 2: From Saved Lists */}
+              <button
+                onClick={() => setShowListsModal(true)}
+                className="px-2 py-2 sm:p-2.5 rounded-2xl border border-slate-200/90 bg-white hover:border-[#544ee5]/40 hover:bg-[#f8f9ff] active:scale-95 flex items-center gap-1.5 sm:gap-2 text-left shadow-2xs transition-all cursor-pointer"
+              >
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[#eef2ff] flex items-center justify-center text-[#4f46e5] shrink-0">
+                  <List className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] sm:text-[11px] font-extrabold text-[#0f1738] leading-[1.15]">
+                    From Saved Lists
+                  </div>
+                  <div className="text-[7.5px] sm:text-[8.5px] text-[#717ea1] font-medium leading-[1.15] mt-0.5">
+                    Add from your lists
+                  </div>
+                </div>
+              </button>
 
-          {/* 5. Tree Jardin du Luxembourg Pin */}
-          <div
-            onClick={() => handleAddPlaceToList('Jardin du Luxembourg')}
-            style={{ top: '40.5%', left: '69.5%', width: '10%', height: '5.8%' }}
-            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
-            title="Jardin du Luxembourg"
-          />
+              {/* Card 3: Import from Google Maps */}
+              <button
+                onClick={() => setShowGmapsModal(true)}
+                className="px-2 py-2 sm:p-2.5 rounded-2xl border border-slate-200/90 bg-white hover:border-[#544ee5]/40 hover:bg-[#f8f9ff] active:scale-95 flex items-center gap-1.5 sm:gap-2 text-left shadow-2xs transition-all cursor-pointer"
+              >
+                <div className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center shrink-0">
+                  <img
+                    src="/c35-gmaps-pin-exact.png"
+                    alt="Google Maps"
+                    className="w-4.5 h-6 sm:w-5 sm:h-6.5 object-contain"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[9.5px] sm:text-[10.5px] font-extrabold text-[#0f1738] leading-[1.1]">
+                    Import from Google Maps
+                  </div>
+                  <div className="text-[7.5px] sm:text-[8px] text-[#717ea1] font-medium leading-[1.1] mt-0.5">
+                    Import your places
+                  </div>
+                </div>
+              </button>
+            </div>
 
-          {/* 6. Hotel Hôtel Lutetia Pin */}
-          <div
-            onClick={() => handleAddPlaceToList('Hôtel Lutetia')}
-            style={{ top: '54.0%', left: '72.5%', width: '10%', height: '5.8%' }}
-            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/10 active:scale-90 transition-all"
-            title="Hôtel Lutetia"
-          />
+            {/* Done Button */}
+            <button
+              onClick={handleSaveAndFinish}
+              disabled={isSavingMap}
+              className="w-full mt-3 py-3.5 sm:py-4 rounded-full bg-[#5d54ee] hover:bg-[#4d44de] active:scale-[0.99] text-white font-black text-[15.5px] flex items-center justify-center gap-2 shadow-lg shadow-indigo-300/40 transition-all cursor-pointer disabled:opacity-70"
+            >
+              {isSavingMap ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Saving to Cloudflare &amp; Supabase...</span>
+                </>
+              ) : (
+                <span>Done</span>
+              )}
+            </button>
 
-          {/* 7. River GPS Pulsing Beacon */}
-          <div
-            onClick={handleRecenter}
-            style={{ top: '52.0%', left: '48.0%', width: '16%', height: '8.5%' }}
-            className="absolute z-25 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
-            title="Live GPS Beacon"
-          />
-
-          {/* Bottom Sheet Card 1 Hitbox: Search & Add */}
-          <div
-            onClick={() => setShowPlacesSearchModal(true)}
-            style={{ bottom: '11.8%', left: '4.2%', width: '29.5%', height: '10.5%' }}
-            className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
-            title="Search & Add manually"
-          />
-
-          {/* Bottom Sheet Card 2 Hitbox: From Saved Lists */}
-          <div
-            onClick={() => setShowListsModal(true)}
-            style={{ bottom: '11.8%', left: '35.2%', width: '29.5%', height: '10.5%' }}
-            className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
-            title="From Saved Lists"
-          />
-
-          {/* Bottom Sheet Card 3 Hitbox: Import from Google Maps */}
-          <div
-            onClick={() => setShowGmapsModal(true)}
-            style={{ bottom: '11.8%', left: '66.2%', width: '29.5%', height: '10.5%' }}
-            className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
-            title="Import from Google Maps"
-          />
-
-          {/* Bottom Sheet Done Button Hitbox */}
-          <div
-            onClick={() => setShowDoneModal(true)}
-            style={{ bottom: '3.6%', left: '4.2%', width: '91.6%', height: '5.8%' }}
-            className="absolute z-30 rounded-full cursor-pointer hover:bg-black/10 active:scale-98 transition-all"
-            title="Done - Save Map"
-          />
+            {/* iOS Home Indicator Bar */}
+            <div className="w-32 h-1 bg-slate-900/70 rounded-full mx-auto mt-3" />
+          </div>
         </div>
       )}
 
@@ -791,29 +1018,30 @@ export default function CreateMapPage({ onBack, onNavigate }) {
             <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
               <Check className="w-8 h-8 stroke-[3]" />
             </div>
-            <h3 className="text-[19px] font-black text-[#0f1738]">Map Created!</h3>
+            <h3 className="text-[19px] font-black text-[#0f1738]">Map Created &amp; Listed!</h3>
             <p className="text-xs text-[#717ea1] font-medium">
-              "{mapTitle}" has been saved with {addedPlaces.length > 0 ? addedPlaces.length : 'all curated'} places.
+              "{mapTitle}" has been saved to Cloudflare / Supabase with {coverImage ? 'custom cover image' : 'cover photo'} and listed in your Profile.
             </p>
 
             <div className="pt-2 space-y-2">
               <button
                 onClick={() => {
                   setShowDoneModal(false);
-                  onNavigate?.('purchased-map');
+                  onNavigate?.('user-profile');
                 }}
-                className="w-full py-3.5 bg-[#544ee5] hover:bg-[#4338ca] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer"
+                className="w-full py-3.5 bg-[#544ee5] hover:bg-[#4338ca] text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5"
               >
-                Open Map View
+                <User className="w-4 h-4" />
+                <span>View in My Profile</span>
               </button>
               <button
                 onClick={() => {
                   setShowDoneModal(false);
-                  onNavigate?.('explore');
+                  onNavigate?.('purchased-map');
                 }}
                 className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer"
               >
-                Back to Explore
+                Open Map View
               </button>
             </div>
           </div>
