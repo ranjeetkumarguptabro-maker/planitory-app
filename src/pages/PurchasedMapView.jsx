@@ -31,8 +31,8 @@ export const MY_MAP_PINS = [
     rating: '4.8',
     reviews: '320',
     img: '/c7-photo-cafe-de-flore.png',
-    x: 68.8,
-    y: 24.2,
+    x: 67.93,
+    y: 22.23,
     color: '#854d0e',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Cafe+de+Flore+Paris',
   },
@@ -46,8 +46,8 @@ export const MY_MAP_PINS = [
     rating: '4.9',
     reviews: '410',
     img: '/c7-photo-croissant.png',
-    x: 70.8,
-    y: 35.8,
+    x: 69.82,
+    y: 33.29,
     color: '#dc2626',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Le+Comptoir+du+Relais+Paris',
   },
@@ -61,8 +61,8 @@ export const MY_MAP_PINS = [
     rating: '4.9',
     reviews: '280',
     img: '/map-card-paris-hq.png',
-    x: 79.8,
-    y: 54.5,
+    x: 80.22,
+    y: 54.35,
     color: '#ca8a04',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Pont+des+Arts+Paris',
   },
@@ -76,8 +76,8 @@ export const MY_MAP_PINS = [
     rating: '4.9',
     reviews: '520',
     img: '/c4-thumb-europe.png',
-    x: 33.8,
-    y: 19.1,
+    x: 32.89,
+    y: 18.06,
     color: '#15803d',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Jardin+du+Luxembourg+Paris',
   },
@@ -91,8 +91,8 @@ export const MY_MAP_PINS = [
     rating: '4.9',
     reviews: '340',
     img: '/c6-thumb-paris-museums.png',
-    x: 26.8,
-    y: 34.5,
+    x: 30.85,
+    y: 33.89,
     color: '#7e22ce',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Musee+dOrsay+Paris',
   },
@@ -106,8 +106,8 @@ export const MY_MAP_PINS = [
     rating: '4.8',
     reviews: '195',
     img: '/c8-thumb-paris.png',
-    x: 27.8,
-    y: 52.8,
+    x: 26.84,
+    y: 52.23,
     color: '#3b82f6',
     googleMapsUrl: 'https://www.google.com/maps/dir/?api=1&destination=Hotel+Lutetia+Paris',
   },
@@ -326,71 +326,43 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                 style={{
                   left: `${pin.x}%`,
                   top: `${pin.y}%`,
-                  transform: `translate(-50%, ${isEmoji || isCustomColor ? '-85%' : '-50%'}) scale(${1 / Math.max(0.9, zoomLevel)})`,
-                  transformOrigin: 'center bottom',
+                  transform: `translate(-50%, -50%) scale(${1 / Math.max(0.9, zoomLevel)})`,
+                  transformOrigin: 'center center',
                 }}
-                className="absolute z-20 cursor-pointer flex flex-col items-center group transition-transform hover:scale-110 active:scale-95"
+                className="absolute z-20 cursor-pointer flex items-center justify-center transition-transform hover:scale-115 active:scale-95"
                 title={pin.name}
               >
-                {/* 3D Emoji Pin View */}
+                {/* 3D Emoji Pin View (Concentric disc seamlessly overlaying pin head) */}
                 {isEmoji ? (
-                  <div className="relative flex flex-col items-center animate-in zoom-in-50 duration-200">
-                    {/* Emoji Pin Bubble */}
-                    <div
-                      style={{ backgroundColor: themeColor }}
-                      className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2.5 border-white shadow-[0_6px_20px_rgba(0,0,0,0.3)] flex items-center justify-center transition-all ${
-                        isSelected
-                          ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-110'
-                          : ''
-                      }`}
-                    >
-                      <span className="text-[22px] sm:text-[24px] leading-none filter drop-shadow-sm select-none transform group-hover:scale-120 transition-transform">
-                        {pin.emoji}
-                      </span>
-                    </div>
-                    {/* Pin Tip Pointer */}
-                    <div
-                      style={{ borderTopColor: themeColor }}
-                      className="w-0 h-0 border-x-[6px] border-x-transparent border-t-[8px] -mt-[1px] drop-shadow-xs"
-                    />
-
-                    {/* Selected Tooltip */}
-                    {isSelected && (
-                      <div className="absolute -top-7 px-2.5 py-0.5 rounded-full bg-[#0f1738]/95 text-white text-[10.5px] font-extrabold whitespace-nowrap shadow-md border border-white/20 flex items-center gap-1 animate-in fade-in slide-in-from-bottom-1">
-                        <span>{pin.name}</span>
-                        <span className="text-amber-400">★ {pin.rating}</span>
-                      </div>
-                    )}
+                  <div
+                    style={{ backgroundColor: themeColor }}
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_14px_rgba(0,0,0,0.28)] flex items-center justify-center transition-all animate-in zoom-in-75 duration-150 ${
+                      isSelected
+                        ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-110'
+                        : ''
+                    }`}
+                  >
+                    <span className="text-[19px] sm:text-[21px] leading-none select-none filter drop-shadow-xs">
+                      {pin.emoji}
+                    </span>
                   </div>
                 ) : isCustomColor ? (
-                  /* Custom Vector Pin */
-                  <div className="relative flex flex-col items-center animate-in zoom-in-50 duration-200">
-                    <div
-                      style={{ backgroundColor: themeColor }}
-                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_16px_rgba(0,0,0,0.25)] flex items-center justify-center text-white transition-all ${
-                        isSelected
-                          ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-110'
-                          : ''
-                      }`}
-                    >
-                      {getVectorIcon(pin.type)}
-                    </div>
-                    <div
-                      style={{ borderTopColor: themeColor }}
-                      className="w-0 h-0 border-x-[5px] border-x-transparent border-t-[7px] -mt-[1px]"
-                    />
-                    {isSelected && (
-                      <div className="absolute -top-7 px-2.5 py-0.5 rounded-full bg-[#0f1738]/95 text-white text-[10.5px] font-extrabold whitespace-nowrap shadow-md border border-white/20 flex items-center gap-1 animate-in fade-in slide-in-from-bottom-1">
-                        <span>{pin.name}</span>
-                        <span className="text-amber-400">★ {pin.rating}</span>
-                      </div>
-                    )}
+                  /* Custom Vector Pin Disc */
+                  <div
+                    style={{ backgroundColor: themeColor }}
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_14px_rgba(0,0,0,0.22)] flex items-center justify-center text-white transition-all animate-in zoom-in-75 duration-150 ${
+                      isSelected
+                        ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-110'
+                        : ''
+                    }`}
+                  >
+                    {getVectorIcon(pin.type)}
                   </div>
                 ) : (
                   /* Original Mode: Transparent Hitbox with selection glow */
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-full flex items-center justify-center">
                     {isSelected && (
-                      <div className="w-11 h-11 rounded-full ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white shadow-xl animate-in zoom-in-75 duration-150 bg-indigo-500/10 pointer-events-none" />
+                      <div className="w-10 h-10 rounded-full ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white shadow-lg animate-in zoom-in-75 duration-150 bg-indigo-500/15 pointer-events-none" />
                     )}
                   </div>
                 )}
