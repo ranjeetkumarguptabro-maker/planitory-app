@@ -334,23 +334,20 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
           }}
           className="relative w-full h-full transition-all duration-300"
         >
-          {/* Paris Map Vector Graphic */}
+          {/* Paris Map Graphic matching c26.png */}
           <img
-            src={
-              pinIconStyle === 'emoji' || pinColorTheme !== 'original'
-                ? '/c26-map-bg.png'
-                : '/c26-map-bg.png'
-            }
+            src="/c26-my-map.png"
             alt="My Map Vector Paris"
             className="w-full h-full object-cover pointer-events-none select-none"
             draggable={false}
           />
 
-          {/* Interactive Dynamic Map Pins */}
+          {/* Interactive Pins (Only render dynamic 3D emoji overlays when customized) */}
           {MY_MAP_PINS.map((pin) => {
             const isSelected = selectedLocation?.id === pin.id;
             const themeColor = getPinThemeColor(pinColorTheme, pin.color);
             const isEmoji = pinIconStyle === 'emoji';
+            const isCustom = pinIconStyle === 'emoji' || pinColorTheme !== 'original';
 
             return (
               <div
@@ -366,27 +363,32 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
                   transform: `translate(-50%, -50%) scale(${1 / Math.max(0.9, zoomLevel)})`,
                   transformOrigin: 'center center',
                 }}
-                className="absolute z-20 cursor-pointer flex items-center justify-center transition-transform hover:scale-115 active:scale-95"
+                className="absolute z-20 cursor-pointer flex items-center justify-center transition-transform hover:scale-110 active:scale-95"
                 title={pin.name}
               >
-                <div
-                  style={{ backgroundColor: themeColor }}
-                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_14px_rgba(0,0,0,0.28)] flex items-center justify-center transition-all animate-in zoom-in-75 duration-150 ${
-                    isSelected
-                      ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-115'
-                      : ''
-                  }`}
-                >
-                  {isEmoji ? (
-                    <span className="text-[19px] sm:text-[21px] leading-none select-none filter drop-shadow-xs">
-                      {pin.emoji}
-                    </span>
-                  ) : (
-                    <div className="text-white flex items-center justify-center">
-                      {getVectorIcon(pin.type)}
-                    </div>
-                  )}
-                </div>
+                {isCustom ? (
+                  <div
+                    style={{ backgroundColor: themeColor }}
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-[0_4px_14px_rgba(0,0,0,0.28)] flex items-center justify-center transition-all animate-in zoom-in-75 duration-150 ${
+                      isSelected
+                        ? 'ring-3 ring-[#544ee5] ring-offset-2 ring-offset-white scale-110'
+                        : ''
+                    }`}
+                  >
+                    {isEmoji ? (
+                      <span className="text-[19px] sm:text-[21px] leading-none select-none filter drop-shadow-xs">
+                        {pin.emoji}
+                      </span>
+                    ) : (
+                      <div className="text-white flex items-center justify-center">
+                        {getVectorIcon(pin.type)}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Clean invisible tap target over native pin */
+                  <div className="w-12 h-12 rounded-full cursor-pointer" />
+                )}
               </div>
             );
           })}
@@ -394,133 +396,74 @@ export default function PurchasedMapView({ onBack, onNavigate }) {
       </div>
 
       {/* ========================================================= */}
-      {/* 2. TOP FLOATING HEADER                                    */}
+      {/* 2. TOP-LEFT BACK BUTTON                                   */}
       {/* ========================================================= */}
-      <div className="relative z-30 p-4 flex items-center justify-between pointer-events-none">
-        {/* Back Button */}
+      <div className="absolute top-4 left-4 z-40">
         <button
           onClick={() => onBack && onBack()}
-          className="pointer-events-auto w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-white active:scale-90 transition-all cursor-pointer"
-          title="Back"
+          className="w-10 h-10 rounded-full bg-white/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.14)] border border-white flex items-center justify-center text-[#0f1738] hover:bg-white active:scale-90 transition-all cursor-pointer"
+          title="Back to Explore"
         >
           <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
         </button>
-
-        {/* Map Title Pill */}
-        <div className="pointer-events-auto px-3.5 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_3px_12px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[12px] font-extrabold text-[#0f1738]">Paris Café Guide</span>
-          <span className="text-[10px] text-slate-400 font-bold">• 5 Places</span>
-        </div>
       </div>
 
       {/* ========================================================= */}
-      {/* 3. RIGHT FLOATING ACTION CONTROLS                         */}
+      {/* 3. INVISIBLE INTERACTIVE HITBOXES OVER c26 BUTTONS        */}
       {/* ========================================================= */}
-      <div className="absolute right-3.5 top-20 z-30 flex flex-col gap-2.5 pointer-events-auto">
-        {/* Layers / Map Style */}
-        <button
-          onClick={() => {
-            setCustomizationStep(1);
-            setShowCustomizeModal(true);
-          }}
-          className="w-11 h-11 rounded-full bg-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer"
-          title="Map Style"
-        >
-          <Layers className="w-5 h-5 stroke-[2.2]" />
-        </button>
+      {/* Top-Right Button Hitbox 1: Layers -> Opens Style Modal */}
+      <div
+        onClick={() => {
+          setCustomizationStep(1);
+          setShowCustomizeModal(true);
+        }}
+        style={{ top: '7.4%', right: '3.6%' }}
+        className="absolute z-30 w-12 h-12 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+        title="Map Layers"
+      />
 
-        {/* GPS Recenter */}
-        <button
-          onClick={handleLocateUser}
-          className="w-11 h-11 rounded-full bg-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] border border-slate-100 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer"
-          title="My Location"
-        >
-          <Crosshair className="w-5 h-5 stroke-[2.2]" />
-        </button>
+      {/* Top-Right Button Hitbox 2: GPS Recenter */}
+      <div
+        onClick={handleLocateUser}
+        style={{ top: '14.2%', right: '3.6%' }}
+        className="absolute z-30 w-12 h-12 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+        title="My Location"
+      />
 
-        {/* Customize Button (Purple) */}
-        <button
-          onClick={() => {
-            setCustomizationStep(2);
-            setShowCustomizeModal(true);
-          }}
-          className="w-11 h-11 rounded-full bg-[#544ee5] shadow-[0_4px_16px_rgba(84,78,229,0.38)] flex items-center justify-center text-white hover:bg-[#4338ca] active:scale-90 transition-all cursor-pointer"
-          title="Customize Pins & Colors"
-        >
-          <SlidersHorizontal className="w-5 h-5 stroke-[2.4]" />
-        </button>
+      {/* Top-Right Button Hitbox 3: Purple Customization Button -> Opens c27 Modal */}
+      <div
+        onClick={() => {
+          setCustomizationStep(2);
+          setShowCustomizeModal(true);
+        }}
+        style={{ top: '21.0%', right: '3.6%' }}
+        className="absolute z-30 w-12 h-12 rounded-full cursor-pointer hover:bg-white/10 active:scale-90 transition-all"
+        title="Customize Map Styles & Colors"
+      />
 
-        {/* Zoom In & Zoom Out Buttons */}
-        <div className="flex flex-col bg-white rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.12)] border border-slate-100 overflow-hidden mt-2">
-          <button
-            onClick={() => handleZoom('in')}
-            className="w-11 h-10 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer border-b border-slate-100"
-            title="Zoom In"
-          >
-            <Plus className="w-4.5 h-4.5 stroke-[2.4]" />
-          </button>
-          <button
-            onClick={() => handleZoom('out')}
-            className="w-11 h-10 flex items-center justify-center text-[#0f1738] hover:bg-slate-50 active:scale-90 transition-all cursor-pointer"
-            title="Zoom Out"
-          >
-            <Minus className="w-4.5 h-4.5 stroke-[2.4]" />
-          </button>
-        </div>
-      </div>
+      {/* Bottom-Right Compass Hitbox */}
+      <div
+        onClick={() => handleDirections(selectedLocation)}
+        style={{ bottom: '18.5%', right: '3.6%' }}
+        className="absolute z-30 w-14 h-14 rounded-full cursor-pointer hover:bg-black/5 active:scale-90 transition-all"
+        title="Compass Navigation"
+      />
 
-      {/* ========================================================= */}
-      {/* 4. BOTTOM FLOATING PLACE CARD (Matching c26.png)          */}
-      {/* ========================================================= */}
-      {selectedLocation && (
-        <div className="relative z-30 px-3.5 pb-4 pointer-events-none">
-          <div className="pointer-events-auto bg-white/95 backdrop-blur-md rounded-[24px] p-3 shadow-[0_8px_30px_rgba(0,0,0,0.14)] border border-white/80 flex items-center gap-3 animate-in slide-in-from-bottom-3 duration-200 max-w-sm mx-auto">
-            {/* Thumbnail Image */}
-            <div
-              onClick={() => onNavigate && onNavigate('map-detail')}
-              className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-100 shrink-0 cursor-pointer shadow-xs"
-            >
-              <img
-                src={selectedLocation.img}
-                alt={selectedLocation.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
+      {/* Bottom Location Card Directions Hitbox */}
+      <div
+        onClick={() => handleDirections(selectedLocation)}
+        style={{ bottom: '3.8%', right: '4.8%', width: '33%', height: '5.2%' }}
+        className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/10 active:scale-95 transition-all"
+        title="Get Directions in Google Maps"
+      />
 
-            {/* Info Body */}
-            <div
-              onClick={() => onNavigate && onNavigate('map-detail')}
-              className="flex-1 min-w-0 cursor-pointer"
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="text-[9.5px] font-extrabold uppercase tracking-wide text-[#544ee5] bg-[#eeedff] px-2 py-0.5 rounded-full">
-                  {selectedLocation.category.split('•')[0].trim()}
-                </span>
-                <div className="flex items-center gap-0.5 text-[11px] font-bold text-amber-500">
-                  <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                  <span>{selectedLocation.rating}</span>
-                </div>
-              </div>
-              <h3 className="font-extrabold text-[14.5px] text-[#0f1738] leading-tight mt-1 truncate">
-                {selectedLocation.name}
-              </h3>
-              <p className="text-[11px] text-[#717ea1] font-medium truncate mt-0.5">
-                {selectedLocation.address}
-              </p>
-            </div>
-
-            {/* Action: Directions Button */}
-            <button
-              onClick={() => handleDirections(selectedLocation)}
-              className="w-10 h-10 rounded-2xl bg-[#544ee5] text-white flex items-center justify-center hover:bg-[#4338ca] active:scale-95 shadow-md shadow-indigo-300/40 transition-all cursor-pointer shrink-0"
-              title="Directions in Google Maps"
-            >
-              <Navigation className="w-4.5 h-4.5 stroke-[2.4] -rotate-45" />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Bottom Location Card Detail Tap Hitbox */}
+      <div
+        onClick={() => onNavigate && onNavigate('map-detail')}
+        style={{ bottom: '3.2%', left: '4.5%', width: '58%', height: '6.5%' }}
+        className="absolute z-30 rounded-2xl cursor-pointer hover:bg-black/5 active:scale-95 transition-all"
+        title="View Place Details"
+      />
 
       {/* ========================================================= */}
       {/* 4. CUSTOMIZE MAP BOTTOM SHEET MODAL (c27.png)             */}
